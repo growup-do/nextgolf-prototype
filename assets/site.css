@@ -12,6 +12,8 @@
   --red: #da0001; --orange: #e8994c; --orange-ink: #b9620f;
   /* KV の 2 本の色（鎬BLUE・Rafale RS1.0 の黄緑。撮影写真から） */
   --kv-blue: #1d6fd1; --kv-green: #6cc23a;
+  /* ポイントカラー：カーソルを合わせたとき（ホバー）の色。明るい地では文字色にせず、下線や塗りに使い、上に載せる文字は K90 */
+  --point: #ffae00; --point-soft: #ffd27a; --on-point: var(--k90);
   --en: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif; --ja: "Noto Sans JP", sans-serif;
   --hd: 88px; --w: 1200px; --px: 40px;
   --hd-x: 48px;   /* ヘッダーのロゴとメニューは、画面の左右の端から 48px の位置に固定 */
@@ -40,10 +42,11 @@ button { font: inherit; color: inherit; }
 .hd nav { display: flex; gap: 34px; font: 600 16px/1 var(--en); }
 .hd nav a { opacity: .75; transition: opacity .2s; padding: 6px 0; }
 .hd nav a:hover, .hd nav a.on { opacity: 1; }
+.hd nav a:hover { box-shadow: inset 0 -2px 0 var(--point); }
 .hd nav a.on { box-shadow: inset 0 -2px 0 var(--k90); }
 .sns { display: flex; gap: 18px; }
 .sns a { opacity: .85; transition: opacity .2s; }
-.sns a:hover { opacity: 1; }
+.sns a:hover { opacity: 1; color: var(--point); }
 .sns svg { width: 22px; height: 22px; display: block; }
 .ft .sns svg { width: 20px; height: 20px; }
 .sns .f { fill: #f2f2f2; }
@@ -58,6 +61,7 @@ button { font: inherit; color: inherit; }
 .menu-open .spmenu { opacity: 1; visibility: visible; }
 .menu-open { overflow: hidden; }
 .spmenu a { font: 700 24px/1 var(--en); padding: 20px 0; border-bottom: 1px solid var(--line); }
+.spmenu a:hover { border-bottom-color: var(--point); box-shadow: inset 0 -1px 0 var(--point); }
 .spmenu a small { display: block; font: 500 12px/1 var(--ja); color: var(--sub); margin-top: 8px; }
 main { padding-top: var(--hd); }
 
@@ -66,7 +70,7 @@ main { padding-top: var(--hd); }
 .ft .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 40px; }
 .ft .logo svg { height: 56px; width: auto; color: #fff; }
 .ft nav { display: grid; grid-template-columns: repeat(4, auto); gap: 18px 48px; font: 600 14px/1 var(--en); }
-.ft nav a { opacity: .8; } .ft nav a:hover { opacity: 1; }
+.ft nav a { opacity: .8; transition: color .2s, opacity .2s; } .ft nav a:hover { opacity: 1; color: var(--point); }
 .ft .bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line); font: 400 15px/1 var(--en); color: var(--k30); }
 .ft .sns .f { fill: var(--k90); }
 
@@ -80,13 +84,13 @@ main { padding-top: var(--hd); }
 .sh .j { font: 500 14px/1.5 var(--ja); color: var(--sub); margin-top: 10px; }
 .more { display: inline-flex; align-items: center; gap: 12px; font: 600 15px/1 var(--en); white-space: nowrap; }
 .more::after { content: ""; width: 28px; height: 1px; background: currentColor; transition: width .3s; }
-.more:hover::after { width: 44px; }
+.more:hover::after { width: 44px; background: var(--point); height: 2px; }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 14px; height: 54px; padding: 0 32px; border: 1px solid var(--k90);
   font: 600 15px/1 var(--en); transition: background .3s, color .3s; background: rgba(255,255,255,.35); white-space: nowrap; cursor: pointer; }
 .btn::after { content: "→"; font-family: var(--ja); }
-.btn:hover { background: var(--k90); color: #fff; }
+.btn:hover { background: var(--point); border-color: var(--point); color: var(--on-point); }
 .btn.solid { background: var(--k90); color: #fff; }
-.btn.solid:hover { background: transparent; color: var(--k90); }
+.btn.solid:hover { background: var(--point); border-color: var(--point); color: var(--on-point); }
 .note { font-size: 14px; line-height: 1.5; color: var(--sub); }
 .tag { display: inline-block; font: 700 12px/1 var(--en); padding: 6px 10px; background: var(--accent, var(--k90)); color: var(--on-accent, #fff); }
 .tag.gray { background: var(--k10); color: var(--k70); }
@@ -94,7 +98,7 @@ main { padding-top: var(--hd); }
 /* ページの見出し */
 .ptitle { padding: 96px 0 56px; border-bottom: 1px solid var(--line); }
 .crumb { font: 500 14px/1.5 var(--ja); color: var(--sub); margin-bottom: 28px; }
-.crumb a:hover { color: var(--k); }
+.crumb a:hover { color: var(--k); text-decoration: underline; text-decoration-color: var(--point); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 .crumb i { font-style: normal; margin: 0 10px; opacity: .6; }
 /* TITLE STRONG */
 .ptitle h1 { font: 700 72px/1 var(--en); }
@@ -163,7 +167,7 @@ html.kv-off .kv-bg { visibility: hidden; }
 .kv-item .go { margin-top: 10px; display: inline-flex; align-items: center; gap: 12px; height: 44px; padding: 0 22px; border: 1px solid rgba(0,0,0,.5); font: 600 13px/1 var(--en);
   background: rgba(255,255,255,.4); transition: background .3s, color .3s, border-color .3s; }
 .kv-item .go::after { content: "→"; font-family: var(--ja); }
-.kv-item:hover .go, .kv-item:focus-visible .go, .kv-item.s-shinogi:hover .go { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.kv-item:hover .go, .kv-item:focus-visible .go, .kv-item.s-shinogi:hover .go { background: var(--point); border-color: var(--point); color: var(--on-point); }
 .kv-cue { grid-column: 1 / -1; justify-self: center; pointer-events: auto; display: flex; flex-direction: column; align-items: center; gap: 14px;
   font: 600 14px/1 var(--en); color: color-mix(in srgb, #dfe6f2 calc(var(--sh) * 100%), var(--k80)); opacity: calc((1 - (var(--sh) + var(--rf)) * .6) * var(--cue));
   visibility: var(--cue-vis, visible); }
@@ -209,7 +213,7 @@ html.no3d .kv-bg .b-base { background: var(--page); }
 .card .ph .tag { position: absolute; left: 12px; top: 12px; }
 .card b { display: block; font: 700 20px/1.3 var(--en); margin-top: 16px; }
 .card > span { display: block; font: 500 14px/1.5 var(--ja); color: var(--sub); margin-top: 6px; }
-.card:hover b { text-decoration: underline; text-underline-offset: 4px; }
+.card:hover b { text-decoration: underline; text-decoration-color: var(--point); text-decoration-thickness: 2px; text-underline-offset: 5px; }
 
 /* 試打会・お知らせ */
 .two { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; }
@@ -223,7 +227,7 @@ html.no3d .kv-bg .b-base { background: var(--page); }
 .ev .tag { margin-bottom: 8px; }
 .nw { display: grid; grid-template-columns: 110px 1fr; gap: 20px; padding: 22px 0; border-bottom: 1px solid var(--line); font-size: 15px; line-height: 1.8; }
 .nw .dt { font: 400 15px/1.8 var(--en); color: var(--sub); }
-a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-underline-offset: 4px; }
+a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-color: var(--point); text-decoration-thickness: 2px; text-underline-offset: 5px; }
 .empty { padding: 28px; border: 1px solid var(--line); background: var(--panel); color: var(--sub); font-size: 14px; line-height: 1.5; margin-bottom: 8px; }
 
 /* 取扱店を探す：日本地図と地域ボタン */
@@ -233,16 +237,16 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-underline-offse
   font: 700 15px/1 var(--ja); transition: background .3s, color .3s; }
 .areas a span { font: 400 14px/1 var(--en); color: var(--sub); transition: color .3s; }
 .areas a span::after { content: " SHOPS"; font-size: 12px; }
-.areas a:hover, .areas a.hl { background: var(--k90); color: #fff; }
-.areas a:hover span, .areas a.hl span { color: var(--k30); }
+.areas a:hover, .areas a.hl { background: var(--point); border-color: var(--point); color: var(--on-point); }
+.areas a:hover span, .areas a.hl span { color: var(--k80); }
 .jmap svg { display: block; width: 100%; height: auto; overflow: visible; }
 .jmap .pf { stroke: #fff; stroke-width: .9; stroke-linejoin: round; transition: fill .25s; }
 .jmap .pf.none { fill: var(--k30); fill-opacity: .2; }   /* 取扱店のない県：店のある県と同じ色を 20% だけ */
 .jmap a.pf path { fill: var(--k30); cursor: pointer; }
-/* 地域にカーソルが乗る（または地域ボタンに乗る）と、その地域ごと少し濃く。県に乗ると、その県をいちばん濃く */
-.jmap .ar:hover a.pf path, .jmap .ar.hl a.pf path { fill: var(--k50); }
+/* 地域にカーソルが乗る（または地域ボタンに乗る）と、その地域を淡いポイントカラーに。県に乗ると、その県をポイントカラーに */
+.jmap .ar:hover a.pf path, .jmap .ar.hl a.pf path { fill: var(--point-soft); }
 .jmap .ar:hover .pf.none, .jmap .ar.hl .pf.none { fill-opacity: .3; }
-.jmap a.pf:hover path, .jmap a.pf:focus-visible path { fill: var(--k90); }
+.jmap a.pf:hover path, .jmap a.pf:focus-visible path { fill: var(--point); }
 .jmap a.pf:focus-visible { outline: none; }
 .jmap .oki { fill: none; stroke: var(--k30); stroke-width: 1; stroke-dasharray: 3 3; }
 .sec.find { padding-bottom: 40px; }
@@ -278,7 +282,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-underline-offse
 .spec td:first-child { font-weight: 700; }
 .cta { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .cta > a { display: block; padding: 48px; border: 1px solid var(--line); background: var(--panel); transition: border-color .3s, background .3s; }
-.cta > a:hover { border-color: var(--k90); background: rgba(255,255,255,.85); }
+.cta > a:hover { border-color: var(--point); background: rgba(255,255,255,.85); box-shadow: inset 0 0 0 1px var(--point); }
 .cta .e { font: 600 15px/1 var(--en); color: var(--sub); }
 .cta h3 { font: 700 27px/1.5 var(--ja); margin: 14px 0 8px; }
 .cta p { color: var(--sub); font-size: 14px; line-height: 1.5; }
@@ -312,7 +316,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-underline-offse
 .area-nav { position: sticky; top: var(--hd); z-index: 10; background: rgba(240,240,240,.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 .area-nav .wrap { display: flex; gap: 8px; overflow-x: auto; padding-top: 14px; padding-bottom: 14px; }
 .area-nav a { flex: 0 0 auto; padding: 10px 20px; border: 1px solid var(--line); background: var(--panel); font-size: 14px; line-height: 1.5; transition: background .3s, color .3s; }
-.area-nav a:hover { background: var(--k90); color: #fff; }
+.area-nav a:hover { background: var(--point); border-color: var(--point); color: var(--on-point); }
 .area + .area { margin-top: 96px; }
 .area > h2 { font: 700 38px/1.2 var(--ja); padding-bottom: 20px; border-bottom: 1px solid var(--line); }
 .area > h2 span { font: 600 15px/1 var(--en); color: var(--sub); margin-left: 16px; }
@@ -325,6 +329,8 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-underline-offse
 .shop .tag { margin-top: 8px; }   /* microCMS で「試打できる」をオンにした店 */
 .shop p { font-size: 14px; line-height: 1.7; color: var(--sub); margin-top: 10px; }
 .shop a { display: inline-block; margin-top: 12px; font: 600 14px/1 var(--en); text-decoration: underline; text-underline-offset: 3px; }
+/* 本文や一覧の中のリンク：ホバーで下線をポイントカラーに */
+.shop a:hover, .article .body a:hover, .info dd a:hover, .form .agree a:hover { text-decoration-color: var(--point); text-decoration-thickness: 2px; }
 
 /* ===== 会社概要・お問い合わせ・プライバシーポリシー ===== */
 .info { display: grid; grid-template-columns: 200px 1fr; border-top: 1px solid var(--line); max-width: 880px; }
