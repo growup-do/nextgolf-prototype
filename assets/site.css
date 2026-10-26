@@ -147,12 +147,12 @@ html.kv-off .kv-bg { visibility: hidden; }
   -webkit-mask-image: radial-gradient(closest-side, #000 58%, rgba(0,0,0,.6) 78%, transparent 100%); mask-image: radial-gradient(closest-side, #000 58%, rgba(0,0,0,.6) 78%, transparent 100%);
   -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
   transform: translate(-50%, -50%) scale(calc(1.06 - var(--sh) * .06)) translate(calc(var(--mx) * -14px), calc(var(--my) * -10px)); }
-/* Rafale の背景：緑からオレンジへ流れる光の筋を画面いっぱいに。現れるとき、風に乗るように左から少し流れ込む */
-.kv-bg .b-rafale { opacity: var(--rf); background: #1a0d05; }
-.kv-bg .b-rafale .photo { position: absolute; inset: 0; background: url("img/kv-rafale-hover.jpg") center / cover no-repeat;
+/* Rafale の背景：上に緑からオレンジへ流れる光の筋、下は黒へ溶ける横長の画像。画面の上に合わせて敷き、下は同じ黒で続ける
+   （高さが画面の 7 割より低くならないよう、幅は「画面幅」と「画面の高さ × 1.83」の大きいほう）。現れるとき、左から少し流れ込む */
+.kv-bg .b-rafale { opacity: var(--rf); background: #000; }
+.kv-bg .b-rafale .photo { position: absolute; inset: 0; background: url("img/kv-rafale-hover.jpg") center 40px / max(100%, 183vh) auto no-repeat;
+  transform-origin: 50% 40px;   /* 背景の層は画面より 40px 大きいので、画像の上端を画面の上端にそろえる */
   transform: translateX(calc((var(--rf) - 1) * 80px + var(--mx) * -18px)) scale(1.06); }
-/* 全体を少し沈めて、ロゴとシャフトを浮かせる */
-.kv-bg .b-rafale::after { content: ""; position: absolute; inset: 0; background: rgba(12,6,0,.16); }
 /* 前面の文字とロゴ */
 .kv-ui { position: absolute; inset: var(--hd) 0 0; z-index: 2; pointer-events: none; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr auto; padding: 4vh 5vw 5vh; }
 /* 鎬は、ホバーで背景が暗くなるのに合わせて、ロゴを明るい青に、文字とボタンを白に寄せる（--sh：0〜1） */
