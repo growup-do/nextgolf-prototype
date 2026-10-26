@@ -35,8 +35,8 @@ button { font: inherit; color: inherit; }
 
 /* ===== ヘッダー（常に固定） =====
    後ろが暗いとき（--hdk：0〜1）は、地を濃いグレーに、ロゴと文字を白にする。
-   KV で鎬の暗い背景が出ているとき（鎬へのフォーカス × KV の背景が残っている割合）と、フッターの上に来たとき（site.js が .hd-dark） */
-.hd { --hdk: calc(var(--sh) * (1 - var(--blend))); position: fixed; top: 0; left: 0; right: 0; height: var(--hd); z-index: 50;
+   KV で鎬・Rafale の暗い背景が出ているとき（どちらかへのフォーカス × KV の背景が残っている割合）と、フッターの上に来たとき（site.js が .hd-dark） */
+.hd { --hdk: calc(max(var(--sh), var(--rf)) * (1 - var(--blend))); position: fixed; top: 0; left: 0; right: 0; height: var(--hd); z-index: 50;
   background: color-mix(in srgb, rgba(25,25,25,.82) calc(var(--hdk) * 100%), rgba(246,246,246,.72));
   color: color-mix(in srgb, #fff calc(var(--hdk) * 100%), var(--k90));
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
@@ -147,16 +147,12 @@ html.kv-off .kv-bg { visibility: hidden; }
   -webkit-mask-image: radial-gradient(closest-side, #000 58%, rgba(0,0,0,.6) 78%, transparent 100%); mask-image: radial-gradient(closest-side, #000 58%, rgba(0,0,0,.6) 78%, transparent 100%);
   -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
   transform: translate(-50%, -50%) scale(calc(1.06 - var(--sh) * .06)) translate(calc(var(--mx) * -14px), calc(var(--my) * -10px)); }
-.kv-bg .b-rafale { opacity: var(--rf); background:
-  radial-gradient(55% 75% at 70% 52%, rgba(108,194,58,.30), transparent 70%),
-  linear-gradient(245deg, #f2f6ee 0%, #dfecd3 55%, #c4dcb0 100%); }
-/* Rafale の背景：筆記体のロゴと、風の線 */
-.kv-bg .script { position: absolute; left: 3%; top: 50%; width: min(62vw, 980px); color: rgba(76,150,36,.18);
-  transform: translate(calc((var(--rf) - 1) * 60px + var(--mx) * -26px), calc(-50% + var(--my) * -14px)) rotate(-6deg); }
-.kv-bg .script svg { width: 100%; height: auto; display: block; }
-.kv-bg .wind { position: absolute; left: -5%; width: 110%; top: 30%; aspect-ratio: var(--wind-ar, 4); background: rgba(108,194,58,.5);
-  -webkit-mask: var(--wind) center / contain no-repeat; mask: var(--wind) center / contain no-repeat;
-  transform: translateX(calc((1 - var(--rf)) * 25% + var(--mx) * -30px)); }
+/* Rafale の背景：緑からオレンジへ流れる光の筋を画面いっぱいに。現れるとき、風に乗るように左から少し流れ込む */
+.kv-bg .b-rafale { opacity: var(--rf); background: #1a0d05; }
+.kv-bg .b-rafale .photo { position: absolute; inset: 0; background: url("img/kv-rafale-hover.jpg") center / cover no-repeat;
+  transform: translateX(calc((var(--rf) - 1) * 80px + var(--mx) * -18px)) scale(1.06); }
+/* 全体を少し沈めて、ロゴとシャフトを浮かせる */
+.kv-bg .b-rafale::after { content: ""; position: absolute; inset: 0; background: rgba(12,6,0,.16); }
 /* 前面の文字とロゴ */
 .kv-ui { position: absolute; inset: var(--hd) 0 0; z-index: 2; pointer-events: none; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr auto; padding: 4vh 5vw 5vh; }
 /* 鎬は、ホバーで背景が暗くなるのに合わせて、ロゴを明るい青に、文字とボタンを白に寄せる（--sh：0〜1） */
@@ -166,6 +162,9 @@ html.kv-off .kv-bg { visibility: hidden; }
 .kv-item.s-shinogi .go { color: color-mix(in srgb, #fff calc(var(--sh) * 100%), var(--k90)); border-color: color-mix(in srgb, rgba(255,255,255,.6) calc(var(--sh) * 100%), rgba(0,0,0,.5));
   background: color-mix(in srgb, rgba(255,255,255,.06) calc(var(--sh) * 100%), rgba(255,255,255,.4)); }
 .kv-item.s-rafale { --accent: var(--kv-green); --on-accent: var(--k90); }
+/* Rafale は、背景の明るいオレンジの上でもロゴが浮くように影を濃くし、ボタンの地も少し強める */
+.kv-item.s-rafale .lg { filter: drop-shadow(0 2px 14px rgba(0,0,0, calc(.08 + var(--rf) * .45))); }
+.kv-item.s-rafale .go { background: color-mix(in srgb, rgba(255,255,255,.75) calc(var(--rf) * 100%), rgba(255,255,255,.4)); }
 .kv-item { pointer-events: auto; align-self: center; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px; transition: transform .2s; }
 .kv-item.s-shinogi { justify-self: start; opacity: calc(1 - var(--rf)); transform: translateX(calc(var(--sh) * -1.5vw)) scale(calc(1 + var(--sh) * .06)); }
 .kv-item.s-rafale { justify-self: end; opacity: calc(1 - var(--sh)); transform: translateX(calc(var(--rf) * 1.5vw)) scale(calc(1 + var(--rf) * .06)); }
@@ -177,11 +176,11 @@ html.kv-off .kv-bg { visibility: hidden; }
 .kv-item .go::after { content: "→"; font-family: var(--ja); }
 .kv-item:hover .go, .kv-item:focus-visible .go, .kv-item.s-shinogi:hover .go { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }   /* FV の製品ボタンだけは、製品のロゴの色 */
 .kv-cue { grid-column: 1 / -1; justify-self: center; pointer-events: auto; display: flex; flex-direction: column; align-items: center; gap: 14px;
-  font: 600 14px/1 var(--en); color: color-mix(in srgb, #dfe6f2 calc(var(--sh) * 100%), var(--k80)); opacity: calc((1 - (var(--sh) + var(--rf)) * .6) * var(--cue));
+  font: 600 14px/1 var(--en); color: color-mix(in srgb, #dfe6f2 calc(max(var(--sh), var(--rf)) * 100%), var(--k80)); opacity: calc((1 - (var(--sh) + var(--rf)) * .6) * var(--cue));
   visibility: var(--cue-vis, visible); }
 /* スクロールの案内：細い線の中を、光の筋が上から下へ繰り返し流れる */
 .kv-cue i { position: relative; display: block; width: 1px; height: 64px; background: rgba(0,0,0,.14); overflow: hidden; }
-.kv-cue i::after { content: ""; position: absolute; left: 0; top: 0; width: 1px; height: 100%; background: color-mix(in srgb, #fff calc(var(--sh) * 100%), var(--k90)); animation: kv-cue 2s cubic-bezier(.65,0,.35,1) infinite; }
+.kv-cue i::after { content: ""; position: absolute; left: 0; top: 0; width: 1px; height: 100%; background: color-mix(in srgb, #fff calc(max(var(--sh), var(--rf)) * 100%), var(--k90)); animation: kv-cue 2s cubic-bezier(.65,0,.35,1) infinite; }
 .kv-cue span { animation: kv-cue-text 2s ease-in-out infinite; }
 @keyframes kv-cue { 0% { transform: translateY(-100%); } 50% { transform: translateY(0); } 100% { transform: translateY(100%); } }
 @keyframes kv-cue-text { 0%, 100% { transform: translateY(0); opacity: 1; } 50% { transform: translateY(4px); opacity: .55; } }
@@ -249,8 +248,8 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .areas a:hover span, .areas a.hl span { color: #fff; }
 .jmap svg { display: block; width: 100%; height: auto; overflow: visible; }
 .jmap .pf { stroke: #fff; stroke-width: .9; stroke-linejoin: round; transition: fill .25s; }
-.jmap .pf.none { fill: var(--k30); fill-opacity: .2; }   /* 取扱店のない県：店のある県と同じ色を 20% だけ */
-.jmap a.pf path { fill: var(--k30); cursor: pointer; }
+.jmap .pf.none { fill: var(--k); fill-opacity: .2; }   /* 取扱店のない県：店のある県と同じ黒を 20% だけ */
+.jmap a.pf path { fill: var(--k); cursor: pointer; }   /* 取扱店のある県は黒 */
 /* 地域にカーソルが乗る（または地域ボタンに乗る）と、その地域の県をボタンと同じポイントカラーに */
 .jmap .ar:hover a.pf path, .jmap .ar.hl a.pf path { fill: var(--point); }
 .jmap .ar:hover .pf.none, .jmap .ar.hl .pf.none { fill-opacity: .3; }
@@ -395,7 +394,6 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
   .kv-item .go { height: 38px; padding: 0 16px; font-size: 12px; margin-top: 4px; }
   .kv-cue { font-size: 12px; gap: 10px; }
   .kv-cue i { height: 48px; }
-  .kv-bg .script { width: 110vw; left: -10%; }
   .kv-bg .b-shinogi .photo { left: 50%; width: 115vw; }
   .cards { grid-template-columns: 1fr 1fr; gap: 28px 14px; }
   .card b { font-size: 16px; }
