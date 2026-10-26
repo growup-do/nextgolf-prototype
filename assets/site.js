@@ -82,16 +82,8 @@
     check();
   }
 
-  // 取扱店の日本地図：県にカーソルを合わせると県名と店の数を出す。地域ボタンと地図の地域を連動して光らせる
+  // 取扱店の日本地図：地域ボタンと地図の地域を連動して光らせる
   document.querySelectorAll('.shopfind').forEach(box => {
-    const info = box.querySelector('.jmap-info'), first = info ? info.textContent : '';
-    const show = el => { if (info) info.textContent = el ? `${el.dataset.name}　${+el.dataset.n ? el.dataset.n + '店舗' : '取扱店はまだありません'}` : first; };
-    box.querySelectorAll('.pf').forEach(el => {
-      el.addEventListener('pointerenter', () => show(el));
-      el.addEventListener('pointerleave', () => show(null));
-      el.addEventListener('focus', () => show(el));
-      el.addEventListener('blur', () => show(null));
-    });
     const light = (id, on) => box.querySelectorAll(`[data-area="${id}"]`).forEach(e => e.classList.toggle('hl', on));
     box.querySelectorAll('[data-area]').forEach(el => {
       el.addEventListener('pointerenter', () => light(el.dataset.area, true));

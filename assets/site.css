@@ -238,8 +238,6 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-underline-offse
 .jmap a.pf:hover path, .jmap a.pf:focus-visible path { fill: var(--k90); }
 .jmap a.pf:focus-visible { outline: none; }
 .jmap .oki { fill: none; stroke: var(--k30); stroke-width: 1; stroke-dasharray: 3 3; }
-.jmap-info { margin-top: 18px; font: 700 15px/1.6 var(--ja); min-height: 1.6em; }
-.jmap-src { margin-top: 6px; font-size: 12px; line-height: 1.5; color: var(--sub); }
 .sec.find { padding-bottom: 40px; }
 
 /* ===== 製品詳細 ===== */
