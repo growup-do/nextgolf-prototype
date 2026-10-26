@@ -63,14 +63,17 @@
   // トップの各セクションのフェードイン：セクションの頭が画面の下から上がってきたら表示する。
   // 画面の下へ完全に出たら元に戻す（上へ戻ってもう一度スクロールしたときも、また浮かび上がる）
   const reveals = document.querySelectorAll('.reveal');
-  if (reveals.length) {
-    // 中身は上から順に少しずつ遅らせて出す（見出し・カード・試打会やお知らせの行・地図・地域ボタン）
-    reveals.forEach(r => {
-      r.querySelectorAll('.series-h, .cards > *, .ev, .nw, .empty, .jmap, .areas > a').forEach((el, i) => {
-        el.classList.add('rv');
-        el.style.setProperty('--i', Math.min(i, 10));
-      });
+  // 中身は上から順に少しずつ遅らせて出す（見出し・カード・試打会やお知らせの行・地図・地域ボタン）
+  // 試打会とお知らせの行は microCMS から読み込んだあとに入るので、cms.js が描き終えてからもう一度呼ぶ
+  const tag = () => reveals.forEach(r => {
+    r.querySelectorAll('.series-h, .cards > *, .ev, .nw, .empty, .jmap, .areas > a').forEach((el, i) => {
+      el.classList.add('rv');
+      el.style.setProperty('--i', Math.min(i, 10));
     });
+  });
+  window.NG = { tag };
+  if (reveals.length) {
+    tag();
     const check = () => reveals.forEach(r => {
       const top = r.getBoundingClientRect().top;
       // 表示し始める位置（画面の高さに対する割合）。KV のあとの製品一覧は、背景の切り替えが半分ほど進んでから

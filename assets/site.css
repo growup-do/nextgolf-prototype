@@ -13,7 +13,8 @@
   /* KV の 2 本の色（鎬BLUE・Rafale RS1.0 の黄緑。撮影写真から） */
   --kv-blue: #1d6fd1; --kv-green: #6cc23a;
   --en: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif; --ja: "Noto Sans JP", sans-serif;
-  --hd: 72px; --w: 1200px; --px: 40px;
+  --hd: 88px; --w: 1200px; --px: 40px;
+  --hd-x: 48px;   /* ヘッダーのロゴとメニューは、画面の左右の端から 48px の位置に固定 */
   /* トップの KV の状態（kv.js・site.js が書き換える）：鎬／Rafale へのフォーカス、マウスの位置、背景の切り替えの進み具合 */
   --sh: 0; --rf: 0; --mx: 0; --my: 0; --blend: 0; --cue: 1;
 }
@@ -33,24 +34,25 @@ button { font: inherit; color: inherit; }
 /* ===== ヘッダー（常に固定） ===== */
 .hd { position: fixed; top: 0; left: 0; right: 0; height: var(--hd); z-index: 50; background: rgba(246,246,246,.72);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
-.hd .in { height: 100%; display: flex; align-items: center; justify-content: space-between; max-width: 1440px; margin: 0 auto; padding: 0 var(--px); }
-.hd .logo svg { height: 38px; width: auto; display: block; color: var(--k); }
-.hd .right { display: flex; align-items: center; gap: 36px; }
-.hd nav { display: flex; gap: 30px; font: 600 14px/1 var(--en); }
+.hd .in { height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 var(--hd-x); }
+.hd .logo svg { height: 50px; width: auto; display: block; color: var(--k); }
+.hd .right { display: flex; align-items: center; gap: 40px; }
+.hd nav { display: flex; gap: 34px; font: 600 16px/1 var(--en); }
 .hd nav a { opacity: .75; transition: opacity .2s; padding: 6px 0; }
 .hd nav a:hover, .hd nav a.on { opacity: 1; }
 .hd nav a.on { box-shadow: inset 0 -2px 0 var(--k90); }
-.sns { display: flex; gap: 16px; }
+.sns { display: flex; gap: 18px; }
 .sns a { opacity: .85; transition: opacity .2s; }
 .sns a:hover { opacity: 1; }
-.sns svg { width: 20px; height: 20px; display: block; }
+.sns svg { width: 22px; height: 22px; display: block; }
+.ft .sns svg { width: 20px; height: 20px; }
 .sns .f { fill: #f2f2f2; }
-.burger { display: none; width: 28px; height: 18px; position: relative; background: none; border: 0; cursor: pointer; }
+.burger { display: none; width: 34px; height: 22px; position: relative; background: none; border: 0; cursor: pointer; }
 .burger span { position: absolute; left: 0; right: 0; height: 2px; background: var(--k90); transition: .3s; }
-.burger span:nth-child(1) { top: 0; } .burger span:nth-child(2) { top: 8px; } .burger span:nth-child(3) { top: 16px; }
-.menu-open .burger span:nth-child(1) { top: 8px; transform: rotate(45deg); }
+.burger span:nth-child(1) { top: 0; } .burger span:nth-child(2) { top: 10px; } .burger span:nth-child(3) { top: 20px; }
+.menu-open .burger span:nth-child(1) { top: 10px; transform: rotate(45deg); }
 .menu-open .burger span:nth-child(2) { opacity: 0; }
-.menu-open .burger span:nth-child(3) { top: 8px; transform: rotate(-45deg); }
+.menu-open .burger span:nth-child(3) { top: 10px; transform: rotate(-45deg); }
 .spmenu { position: fixed; top: var(--hd); left: 0; right: 0; bottom: 0; z-index: 49; background: rgba(238,238,238,.97); padding: 24px var(--px) 40px;
   display: flex; flex-direction: column; opacity: 0; visibility: hidden; transition: .3s; overflow-y: auto; }
 .menu-open .spmenu { opacity: 1; visibility: visible; }
@@ -142,9 +144,7 @@ html.kv-off .kv-bg { visibility: hidden; }
   -webkit-mask: var(--wind) center / contain no-repeat; mask: var(--wind) center / contain no-repeat;
   transform: translateX(calc((1 - var(--rf)) * 25% + var(--mx) * -30px)); }
 /* 前面の文字とロゴ */
-.kv-ui { position: absolute; inset: var(--hd) 0 0; z-index: 2; pointer-events: none; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr auto; padding: 4vh 5vw 5vh; }
-.kv-brand { grid-column: 1 / -1; justify-self: center; transition: opacity .4s; }
-.kv-brand svg { width: clamp(150px, 15vw, 230px); height: auto; display: block; color: var(--k); }
+.kv-ui { position: absolute; inset: var(--hd) 0 0; z-index: 2; pointer-events: none; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr auto; padding: 4vh 5vw 5vh; }
 .kv-item.s-shinogi { --accent: var(--kv-blue); --on-accent: #fff; }
 .kv-item.s-rafale { --accent: var(--kv-green); --on-accent: var(--k90); }
 .kv-item { pointer-events: auto; align-self: center; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px; transition: transform .2s; }
@@ -315,6 +315,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-underline-offse
 .shops { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .shop { padding: 24px; background: var(--panel); border: 1px solid var(--line); }
 .shop b { display: block; font: 700 17px/1.6 var(--ja); }
+.shop .tag { margin-top: 8px; }   /* microCMS で「試打できる」をオンにした店 */
 .shop p { font-size: 14px; line-height: 1.7; color: var(--sub); margin-top: 10px; }
 .shop a { display: inline-block; margin-top: 12px; font: 600 14px/1 var(--en); text-decoration: underline; text-underline-offset: 3px; }
 
@@ -350,22 +351,21 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-underline-offse
 @media (max-width: 1080px) {
   .hd nav { display: none; }
   .burger { display: block; }
-  .hd .right { gap: 22px; }
+  .hd .right { gap: 26px; }
   .cards { grid-template-columns: repeat(3, 1fr); }
   .shops { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 760px) {
-  :root { --hd: 60px; --px: 20px; }
+  :root { --hd: 64px; --px: 20px; --hd-x: 20px; }
   body { font-size: 15px; }
-  .hd .logo svg { height: 30px; }
+  .hd .logo svg { height: 34px; }
   .sec { padding: 72px 0; }
   .sh { margin-bottom: 32px; }
   .sh .e { font-size: 34px; line-height: 1; }
   .ptitle { padding: 56px 0 40px; }
   .ptitle h1 { font-size: 44px; }
   /* キービジュアル：ロゴを上下に置き、交差するシャフトを真ん中に見せる */
-  .kv-ui { grid-template-columns: 1fr; grid-template-rows: auto 1fr 1fr auto; padding: 20px 20px 28px; }
-  .kv-brand svg { width: 120px; }
+  .kv-ui { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr auto; padding: 20px 20px 28px; }
   .kv-item { padding: 8px; gap: 8px; }
   .kv-item.s-shinogi { justify-self: start; align-self: start; margin-top: 2vh; }
   .kv-item.s-rafale { justify-self: end; align-self: end; margin-bottom: 2vh; }
