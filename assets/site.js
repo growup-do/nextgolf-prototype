@@ -11,6 +11,15 @@
   addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
   addEventListener('resize', () => { if (innerWidth > 1080) setMenu(false); });
 
+  // ヘッダーの下に暗いフッターが来たら、ヘッダーも暗くする（KV の鎬の暗い背景は CSS が --sh から計算する）
+  const ft = document.querySelector('.ft'), hd = document.querySelector('.hd');
+  if (ft && hd) {
+    const dark = () => document.documentElement.classList.toggle('hd-dark', ft.getBoundingClientRect().top < hd.offsetHeight);
+    addEventListener('scroll', dark, { passive: true });
+    addEventListener('resize', dark);
+    dark();
+  }
+
   // トップ：KV の背景は画面に固定。KV を半分ほど抜けたところから、背景をブレンドで切り替える
   const root = document.documentElement;
   root.classList.add('js');

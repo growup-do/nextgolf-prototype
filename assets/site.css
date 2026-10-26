@@ -12,8 +12,8 @@
   --red: #da0001; --orange: #e8994c; --orange-ink: #b9620f;
   /* KV の 2 本の色（鎬BLUE・Rafale RS1.0 の黄緑。撮影写真から） */
   --kv-blue: #1d6fd1; --kv-green: #6cc23a;
-  /* ポイントカラー：カーソルを合わせたとき（ホバー）の色。明るい地では文字色にせず、下線や塗りに使い、上に載せる文字は K90 */
-  --point: #ffae00; --point-soft: #ffd27a; --on-point: var(--k90);
+  /* ポイントカラー：カーソルを合わせたとき（ホバー）の色。明るい地では文字色にせず、下線や塗りに使う。塗ったボタンの文字は白 */
+  --point: #ffae00; --on-point: #fff;
   --en: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif; --ja: "Noto Sans JP", sans-serif;
   --hd: 88px; --w: 1200px; --px: 40px;
   --hd-x: 48px;   /* ヘッダーのロゴとメニューは、画面の左右の端から 48px の位置に固定 */
@@ -33,25 +33,33 @@ button { font: inherit; color: inherit; }
 .s-shinogi { --accent: var(--red); --accent-ink: var(--red); --on-accent: #fff; }
 .s-rafale { --accent: var(--orange); --accent-ink: var(--orange-ink); --on-accent: var(--k90); }
 
-/* ===== ヘッダー（常に固定） ===== */
-.hd { position: fixed; top: 0; left: 0; right: 0; height: var(--hd); z-index: 50; background: rgba(246,246,246,.72);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+/* ===== ヘッダー（常に固定） =====
+   後ろが暗いとき（--hdk：0〜1）は、地を濃いグレーに、ロゴと文字を白にする。
+   KV で鎬の暗い背景が出ているとき（鎬へのフォーカス × KV の背景が残っている割合）と、フッターの上に来たとき（site.js が .hd-dark） */
+.hd { --hdk: calc(var(--sh) * (1 - var(--blend))); position: fixed; top: 0; left: 0; right: 0; height: var(--hd); z-index: 50;
+  background: color-mix(in srgb, rgba(25,25,25,.82) calc(var(--hdk) * 100%), rgba(246,246,246,.72));
+  color: color-mix(in srgb, #fff calc(var(--hdk) * 100%), var(--k90));
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid color-mix(in srgb, rgba(255,255,255,.14) calc(var(--hdk) * 100%), rgba(0,0,0,.12)); transition: background-color .3s; }
+html.hd-dark .hd { --hdk: 1; }
+.menu-open .hd { --hdk: 0; }   /* スマホのメニューを開いたときは、明るいメニューに合わせる */
 .hd .in { height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 var(--hd-x); }
-.hd .logo svg { height: 50px; width: auto; display: block; color: var(--k); }
+.hd .logo svg { height: 50px; width: auto; display: block; color: inherit; }
 .hd .right { display: flex; align-items: center; gap: 40px; }
 .hd nav { display: flex; gap: 34px; font: 600 16px/1 var(--en); }
 .hd nav a { opacity: .75; transition: opacity .2s; padding: 6px 0; }
 .hd nav a:hover, .hd nav a.on { opacity: 1; }
 .hd nav a:hover { box-shadow: inset 0 -2px 0 var(--point); }
-.hd nav a.on { box-shadow: inset 0 -2px 0 var(--k90); }
+.hd nav a.on { box-shadow: inset 0 -2px 0 currentColor; }
 .sns { display: flex; gap: 18px; }
 .sns a { opacity: .85; transition: opacity .2s; }
 .sns a:hover { opacity: 1; color: var(--point); }
 .sns svg { width: 22px; height: 22px; display: block; }
 .ft .sns svg { width: 20px; height: 20px; }
 .sns .f { fill: #f2f2f2; }
+.hd .sns .f { fill: color-mix(in srgb, var(--k90) calc(var(--hdk) * 100%), #f2f2f2); }   /* Facebook の「f」は、丸の色の反対 */
 .burger { display: none; width: 34px; height: 22px; position: relative; background: none; border: 0; cursor: pointer; }
-.burger span { position: absolute; left: 0; right: 0; height: 2px; background: var(--k90); transition: .3s; }
+.burger span { position: absolute; left: 0; right: 0; height: 2px; background: currentColor; transition: .3s; }
 .burger span:nth-child(1) { top: 0; } .burger span:nth-child(2) { top: 10px; } .burger span:nth-child(3) { top: 20px; }
 .menu-open .burger span:nth-child(1) { top: 10px; transform: rotate(45deg); }
 .menu-open .burger span:nth-child(2) { opacity: 0; }
@@ -167,7 +175,7 @@ html.kv-off .kv-bg { visibility: hidden; }
 .kv-item .go { margin-top: 10px; display: inline-flex; align-items: center; gap: 12px; height: 44px; padding: 0 22px; border: 1px solid rgba(0,0,0,.5); font: 600 13px/1 var(--en);
   background: rgba(255,255,255,.4); transition: background .3s, color .3s, border-color .3s; }
 .kv-item .go::after { content: "→"; font-family: var(--ja); }
-.kv-item:hover .go, .kv-item:focus-visible .go, .kv-item.s-shinogi:hover .go { background: var(--point); border-color: var(--point); color: var(--on-point); }
+.kv-item:hover .go, .kv-item:focus-visible .go, .kv-item.s-shinogi:hover .go { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }   /* FV の製品ボタンだけは、製品のロゴの色 */
 .kv-cue { grid-column: 1 / -1; justify-self: center; pointer-events: auto; display: flex; flex-direction: column; align-items: center; gap: 14px;
   font: 600 14px/1 var(--en); color: color-mix(in srgb, #dfe6f2 calc(var(--sh) * 100%), var(--k80)); opacity: calc((1 - (var(--sh) + var(--rf)) * .6) * var(--cue));
   visibility: var(--cue-vis, visible); }
@@ -238,13 +246,13 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .areas a span { font: 400 14px/1 var(--en); color: var(--sub); transition: color .3s; }
 .areas a span::after { content: " SHOPS"; font-size: 12px; }
 .areas a:hover, .areas a.hl { background: var(--point); border-color: var(--point); color: var(--on-point); }
-.areas a:hover span, .areas a.hl span { color: var(--k80); }
+.areas a:hover span, .areas a.hl span { color: #fff; }
 .jmap svg { display: block; width: 100%; height: auto; overflow: visible; }
 .jmap .pf { stroke: #fff; stroke-width: .9; stroke-linejoin: round; transition: fill .25s; }
 .jmap .pf.none { fill: var(--k30); fill-opacity: .2; }   /* 取扱店のない県：店のある県と同じ色を 20% だけ */
 .jmap a.pf path { fill: var(--k30); cursor: pointer; }
-/* 地域にカーソルが乗る（または地域ボタンに乗る）と、その地域を淡いポイントカラーに。県に乗ると、その県をポイントカラーに */
-.jmap .ar:hover a.pf path, .jmap .ar.hl a.pf path { fill: var(--point-soft); }
+/* 地域にカーソルが乗る（または地域ボタンに乗る）と、その地域の県をボタンと同じポイントカラーに */
+.jmap .ar:hover a.pf path, .jmap .ar.hl a.pf path { fill: var(--point); }
 .jmap .ar:hover .pf.none, .jmap .ar.hl .pf.none { fill-opacity: .3; }
 .jmap a.pf:hover path, .jmap a.pf:focus-visible path { fill: var(--point); }
 .jmap a.pf:focus-visible { outline: none; }
