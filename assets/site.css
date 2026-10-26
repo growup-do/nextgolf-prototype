@@ -126,12 +126,14 @@ html.kv-off .kv-bg { visibility: hidden; }
   transform: translate(calc(var(--mx) * -10px), calc(var(--my) * -8px)); }
 /* 床：画面の下に向かって、うっすら影を落とす */
 .kv-bg .b-base::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 38%; background: linear-gradient(180deg, transparent, rgba(0,0,0,.06)); }
-/* 鎬の背景：侍と刀、その奥でスイングするゴルファーの写真（暗い紺）。左のロゴが読めるよう、左と下を沈める */
-.kv-bg .b-shinogi { opacity: var(--sh); background: #070b16; }
-.kv-bg .b-shinogi .photo { position: absolute; inset: 0; background: url("img/kv-shinogi-hover.jpg") 68% center / cover no-repeat;
-  transform: scale(calc(1.08 - var(--sh) * .05)) translate(calc(var(--mx) * -14px), calc(var(--my) * -10px)); }
-.kv-bg .b-shinogi::after { content: ""; position: absolute; inset: 0;
-  background: linear-gradient(90deg, rgba(4,8,20,.78) 0%, rgba(4,8,20,.42) 36%, rgba(4,8,20,0) 62%), linear-gradient(0deg, rgba(4,8,20,.55), rgba(4,8,20,0) 40%); }
+/* 鎬の背景：侍と刀、その奥でスイングするゴルファーの写真。画面の半分ほどの大きさで右寄りに置き、
+   まわりは写真の地と同じ暗い紺。写真の端はぼかして、地に溶け込ませる */
+.kv-bg .b-shinogi { opacity: var(--sh); background: radial-gradient(60% 70% at 62% 52%, #0d1730 0%, #070b16 70%); }
+.kv-bg .b-shinogi .photo { position: absolute; inset: auto; left: 62%; top: 52%; width: min(56vw, 150vh, 1100px); aspect-ratio: 1536 / 1024;
+  background: url("img/kv-shinogi-hover.jpg") center / cover no-repeat;
+  -webkit-mask-image: radial-gradient(closest-side, #000 58%, rgba(0,0,0,.6) 78%, transparent 100%); mask-image: radial-gradient(closest-side, #000 58%, rgba(0,0,0,.6) 78%, transparent 100%);
+  -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+  transform: translate(-50%, -50%) scale(calc(1.06 - var(--sh) * .06)) translate(calc(var(--mx) * -14px), calc(var(--my) * -10px)); }
 .kv-bg .b-rafale { opacity: var(--rf); background:
   radial-gradient(55% 75% at 70% 52%, rgba(108,194,58,.30), transparent 70%),
   linear-gradient(245deg, #f2f6ee 0%, #dfecd3 55%, #c4dcb0 100%); }
@@ -379,6 +381,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-underline-offse
   .kv-cue { font-size: 12px; gap: 10px; }
   .kv-cue i { height: 48px; }
   .kv-bg .script { width: 110vw; left: -10%; }
+  .kv-bg .b-shinogi .photo { left: 50%; width: 115vw; }
   .cards { grid-template-columns: 1fr 1fr; gap: 28px 14px; }
   .card b { font-size: 16px; }
   .series-h b { font-size: 26px; }
