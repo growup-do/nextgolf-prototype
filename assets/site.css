@@ -126,10 +126,11 @@ html.kv-off .kv-bg { visibility: hidden; }
   transform: translate(calc(var(--mx) * -10px), calc(var(--my) * -8px)); }
 /* 床：画面の下に向かって、うっすら影を落とす */
 .kv-bg .b-base::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 38%; background: linear-gradient(180deg, transparent, rgba(0,0,0,.06)); }
-/* 鎬の背景：侍と刀、その奥でスイングするゴルファーの写真。画面の半分ほどの大きさで右寄りに置き、
+/* 鎬の背景：侍と刀、その奥でスイングするゴルファーの写真。画面の半分ほどの大きさで右上寄りに置き（拡大したシャフトは
+   左上から右下へ斜めに通るので、その線の右上に寄せて重なりを減らす）、
    まわりは写真の地と同じ暗い紺。写真の端はぼかして、地に溶け込ませる */
-.kv-bg .b-shinogi { opacity: var(--sh); background: radial-gradient(60% 70% at 62% 52%, #0d1730 0%, #070b16 70%); }
-.kv-bg .b-shinogi .photo { position: absolute; inset: auto; left: 62%; top: 52%; width: min(56vw, 150vh, 1100px); aspect-ratio: 1536 / 1024;
+.kv-bg .b-shinogi { opacity: var(--sh); background: radial-gradient(60% 70% at 75% 40%, #0d1730 0%, #070b16 70%); }
+.kv-bg .b-shinogi .photo { position: absolute; inset: auto; left: 75%; top: 40%; width: min(56vw, 150vh, 1100px); aspect-ratio: 1536 / 1024;
   background: url("img/kv-shinogi-hover.jpg") center / cover no-repeat;
   -webkit-mask-image: radial-gradient(closest-side, #000 58%, rgba(0,0,0,.6) 78%, transparent 100%); mask-image: radial-gradient(closest-side, #000 58%, rgba(0,0,0,.6) 78%, transparent 100%);
   -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
