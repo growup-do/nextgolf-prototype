@@ -138,7 +138,7 @@
   key.shadow.mapSize.set(2048, 2048);
   key.shadow.radius = 14;
   key.shadow.blurSamples = 20;
-  Object.assign(key.shadow.camera, { left: -10, right: 10, top: 8, bottom: -8, near: 1, far: 30 });
+  Object.assign(key.shadow.camera, { left: -16, right: 16, top: 12, bottom: -14, near: 1, far: 34 });   // 拡大したときの影まで入る広さ
   scene.add(key);
   scene.add(new THREE.HemisphereLight(0xffffff, 0x9a9a9a, 0.7));
   // 影を受けるだけの透明な面（シャフトのうしろ）
@@ -149,12 +149,16 @@
 
   // ---------- 画面の大きさに合わせた配置 ----------
   // 横長の画面では X を寝かせ、縦長の画面では立てる。2本の先端が画面に収まる距離にカメラを置く
+  // 描く面（canvas）は KV より下へ EXT の割合だけ広げる。拡大したシャフトや影が KV の下で切れないように
+  // （構図は KV の範囲で決め、はみ出した分も同じカメラで続けて描く。はみ出した部分は CSS で下へ向けて消していく）
+  const EXT = 0.4;
   let A = 0.38, DIST = 13.5;
   function layout() {
     const w = kv.clientWidth, h = kv.clientHeight, asp = w / h;
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-    renderer.setSize(w, h, false);
+    renderer.setSize(w, Math.round(h * (1 + EXT)), false);
     camera.aspect = asp;
+    camera.setViewOffset(w, h, 0, 0, w, Math.round(h * (1 + EXT)));
     A = Math.atan(clamp(0.72 / asp, 0.4, 1.3));
     const t = Math.tan(THREE.MathUtils.degToRad(15)), m = asp < 1 ? 0.95 : 1.12;
     const ex = 11.2 * Math.cos(A) * m, ey = 11.2 * Math.sin(A) * m;
@@ -184,8 +188,9 @@
     mouse.tx = clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1, 1);
     mouse.ty = clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1);
     mouse.in = true;
-    // シャフトの上にカーソルがあるか（見えているほうだけ）
-    ndc.set(mouse.tx, -mouse.ty);
+    // シャフトの上にカーソルがあるか（見えているほうだけ）。描く面は KV より縦に長いので、面の大きさで測る
+    const c = canvas.getBoundingClientRect();
+    ndc.set(((e.clientX - c.left) / c.width) * 2 - 1, -(((e.clientY - c.top) / c.height) * 2 - 1));
     ray.setFromCamera(ndc, camera);
     const hits = ray.intersectObjects([...(F > -0.5 ? shin.meshes : []), ...(F < 0.5 ? raf.meshes : [])], false);
     overShaft = hits.length ? (shin.meshes.includes(hits[0].object) ? 1 : -1) : 0;
@@ -193,9 +198,9 @@
     syncTarget();
   });
   kv.addEventListener('pointerleave', () => { mouse.tx = mouse.ty = 0; mouse.in = false; overShaft = 0; kv.classList.remove('on-shaft'); syncTarget(); });
-  // シャフトをクリックしたら、その製品のページへ
-  canvas.addEventListener('click', () => {
-    if (!overShaft) return;
+  // シャフトをクリックしたら、その製品のページへ（描く面はクリックを通すので、KV で受ける。ロゴやボタンはそのまま）
+  kv.addEventListener('click', e => {
+    if (!overShaft || e.target.closest('a')) return;
     const a = kv.querySelector(`[data-focus="${overShaft}"]`);
     if (a) location.href = a.href;
   });

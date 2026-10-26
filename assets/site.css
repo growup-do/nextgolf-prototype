@@ -101,10 +101,12 @@ main { padding-top: var(--hd); }
 .ptitle .j { font: 500 14px/1.5 var(--ja); color: var(--sub); margin-top: 16px; }
 
 /* ===== トップ：キービジュアル（3D） ===== */
-.kv3d { position: relative; height: 100vh; height: 100svh; margin-top: calc(var(--hd) * -1); overflow: hidden; }
-.kv3d canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; opacity: 0; transition: opacity 1.2s; }
+.kv3d { position: relative; height: 100vh; height: 100svh; margin-top: calc(var(--hd) * -1); }
+/* 3D を描く面は KV より 40% 下まで広げ（kv.js の EXT）、KV の下端から先をなだらかに消す。下の製品一覧のクリックは通す */
+.kv3d canvas { position: absolute; top: 0; left: 0; width: 100%; height: 140%; display: block; z-index: 1; opacity: 0; transition: opacity 1.2s; pointer-events: none;
+  -webkit-mask-image: linear-gradient(#000 0%, #000 71.4%, rgba(0,0,0,.6) 80%, transparent 100%); mask-image: linear-gradient(#000 0%, #000 71.4%, rgba(0,0,0,.6) 80%, transparent 100%); }
 .kv3d.ready canvas { opacity: 1; }
-.kv3d.on-shaft canvas { cursor: pointer; }
+.kv3d.on-shaft { cursor: pointer; }
 /* 背景：ふだんは明るいグレー。片方にカーソルを合わせると、そのシリーズの背景が現れる
    画面に固定して、スクロールしても動かない（動くのはシャフトと文字だけ）。KV を抜けるころに、ぼけながら消えて
    ページの背景（--page）にブレンドで切り替わる */
