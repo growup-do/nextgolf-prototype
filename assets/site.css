@@ -126,18 +126,15 @@ html.kv-off .kv-bg { visibility: hidden; }
   transform: translate(calc(var(--mx) * -10px), calc(var(--my) * -8px)); }
 /* 床：画面の下に向かって、うっすら影を落とす */
 .kv-bg .b-base::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 38%; background: linear-gradient(180deg, transparent, rgba(0,0,0,.06)); }
-.kv-bg .b-shinogi { opacity: var(--sh); background:
-  radial-gradient(55% 75% at 30% 52%, rgba(29,111,209,.26), transparent 70%),
-  linear-gradient(115deg, #eef2f8 0%, #d9e3f1 55%, #bfcfe6 100%); }
+/* 鎬の背景：侍と刀、その奥でスイングするゴルファーの写真（暗い紺）。左のロゴが読めるよう、左と下を沈める */
+.kv-bg .b-shinogi { opacity: var(--sh); background: #070b16; }
+.kv-bg .b-shinogi .photo { position: absolute; inset: 0; background: url("img/kv-shinogi-hover.jpg") 68% center / cover no-repeat;
+  transform: scale(calc(1.08 - var(--sh) * .05)) translate(calc(var(--mx) * -14px), calc(var(--my) * -10px)); }
+.kv-bg .b-shinogi::after { content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(4,8,20,.78) 0%, rgba(4,8,20,.42) 36%, rgba(4,8,20,0) 62%), linear-gradient(0deg, rgba(4,8,20,.55), rgba(4,8,20,0) 40%); }
 .kv-bg .b-rafale { opacity: var(--rf); background:
   radial-gradient(55% 75% at 70% 52%, rgba(108,194,58,.30), transparent 70%),
   linear-gradient(245deg, #f2f6ee 0%, #dfecd3 55%, #c4dcb0 100%); }
-/* 鎬の背景：大きな「鎬」と、刃の稜線のような斜めの線 */
-.kv-bg .kanji { position: absolute; right: 4%; top: 50%; font: 400 min(78vh, 46vw)/1 "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif; color: rgba(29,111,209,.11);
-  transform: translate(calc((1 - var(--sh)) * 60px + var(--mx) * -26px), calc(-50% + var(--my) * -14px)); }
-.kv-bg .slash { position: absolute; left: -10%; right: -10%; height: 1px; top: 50%; background: linear-gradient(90deg, transparent, rgba(29,111,209,.55) 40%, rgba(255,255,255,.9) 52%, rgba(29,111,209,.55) 64%, transparent);
-  transform: rotate(-21deg) scaleX(var(--sh)); }
-.kv-bg .slash.s2 { top: 58%; opacity: .5; transform: rotate(-21deg) translateY(30px) scaleX(var(--sh)); }
 /* Rafale の背景：筆記体のロゴと、風の線 */
 .kv-bg .script { position: absolute; left: 3%; top: 50%; width: min(62vw, 980px); color: rgba(76,150,36,.18);
   transform: translate(calc((var(--rf) - 1) * 60px + var(--mx) * -26px), calc(-50% + var(--my) * -14px)) rotate(-6deg); }
@@ -147,7 +144,12 @@ html.kv-off .kv-bg { visibility: hidden; }
   transform: translateX(calc((1 - var(--rf)) * 25% + var(--mx) * -30px)); }
 /* 前面の文字とロゴ */
 .kv-ui { position: absolute; inset: var(--hd) 0 0; z-index: 2; pointer-events: none; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr auto; padding: 4vh 5vw 5vh; }
-.kv-item.s-shinogi { --accent: var(--kv-blue); --on-accent: #fff; }
+/* 鎬は、ホバーで背景が暗くなるのに合わせて、ロゴを明るい青に、文字とボタンを白に寄せる（--sh：0〜1） */
+.kv-item.s-shinogi { --accent: color-mix(in srgb, #5ea6ff calc(var(--sh) * 100%), var(--kv-blue)); --on-accent: #fff;
+  --ink: color-mix(in srgb, #e9eef7 calc(var(--sh) * 100%), var(--k70)); }
+.kv-item.s-shinogi .col { color: var(--ink); }
+.kv-item.s-shinogi .go { color: color-mix(in srgb, #fff calc(var(--sh) * 100%), var(--k90)); border-color: color-mix(in srgb, rgba(255,255,255,.6) calc(var(--sh) * 100%), rgba(0,0,0,.5));
+  background: color-mix(in srgb, rgba(255,255,255,.06) calc(var(--sh) * 100%), rgba(255,255,255,.4)); }
 .kv-item.s-rafale { --accent: var(--kv-green); --on-accent: var(--k90); }
 .kv-item { pointer-events: auto; align-self: center; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px; transition: transform .2s; }
 .kv-item.s-shinogi { justify-self: start; opacity: calc(1 - var(--rf)); transform: translateX(calc(var(--sh) * -1.5vw)) scale(calc(1 + var(--sh) * .06)); }
@@ -158,13 +160,13 @@ html.kv-off .kv-bg { visibility: hidden; }
 .kv-item .go { margin-top: 10px; display: inline-flex; align-items: center; gap: 12px; height: 44px; padding: 0 22px; border: 1px solid rgba(0,0,0,.5); font: 600 13px/1 var(--en);
   background: rgba(255,255,255,.4); transition: background .3s, color .3s, border-color .3s; }
 .kv-item .go::after { content: "→"; font-family: var(--ja); }
-.kv-item:hover .go, .kv-item:focus-visible .go { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.kv-item:hover .go, .kv-item:focus-visible .go, .kv-item.s-shinogi:hover .go { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .kv-cue { grid-column: 1 / -1; justify-self: center; pointer-events: auto; display: flex; flex-direction: column; align-items: center; gap: 14px;
-  font: 600 14px/1 var(--en); color: var(--k80); opacity: calc((1 - (var(--sh) + var(--rf)) * .6) * var(--cue));
+  font: 600 14px/1 var(--en); color: color-mix(in srgb, #dfe6f2 calc(var(--sh) * 100%), var(--k80)); opacity: calc((1 - (var(--sh) + var(--rf)) * .6) * var(--cue));
   visibility: var(--cue-vis, visible); }
 /* スクロールの案内：細い線の中を、光の筋が上から下へ繰り返し流れる */
 .kv-cue i { position: relative; display: block; width: 1px; height: 64px; background: rgba(0,0,0,.14); overflow: hidden; }
-.kv-cue i::after { content: ""; position: absolute; left: 0; top: 0; width: 1px; height: 100%; background: var(--k90); animation: kv-cue 2s cubic-bezier(.65,0,.35,1) infinite; }
+.kv-cue i::after { content: ""; position: absolute; left: 0; top: 0; width: 1px; height: 100%; background: color-mix(in srgb, #fff calc(var(--sh) * 100%), var(--k90)); animation: kv-cue 2s cubic-bezier(.65,0,.35,1) infinite; }
 .kv-cue span { animation: kv-cue-text 2s ease-in-out infinite; }
 @keyframes kv-cue { 0% { transform: translateY(-100%); } 50% { transform: translateY(0); } 100% { transform: translateY(100%); } }
 @keyframes kv-cue-text { 0%, 100% { transform: translateY(0); opacity: 1; } 50% { transform: translateY(4px); opacity: .55; } }
@@ -376,7 +378,6 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-underline-offse
   .kv-item .go { height: 38px; padding: 0 16px; font-size: 12px; margin-top: 4px; }
   .kv-cue { font-size: 12px; gap: 10px; }
   .kv-cue i { height: 48px; }
-  .kv-bg .kanji { font-size: 70vw; right: -6%; }
   .kv-bg .script { width: 110vw; left: -10%; }
   .cards { grid-template-columns: 1fr 1fr; gap: 28px 14px; }
   .card b { font-size: 16px; }
