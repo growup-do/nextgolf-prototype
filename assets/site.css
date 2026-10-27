@@ -336,6 +336,15 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .p3d-track { position: relative; pointer-events: none; }
 .p3d-track section { min-height: 85vh; display: flex; align-items: flex-end; padding: 0 8vw 14vh; }
 .p3d-track section:first-child { min-height: calc(100vh - var(--hd)); }
+/* 3D の製品ページは、読み込みの前から暗い背景で始める（product3d.js が描き始めると、スクロールに合わせて書き換える） */
+html:has(.p3d[data-shaft="shinogi"]) { --sh: 1; }
+html:has(.p3d[data-shaft="rafale"]) { --rf: 1; }
+/* 最初の画面：トップの KV でホバーしたときと同じ並び（鎬は左、Rafale は右にロゴ・BLUE・コピー） */
+.p3d-track .p3d-hero { display: grid; grid-template-columns: 1fr 1fr; align-items: center; padding: 4vh 5vw 8vh; }
+.p3d-hero .kv-item { pointer-events: none; }
+.p3d-hero .kv-item.s-rafale { grid-column: 2; }
+/* 画面には出さず、読み上げと検索のためだけに置く文字 */
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 /* 3D のある製品ページ：3D の区間のあとに本文を重ねる */
 .p3d-title { pointer-events: none; }
 .p3d-title .sl { font: 600 15px/1 var(--en); color: var(--accent-ink); }
@@ -433,6 +442,8 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
   .kv-item .lg { width: min(56vw, 240px); }
   .kv-item .col { font-size: 12px; }
   .kv-item .copy { font-size: 15px; }
+  .p3d-track .p3d-hero { grid-template-columns: 1fr; align-items: start; padding-top: 6vh; }
+  .p3d-hero .kv-item.s-rafale { grid-column: 1; }
   .kv-item .go { height: 38px; padding: 0 16px; font-size: 12px; margin-top: 4px; }
   .kv-cue { font-size: 12px; gap: 10px; }
   .kv-cue i { height: 48px; }
