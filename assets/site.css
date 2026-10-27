@@ -92,6 +92,8 @@ main { padding-top: var(--hd); }
 .sh .j { font: 500 14px/1.5 var(--ja); color: var(--sub); margin-top: 10px; }
 .more { display: inline-flex; align-items: center; gap: 12px; font: 600 15px/1 var(--en); white-space: nowrap; }
 .more::after { content: ""; width: 28px; height: 1px; background: currentColor; transition: width .3s; }
+.more { transition: color .2s; }
+.more:hover { color: var(--point); }
 .more:hover::after { width: 44px; background: var(--point); height: 2px; }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 14px; height: 54px; padding: 0 32px; border: 1px solid var(--k90);
   font: 600 15px/1 var(--en); transition: background .3s, color .3s; background: rgba(255,255,255,.35); white-space: nowrap; cursor: pointer; }
@@ -171,6 +173,7 @@ html.kv-off .kv-bg { visibility: hidden; }
 .kv-item .lg { display: block; width: clamp(220px, 27vw, 500px); aspect-ratio: var(--ar); background: var(--accent);
   -webkit-mask: var(--m) center / contain no-repeat; mask: var(--m) center / contain no-repeat; filter: drop-shadow(0 6px 12px rgba(0,0,0,.08)); }
 .kv-item .col { font: 600 15px/1 var(--en); color: var(--k70); }
+.kv-item .col-logo { display: block; height: 22px; width: auto; }   /* 鎬BLUE のラベルの「BLUE」（印刷データの金） */
 /* ホバーしたときだけ出るコピー（強調リード文 23px）。消えているあいだも場所は取っておき、ボタンが上下に動かないようにする */
 /* 「」！！などの約物は、全角のままだと前後が空いて見えるので、フォントの詰め情報（palt）で詰める（字間を広げる指定ではない） */
 .kv-item .copy { font: 700 23px/1.5 var(--ja); font-feature-settings: "palt"; color: #fff; text-align: center; text-shadow: 0 2px 12px rgba(0,0,0,.45);
@@ -215,7 +218,10 @@ html.no3d .kv-bg .b-base { background: var(--page); }
 /* 見出し：Noto Sans JP Bold 38px */
 .series-h b { font: 700 38px/1 var(--ja); }
 .series-h .rafale-logo { display: block; height: 34px; width: auto; align-self: center; color: var(--k); }
-.series-h span { font: 600 15px/1 var(--en); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.18); }
+/* シャフトに刷られている SHINOGI のロゴ（白抜きの画像をマスクにして黒で塗る） */
+.series-h .shinogi-logo { display: block; height: 30px; aspect-ratio: var(--ar); align-self: center; background: var(--k);
+  -webkit-mask: url("img/logo-shinogi.png") center / contain no-repeat; mask: url("img/logo-shinogi.png") center / contain no-repeat; }
+.series-h span { font: 600 15px/1 var(--en); color: var(--point); }
 .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px 28px; }
 .card .ph { aspect-ratio: 4 / 3; background: linear-gradient(160deg, #fafafa, #e9e9e9); overflow: hidden; position: relative; box-shadow: 0 1px 0 rgba(255,255,255,.8) inset, 0 12px 28px -18px rgba(0,0,0,.35); }
 .card .ph img.photo { width: 100%; height: 100%; object-fit: cover; transition: transform .7s; }
@@ -254,12 +260,12 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .areas a:hover span, .areas a.hl span { color: #fff; }
 .jmap svg { display: block; width: 100%; height: auto; overflow: visible; }
 .jmap .pf { stroke: #fff; stroke-width: .9; stroke-linejoin: round; transition: fill .25s; }
-.jmap .pf.none { fill: var(--k); fill-opacity: .2; }   /* 取扱店のない県：店のある県と同じ黒を 20% だけ */
-.jmap a.pf path { fill: var(--k); cursor: pointer; }   /* 取扱店のある県は黒 */
-/* 地域にカーソルが乗る（または地域ボタンに乗る）と、その地域の県をボタンと同じポイントカラーに */
-.jmap .ar:hover a.pf path, .jmap .ar.hl a.pf path { fill: var(--point); }
+.jmap .pf.none { fill: #fff; fill-opacity: .15; }   /* 取扱店のない県：白を 15% だけ */
+.jmap a.pf path { fill: var(--point); cursor: pointer; }   /* 取扱店のある県はポイントカラー */
+/* 地域にカーソルが乗る（または地域ボタンに乗る）と、その地域の県を濃いグレーに。県に乗ると、その県を黒に */
+.jmap .ar:hover a.pf path, .jmap .ar.hl a.pf path { fill: var(--k70); }
 .jmap .ar:hover .pf.none, .jmap .ar.hl .pf.none { fill-opacity: .3; }
-.jmap a.pf:hover path, .jmap a.pf:focus-visible path { fill: var(--point); }
+.jmap a.pf:hover path, .jmap a.pf:focus-visible path { fill: var(--k); }
 .jmap a.pf:focus-visible { outline: none; }
 .jmap .oki { fill: none; stroke: var(--k30); stroke-width: 1; stroke-dasharray: 3 3; }
 .sec.find { padding-bottom: 40px; }
@@ -414,6 +420,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
   .card b { font-size: 16px; }
   .series-h b { font-size: 26px; }
   .series-h .rafale-logo { height: 24px; }
+  .series-h .shinogi-logo { height: 21px; }
   .series-h span { font-size: 12px; }
   .two { grid-template-columns: 1fr; gap: 64px; }
   .shopfind { grid-template-columns: 1fr; gap: 28px; }
