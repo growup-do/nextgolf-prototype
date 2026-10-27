@@ -173,7 +173,27 @@
   let target = 0, overUI = 0, overShaft = 0;
   const mouse = { x: 0, y: 0, tx: 0, ty: 0, in: false };
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
-  const syncTarget = () => { target = overUI || overShaft; };
+  const syncTarget = () => { if (!leaving) target = overUI || overShaft; };
+
+  // 製品ページへ移るとき：選んだシャフトを軸まわりに 1 回転させてから移る。
+  // 製品ページの最初の画面はホバー時と同じ構図なので、ページの切り替え（site.css の View Transitions）と合わせて、つながって見える
+  const SPIN_MS = 950;
+  let leaving = null;   // { f：+1 鎬 / -1 Rafale, t0：回し始めた時刻 }
+  function go(href, f) {
+    if (leaving) return;
+    leaving = { f, t0: null };
+    target = f;
+    kv.classList.add('leaving');
+    try { sessionStorage.setItem('ng-from-kv', '1'); } catch (e) { /* 使えなくても移動はできる */ }
+    setTimeout(() => { location.href = href; }, reduce ? 0 : SPIN_MS + 80);
+  }
+  // 戻るボタンで戻ってきたとき（ページがそのまま復元されたとき）は、元の状態に戻す
+  addEventListener('pageshow', e => { if (e.persisted && leaving) { leaving = null; kv.classList.remove('leaving'); syncTarget(); } });
+  kv.querySelectorAll('.kv-item').forEach(a => a.addEventListener('click', e => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;   // 新しいタブで開くときは、そのまま
+    e.preventDefault();
+    go(a.href, +a.dataset.focus);
+  }));
 
   kv.querySelectorAll('[data-focus]').forEach(el => {
     const f = +el.dataset.focus;
@@ -202,7 +222,7 @@
   kv.addEventListener('click', e => {
     if (!overShaft || e.target.closest('a')) return;
     const a = kv.querySelector(`[data-focus="${overShaft}"]`);
-    if (a) location.href = a.href;
+    if (a) go(a.href, overShaft);
   });
 
   // ホバーのない端末（スマホ・タブレット）では、SHINOGI → 交差 → Rafale → 交差 の順に自動で切り替えて見せる
@@ -215,7 +235,7 @@
   // ---------- 1コマを描く ----------
   let F = 0, last = null, clock = 0;
   const v3 = new THREE.Vector3();
-  function poseShaft(s, side, mine, other) {
+  function poseShaft(s, side, mine, other, extra = 0) {
     const k = ease(clamp(mine)), o = ease(clamp(other));
     // 2 本とも、手元を左・先端を右に向ける（シャフトの文字は手元から先端へ向かって刷られているので、こうすると正しい向きで読める）
     // 鎬は左上から右下へ、Rafale は左下から右上へ。2 本で X を作る
@@ -223,7 +243,7 @@
     // 選ばれたほうは 150% に拡大して手前へ。もう一方は奥へ下がりながら消える
     s.root.scale.setScalar(1 + 0.5 * k - 0.12 * o);
     s.root.position.set(0, 0, side * -0.15 + 2.2 * k - 1.6 * o);
-    s.spin.rotation.x = 0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15;
+    s.spin.rotation.x = 0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15 + extra;
     const op = 1 - o;
     for (const m of s.mats) { m.opacity = op; m.depthWrite = op > 0.98; }
     s.root.visible = op > 0.01;
@@ -241,8 +261,15 @@
     mouse.y = lerp(mouse.y, reduce ? 0 : mouse.ty, mp);
 
     const sh = Math.max(F, 0), rf = Math.max(-F, 0);
-    poseShaft(shin, 1, sh, rf);
-    poseShaft(raf, -1, rf, sh);
+    // 製品ページへ移る途中：選んだシャフトを、ゆっくり始まってゆっくり止まる 1 回転
+    let extra = 0;
+    if (leaving) {
+      if (leaving.t0 === null) leaving.t0 = now;
+      const p = clamp((now - leaving.t0) / SPIN_MS);
+      extra = (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2) * Math.PI * 2;
+    }
+    poseShaft(shin, 1, sh, rf, leaving && leaving.f > 0 ? extra : 0);
+    poseShaft(raf, -1, rf, sh, leaving && leaving.f < 0 ? extra : 0);
     // マウスの位置で、少しだけ角度が変わる（ゆっくり漂う動きも少し足す）
     const drift = reduce ? 0 : Math.sin(clock * 0.5) * 0.03;
     world.rotation.set(mouse.y * 0.16 + drift, mouse.x * 0.26, 0);

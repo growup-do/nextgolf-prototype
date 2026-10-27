@@ -10,6 +10,8 @@
   const canvas = box.querySelector('.p3d-stage');
   const track = box.querySelector('.p3d-track');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // トップの KV でシャフトを選んで来たときは、3D をふわっと出さずにすぐ出す（KV のシャフトから、つながって見えるように）
+  try { if (sessionStorage.getItem('ng-from-kv')) { sessionStorage.removeItem('ng-from-kv'); box.classList.add('instant'); } } catch (e) { /* 使えなければふつうに出す */ }
 
   let renderer;
   try {
