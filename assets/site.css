@@ -295,6 +295,14 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .cta p { color: var(--sub); font-size: 14px; line-height: 1.5; }
 .cta .more { margin-top: 28px; }
 
+/* 3D のある製品ページ：画面に固定した 3D の上をスクロールの区間（.p3d-track）が流れ、そのあとに本文を重ねる（product3d.js） */
+.p3d-stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; opacity: 0; transition: opacity 1s; cursor: grab; touch-action: pan-y; }
+.p3d-stage:active { cursor: grabbing; }
+.p3d.ready .p3d-stage { opacity: 1; }
+.p3d.no3d .p3d-stage { display: none; }
+.p3d-track { position: relative; pointer-events: none; }
+.p3d-track section { min-height: 85vh; display: flex; align-items: flex-end; padding: 0 8vw 14vh; }
+.p3d-track section:first-child { min-height: calc(100vh - var(--hd)); }
 /* 3D のある製品ページ：3D の区間のあとに本文を重ねる */
 .p3d-title { pointer-events: none; }
 .p3d-title .sl { font: 600 15px/1 var(--en); color: var(--accent-ink); }
