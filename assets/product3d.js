@@ -167,12 +167,12 @@
     renderer.setSize(w, h, false);
     camera.aspect = aspect;
     distScale = aspect < 1.6 ? Math.min(4, 1.75 / aspect) : 1;   // 縦長の画面では引いて、横の見える幅を保つ
-    // 最初のカットの傾きと距離は、KV（kv.js の layout）と同じ計算。KV ではシャフトを 2.2 手前に出しているので、その分カメラを近づける
+    // 最初のカットの傾きと距離は、KV（kv.js の layout）と同じ計算。KV で手前に出している分だけカメラを近づける
     const A = Math.atan(Math.min(1.3, Math.max(0.4, 0.72 / aspect)));
     const t = Math.tan(THREE.MathUtils.degToRad(15)), m = aspect < 1 ? 0.95 : 1.12;
     const dist = Math.max(11.2 * Math.cos(A) * m / (2 * t * aspect), 11.2 * Math.sin(A) * m / (2 * t), 10);
     HERO.rz = KIND === 'rafale' ? A : -A;
-    HERO.off = [0, 0, (dist - 2.2) / distScale];
+    HERO.off = [0, 0, (dist - (KIND === 'rafale' ? 2.35 : 2.05)) / distScale];   // KV では鎬を 2.05、Rafale を 2.35 手前に出している
     camera.updateProjectionMatrix();
   }
   addEventListener('resize', resize);

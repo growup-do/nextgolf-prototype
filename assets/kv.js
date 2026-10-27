@@ -175,9 +175,10 @@
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
   const syncTarget = () => { if (!leaving) target = overUI || overShaft; };
 
-  // 製品ページへ移るとき：選んだシャフトを軸まわりに 1 回転させてから移る。
-  // 製品ページの最初の画面はホバー時と同じ構図なので、ページの切り替え（site.css の View Transitions）と合わせて、つながって見える
-  const SPIN_MS = 950;
+  // 製品ページへ移るとき：選んだシャフトを、画面の上で時計回りに 1 回転させてから移る。
+  // 回りながらマウスによる傾きを戻し、製品ページの最初の画面とまったく同じ位置・角度でぴたっと止める。
+  // そこでページを切り替える（site.css の View Transitions）ので、つながって見える
+  const SPIN_MS = 1100;
   let leaving = null;   // { f：+1 鎬 / -1 Rafale, t0：回し始めた時刻 }
   function go(href, f) {
     if (leaving) return;
@@ -235,15 +236,15 @@
   // ---------- 1コマを描く ----------
   let F = 0, last = null, clock = 0;
   const v3 = new THREE.Vector3();
-  function poseShaft(s, side, mine, other, extra = 0) {
+  function poseShaft(s, side, mine, other, turn = 0) {
     const k = ease(clamp(mine)), o = ease(clamp(other));
     // 2 本とも、手元を左・先端を右に向ける（シャフトの文字は手元から先端へ向かって刷られているので、こうすると正しい向きで読める）
     // 鎬は左上から右下へ、Rafale は左下から右上へ。2 本で X を作る
-    s.root.rotation.set(0, 0, side > 0 ? -A : A);
+    s.root.rotation.set(0, 0, (side > 0 ? -A : A) + turn);
     // 選ばれたほうは 150% に拡大して手前へ。もう一方は奥へ下がりながら消える
     s.root.scale.setScalar(1 + 0.5 * k - 0.12 * o);
     s.root.position.set(0, 0, side * -0.15 + 2.2 * k - 1.6 * o);
-    s.spin.rotation.x = 0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15 + extra;
+    s.spin.rotation.x = 0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15;
     const op = 1 - o;
     for (const m of s.mats) { m.opacity = op; m.depthWrite = op > 0.98; }
     s.root.visible = op > 0.01;
@@ -261,27 +262,29 @@
     mouse.y = lerp(mouse.y, reduce ? 0 : mouse.ty, mp);
 
     const sh = Math.max(F, 0), rf = Math.max(-F, 0);
-    // 製品ページへ移る途中：選んだシャフトを、ゆっくり始まってゆっくり止まる 1 回転
-    let extra = 0;
+    // 製品ページへ移る途中：選んだシャフトを、ゆっくり始まってゆっくり止まる、時計回りの 1 回転（q：0→1）。
+    // マウスによる傾きと漂う動きは q に合わせて消し、止まったときに製品ページの最初の画面と同じ姿勢にする
+    let q = 0;
     if (leaving) {
       if (leaving.t0 === null) leaving.t0 = now;
       const p = clamp((now - leaving.t0) / SPIN_MS);
-      extra = (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2) * Math.PI * 2;
+      q = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
     }
-    poseShaft(shin, 1, sh, rf, leaving && leaving.f > 0 ? extra : 0);
-    poseShaft(raf, -1, rf, sh, leaving && leaving.f < 0 ? extra : 0);
+    const turn = -q * Math.PI * 2;   // 画面の奥を向いて見ているので、マイナスが時計回り
+    poseShaft(shin, 1, sh, rf, leaving && leaving.f > 0 ? turn : 0);
+    poseShaft(raf, -1, rf, sh, leaving && leaving.f < 0 ? turn : 0);
     // マウスの位置で、少しだけ角度が変わる（ゆっくり漂う動きも少し足す）
-    const drift = reduce ? 0 : Math.sin(clock * 0.5) * 0.03;
-    world.rotation.set(mouse.y * 0.16 + drift, mouse.x * 0.26, 0);
-    camera.position.set(mouse.x * 0.35, -mouse.y * 0.2, DIST);
+    const drift = reduce ? 0 : Math.sin(clock * 0.5) * 0.03, still = 1 - q;
+    world.rotation.set((mouse.y * 0.16 + drift) * still, mouse.x * 0.26 * still, 0);
+    camera.position.set(mouse.x * 0.35 * still, -mouse.y * 0.2 * still, DIST);
     camera.lookAt(v3.set(0, 0, 0));
 
     // 背景（.kv-bg）は KV の外にあるので、ページ全体（html）に値を渡す
     const vars = document.documentElement.style;
     vars.setProperty('--sh', sh.toFixed(3));
     vars.setProperty('--rf', rf.toFixed(3));
-    vars.setProperty('--mx', mouse.x.toFixed(3));
-    vars.setProperty('--my', mouse.y.toFixed(3));
+    vars.setProperty('--mx', (mouse.x * still).toFixed(3));
+    vars.setProperty('--my', (mouse.y * still).toFixed(3));
     renderer.render(scene, camera);
   }
 
