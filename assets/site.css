@@ -173,7 +173,8 @@ html.kv-off .kv-bg { visibility: hidden; }
 .kv-item .lg { display: block; width: clamp(220px, 27vw, 500px); aspect-ratio: var(--ar); background: var(--accent);
   -webkit-mask: var(--m) center / contain no-repeat; mask: var(--m) center / contain no-repeat; filter: drop-shadow(0 6px 12px rgba(0,0,0,.08)); }
 .kv-item .col { font: 600 15px/1 var(--en); color: var(--k70); }
-.kv-item .col-logo { display: block; height: 22px; width: auto; }   /* 鎬BLUE のラベルの「BLUE」（印刷データの金） */
+.kv-item .col-logo { display: block; height: 22px; aspect-ratio: var(--ar); background: var(--accent);   /* 鎬BLUE のラベルの「BLUE」。形は印刷データ、色はロゴと同じ青 */
+  -webkit-mask: url("img/logo-blue.png") center / contain no-repeat; mask: url("img/logo-blue.png") center / contain no-repeat; }
 /* ホバーしたときだけ出るコピー（強調リード文 23px）。消えているあいだも場所は取っておき、ボタンが上下に動かないようにする */
 /* 「」！！などの約物は、全角のままだと前後が空いて見えるので、フォントの詰め情報（palt）で詰める（字間を広げる指定ではない） */
 .kv-item .copy { font: 700 23px/1.5 var(--ja); font-feature-settings: "palt"; color: #fff; text-align: center; text-shadow: 0 2px 12px rgba(0,0,0,.45);
