@@ -171,6 +171,11 @@ html.kv-off .kv-bg { visibility: hidden; }
 .kv-item .lg { display: block; width: clamp(220px, 27vw, 500px); aspect-ratio: var(--ar); background: var(--accent);
   -webkit-mask: var(--m) center / contain no-repeat; mask: var(--m) center / contain no-repeat; filter: drop-shadow(0 6px 12px rgba(0,0,0,.08)); }
 .kv-item .col { font: 600 15px/1 var(--en); color: var(--k70); }
+/* ホバーしたときだけ出るコピー（強調リード文 23px）。消えているあいだも場所は取っておき、ボタンが上下に動かないようにする */
+.kv-item .copy { font: 700 23px/1.5 var(--ja); color: #fff; text-align: center; text-shadow: 0 2px 12px rgba(0,0,0,.45);
+  opacity: 0; transform: translateY(8px); }   /* 動きは --sh・--rf（kv.js がなめらかに変える）にまかせる */
+.kv-item.s-shinogi .copy { opacity: var(--sh); transform: translateY(calc((1 - var(--sh)) * 8px)); }
+.kv-item.s-rafale .copy { opacity: var(--rf); transform: translateY(calc((1 - var(--rf)) * 8px)); }
 .kv-item .go { margin-top: 10px; display: inline-flex; align-items: center; gap: 12px; height: 44px; padding: 0 22px; border: 1px solid rgba(0,0,0,.5); font: 600 13px/1 var(--en);
   background: rgba(255,255,255,.4); transition: background .3s, color .3s, border-color .3s; }
 .kv-item .go::after { content: "→"; font-family: var(--ja); }
@@ -399,6 +404,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
   .kv-item.s-rafale { justify-self: end; align-self: end; margin-bottom: 2vh; }
   .kv-item .lg { width: min(56vw, 240px); }
   .kv-item .col { font-size: 12px; }
+  .kv-item .copy { font-size: 15px; }
   .kv-item .go { height: 38px; padding: 0 16px; font-size: 12px; margin-top: 4px; }
   .kv-cue { font-size: 12px; gap: 10px; }
   .kv-cue i { height: 48px; }
