@@ -155,35 +155,27 @@ html.kv-off .kv-bg { visibility: hidden; }
 .kv-bg .b-rafale .photo { position: absolute; inset: 0; background: url("img/kv-rafale-hover.jpg") center 40px / max(100%, 183vh) auto no-repeat;
   transform-origin: 50% 40px;   /* 背景の層は画面より 40px 大きいので、画像の上端を画面の上端にそろえる */
   transform: translateX(calc((var(--rf) - 1) * 80px + var(--mx) * -18px)) scale(1.06); }
-/* ホバー時の演出（シャフト/kv素材/ の AI から。形だけの白い画像をマスクにして、色と光は CSS で）
-   外側の要素に位置・動き・光、内側の要素に形（マスク）と色。光をマスクの外に出すため、2 つに分けている
-   鎬：「Shinogi」の筆記体と「鎬」の文字組を、左下の暗い紺の空間に大きく。少し大きめから落ち着き、ゆっくり漂う */
-.kv-bg .b-shinogi .type { position: absolute; left: 3%; top: 64%; width: min(50vw, 900px); aspect-ratio: var(--ar);
-  filter: drop-shadow(0 0 6px rgba(120,180,255,.9)) drop-shadow(0 0 28px rgba(50,120,255,.75)); opacity: var(--sh);
-  transform: translate(calc(var(--mx) * -22px), calc(var(--my) * -12px)) scale(calc(1.14 - var(--sh) * .14));
-  animation: kv-drift 14s ease-in-out infinite alternate; }
-.kv-bg .b-shinogi .type > i { position: absolute; inset: 0; background: linear-gradient(100deg, #9cc6ff 0%, #ffffff 50%, #a8cbff 100%);
+/* ホバー時の演出（シャフト/kv素材/ の AI から。形だけの白い画像をマスクにして、色は CSS で）。どれも動かさず、透過させて背景になじませる
+   外側の要素に位置と大きさ、内側の要素に形（マスク）と色
+   鎬：「Shinogi」の筆記体と「鎬」の文字組を、左下の暗い紺の空間にうっすらと */
+.kv-bg .b-shinogi .type { position: absolute; left: 3%; top: 64%; width: min(50vw, 900px); aspect-ratio: var(--ar); opacity: .16;
+  transform: translate(calc(var(--mx) * -22px), calc(var(--my) * -12px)); }
+.kv-bg .b-shinogi .type > i { position: absolute; inset: 0; background: #bcd6ff;
   -webkit-mask: url("img/kv-shinogi-type.png") center / contain no-repeat; mask: url("img/kv-shinogi-type.png") center / contain no-repeat; }
-/* Rafale：シールを左下の黒い空間に大きく置いてゆっくり回し、数式は風に乗って右から左へ流れていく */
-.kv-bg .b-rafale .seal { position: absolute; left: 7%; top: 58%; width: min(26vw, 46vh, 400px); aspect-ratio: var(--ar);
-  opacity: calc(var(--rf) * .55); transform: translate(calc(var(--mx) * -18px), calc(var(--my) * -10px)) scale(calc(1.2 - var(--rf) * .2));
-  animation: kv-spin 60s linear infinite; }
-.kv-bg .b-rafale .seal > i { position: absolute; inset: 0; background: rgba(255,255,255,.75);
+/* Rafale：シャフトを設計した計算式を、シャフトの後ろに大きく透かして敷く（この計算から生まれたシャフト、という見せ方）。
+   いちばん大きな断面二次モーメントの式をシャフトの下に、ほかの 2 つとシールを右下にまとめる */
+.kv-bg .b-rafale .seal, .kv-bg .b-rafale .f { position: absolute; aspect-ratio: var(--ar);
+  transform: translate(calc(var(--mx) * -18px), calc(var(--my) * -10px)); }
+.kv-bg .b-rafale .seal { right: 6%; bottom: 8%; width: min(22vw, 40vh, 340px); opacity: .1; }
+.kv-bg .b-rafale .seal > i { position: absolute; inset: 0; background: #fff;
   -webkit-mask: url("img/kv-rafale-seal.png") center / contain no-repeat; mask: url("img/kv-rafale-seal.png") center / contain no-repeat; }
-.kv-bg .b-rafale .f { position: absolute; height: clamp(20px, 2.2vw, 36px); aspect-ratio: var(--ar);
-  filter: drop-shadow(0 0 10px rgba(255,90,40,.7)); animation: kv-wind 18s linear infinite; }
-.kv-bg .b-rafale .f > i { position: absolute; inset: 0; background: #ff6a3d; }
-.kv-bg .b-rafale .f1 { top: 66%; left: 40%; }
-.kv-bg .b-rafale .f2 { top: 78%; left: 62%; animation-duration: 24s; animation-delay: -9s; }
-.kv-bg .b-rafale .f3 { top: 87%; left: 30%; animation-duration: 21s; animation-delay: -15s; }
+.kv-bg .b-rafale .f > i { position: absolute; inset: 0; background: #ff7a45; }
+.kv-bg .b-rafale .f3 { left: 4%; top: 52%; width: min(64vw, 1150px); opacity: .2; }    /* I=π(D⁴-d⁴)/64 */
+.kv-bg .b-rafale .f1 { left: 46%; top: 76%; width: min(30vw, 540px); opacity: .16; }  /* D=2πT+d */
+.kv-bg .b-rafale .f2 { left: 8%; top: 82%; width: min(17vw, 300px); opacity: .16; }   /* E=σ/ε */
 .kv-bg .b-rafale .f1 > i { -webkit-mask: url("img/kv-rafale-f1.png") center / contain no-repeat; mask: url("img/kv-rafale-f1.png") center / contain no-repeat; }
 .kv-bg .b-rafale .f2 > i { -webkit-mask: url("img/kv-rafale-f2.png") center / contain no-repeat; mask: url("img/kv-rafale-f2.png") center / contain no-repeat; }
 .kv-bg .b-rafale .f3 > i { -webkit-mask: url("img/kv-rafale-f3.png") center / contain no-repeat; mask: url("img/kv-rafale-f3.png") center / contain no-repeat; }
-/* 漂う・回る・流れる動きは、translate / rotate（transform とは別のプロパティ）で付ける。マウスやホバーの動き（transform）と重ねられる */
-@keyframes kv-drift { from { translate: -1.5vw 0; } to { translate: 1.5vw -1vh; } }
-@keyframes kv-spin { to { rotate: 360deg; } }
-@keyframes kv-wind { 0% { translate: 45vw 0; opacity: 0; } 12% { opacity: 1; } 88% { opacity: 1; } 100% { translate: -45vw 0; opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .kv-bg .b-shinogi .type, .kv-bg .b-rafale .seal, .kv-bg .b-rafale .f { animation: none; } }
 /* 前面の文字とロゴ */
 .kv-ui { position: absolute; inset: var(--hd) 0 0; z-index: 2; pointer-events: none; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr auto; padding: 4vh 5vw 5vh; }
 /* 鎬は、ホバーで背景が暗くなるのに合わせて、ロゴを明るい青に、文字とボタンを白に寄せる（--sh：0〜1） */
