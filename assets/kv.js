@@ -217,8 +217,9 @@
   const v3 = new THREE.Vector3();
   function poseShaft(s, side, mine, other) {
     const k = ease(clamp(mine)), o = ease(clamp(other));
-    // 鎬は先端を左上、Rafale は右上へ（動画の最後のカットと同じ）
-    s.root.rotation.set(0, 0, side > 0 ? Math.PI - A : A);
+    // 2 本とも、手元を左・先端を右に向ける（シャフトの文字は手元から先端へ向かって刷られているので、こうすると正しい向きで読める）
+    // 鎬は左上から右下へ、Rafale は左下から右上へ。2 本で X を作る
+    s.root.rotation.set(0, 0, side > 0 ? -A : A);
     // 選ばれたほうは 150% に拡大して手前へ。もう一方は奥へ下がりながら消える
     s.root.scale.setScalar(1 + 0.5 * k - 0.12 * o);
     s.root.position.set(0, 0, side * -0.15 + 2.2 * k - 1.6 * o);
