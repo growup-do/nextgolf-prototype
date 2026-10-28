@@ -84,7 +84,8 @@
   // ---------- お知らせ ----------
   const nwItem = n => `<a class="nw" href="news-detail.html?id=${esc(n.id)}"><span class="dt">${ymd(jst(n.date))}</span><span class="t">${esc(n.title)}</span></a>`;
   const NO_NEWS = '<div class="empty">お知らせはまだありません。</div>';
-  const drawNewsTop = async el => { const l = await all('news'); el.innerHTML = l.length ? l.slice(0, 3).map(nwItem).join('') : NO_NEWS; };
+  // トップのお知らせは多めに描いておき、試打会の列の高さに収まる件数だけ見せる（fitTops）
+  const drawNewsTop = async el => { const l = await all('news'); el.innerHTML = l.length ? l.slice(0, 8).map(nwItem).join('') : NO_NEWS; };
   const drawNewsList = async el => { const l = await all('news'); el.innerHTML = l.length ? l.map(nwItem).join('') : NO_NEWS; };
   const drawNews = async el => {
     const id = new URLSearchParams(location.search).get('id');
@@ -132,6 +133,8 @@
     box.querySelectorAll('[data-area-n]').forEach(s => { s.textContent = byArea[s.dataset.areaN] || 0; });
   };
 
+  // 新しいタブで開くリンクの印（四角から右上へ抜ける矢印）
+  const EXT = '<svg class="ext" viewBox="0 0 16 16" width="12" height="12" role="img" aria-label="（新しいタブで開きます）"><path d="M9 2h5v5M14 2 7.5 8.5M12 9.5V14H2V4h4.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
   const drawShops = async el => {
     const list = await shops();
     el.innerHTML = C.areas.map(([aid, aname]) => {
@@ -141,7 +144,7 @@
         const items = inArea.filter(s => s.p.id === pid).map(s =>
           `<div class="shop"><b>${esc(s.name)}</b>${s.trial ? '<span class="tag">試打できます</span>' : ''}` +
           `<p>${s.zip ? `〒${esc(s.zip)}　` : ''}${esc(s.address)}${s.tel ? `<br>TEL ${esc(s.tel)}` : ''}</p>` +
-          (/^https?:\/\//.test(s.url || '') ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">WEBSITE</a>` : '') + '</div>').join('');
+          (/^https?:\/\//.test(s.url || '') ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">WEBSITE${EXT}</a>` : '') + '</div>').join('');
         return `<div class="pref" id="pref-${pid}"><h3>${esc(p.name)}</h3><div class="shops">${items}</div></div>`;
       }).join('');
       return `<section class="area" id="area-${aid}"><h2>${esc(aname)}<span>${inArea.length} SHOPS</span></h2>${prefs || '<div class=empty style=margin-top:24px>現在、この地域の取扱店はありません。</div>'}</section>`;
@@ -155,6 +158,25 @@
                  'news-top': drawNewsTop, 'news-list': drawNewsList, 'news': drawNews, 'shops': drawShops };
   const tasks = Object.entries(jobs).map(([k, f]) => { const el = $(k); return el && f(el).catch(err => { console.error(err); el.innerHTML = FAIL; }); });
   document.querySelectorAll('.shopfind').forEach(box => tasks.push(drawFind(box).catch(err => console.error(err))));
+  // トップの試打会とお知らせ：2 列のときは、お知らせを試打会の列の高さに収まる件数（3 件以上）だけ見せ、
+  // 余った高さは両方の行の間に配って（CSS の .tops.fit）、2 つの列の下端をそろえる。1 列（スマホ）のときは 3 件
+  const fitTops = () => {
+    const box = document.querySelector('.tops'), ev = $('events-top'), nw = $('news-top');
+    if (!box || !ev || !nw) return;
+    box.classList.remove('fit');
+    const rows = [...nw.querySelectorAll('.nw')];
+    rows.forEach(r => { r.style.display = ''; });
+    if (getComputedStyle(box).gridTemplateColumns.split(' ').length < 2) { rows.slice(3).forEach(r => { r.style.display = 'none'; }); return; }
+    const bottom = ev.getBoundingClientRect().bottom;
+    for (let i = rows.length - 1; i >= 3 && nw.getBoundingClientRect().bottom > bottom + 1; i--) rows[i].style.display = 'none';
+    box.classList.add('fit');
+  };
   // 読み込んだ行も、トップのフェードインの対象にする（site.js）
-  Promise.all(tasks).then(() => window.NG?.tag());
+  Promise.all(tasks).then(() => {
+    fitTops();
+    window.NG?.tag();
+    document.fonts?.ready.then(fitTops);
+    let t;
+    addEventListener('resize', () => { clearTimeout(t); t = setTimeout(fitTops, 150); });
+  });
 })();

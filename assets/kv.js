@@ -171,10 +171,11 @@
 
   // ---------- 入力 ----------
   // focus：+1 で SHINOGI、-1 で Rafale、0 でどちらでもない
-  let target = 0, overUI = 0, overShaft = 0;
+  // slide：ホバーのない端末のスライドショーで、いま見せている側（ホバーのある端末では 0）
+  let target = 0, overUI = 0, overShaft = 0, slide = 0;
   const mouse = { x: 0, y: 0, tx: 0, ty: 0, in: false };
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
-  const syncTarget = () => { if (!leaving) target = overUI || overShaft; };
+  const syncTarget = () => { if (!leaving) target = overUI || overShaft || slide; };
 
   // 製品ページへ移るとき：選んだシャフトを、画面の上で時計回りに 1 回転させながら、ゆっくり消していく。
   // 同時に、背景（ホバー時の暗い背景も含めて）を製品ページの明るいグレーへふわっと切り替え、消えきったらページを移る。
@@ -230,11 +231,11 @@
     if (a) go(a.href, overShaft);
   });
 
-  // ホバーのない端末（スマホ・タブレット）では、SHINOGI → 交差 → Rafale → 交差 の順に自動で切り替えて見せる
+  // ホバーのない端末（スマホ・タブレット）では、2 本が交差した状態は見せず、最初から SHINOGI のホバー状態で始めて、
+  // SHINOGI ⇄ Rafale のホバー状態をスライドショーのように切り替える
   if (noHover && !reduce) {
-    const seq = [0, 1, 0, -1];
-    let k = 0;
-    setInterval(() => { if (!document.hidden) { k = (k + 1) % seq.length; target = seq[k]; } }, 3200);
+    slide = target = 1;
+    setInterval(() => { if (!document.hidden) { slide = -slide; syncTarget(); } }, 4000);
   }
 
   // ---------- ホバー時に、ロゴ・コピー・ボタンをシャフトに重ねない ----------
@@ -288,7 +289,7 @@
   }
 
   // ---------- 1コマを描く ----------
-  let F = 0, last = null, clock = 0;
+  let F = target, last = null, clock = 0;   // スライドショーの端末は、最初から SHINOGI のホバー状態
   const v3 = new THREE.Vector3();
   // vanish：製品ページへ移るときに、選んだシャフトを消していく割合（0→1）
   function poseShaft(s, side, mine, other, turn = 0, vanish = 0) {
