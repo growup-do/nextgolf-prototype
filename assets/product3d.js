@@ -9,32 +9,12 @@
   const canvas = box.querySelector('.p3d-stage');
   const track = box.querySelector('.p3d-track');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // トップの KV でシャフトを選んで来たときは、3D をふわっと出さずにすぐ出す。
-  // KV が止まったときの画面（kv.js が保存）を、3D が描き終わるまで同じ位置に重ねておき、つながって見えるようにする
-  let shot = null;
-  try {
-    if (sessionStorage.getItem('ng-from-kv')) {
-      sessionStorage.removeItem('ng-from-kv');
-      box.classList.add('instant');
-      const url = sessionStorage.getItem('ng-kv-shot');
-      sessionStorage.removeItem('ng-kv-shot');
-      if (url && scrollY === 0) {
-        shot = new Image();
-        shot.className = 'p3d-shot';
-        shot.alt = '';
-        shot.src = url;
-        canvas.after(shot);
-      }
-    }
-  } catch (e) { /* 使えなければふつうに出す */ }
-  const dropShot = () => { if (!shot) return; const s = shot; shot = null; s.classList.add('off'); setTimeout(() => s.remove(), 500); };
 
   let renderer;
   try {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
   } catch (e) {
     box.classList.add('no3d');
-    dropShot();
     return;
   }
   renderer.setClearColor(0x000000, 0);
@@ -234,7 +214,5 @@
   Promise.race([Promise.all(loads), new Promise(r => setTimeout(r, 8000))]).then(() => {
     box.classList.add('ready');
     start();
-    // 3D の最初の 1 コマが出たら、重ねておいた KV の画面を外す
-    requestAnimationFrame(() => requestAnimationFrame(dropShot));
   });
 })();

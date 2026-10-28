@@ -175,11 +175,10 @@
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
   const syncTarget = () => { if (!leaving) target = overUI || overShaft; };
 
-  // 製品ページへ移るとき：選んだシャフトを、画面の上で時計回りに 1 回転させながら、製品ページの最初の画面と
-  // まったく同じ位置・角度（真横に寝かせた全体のカット）へ動かして、ぴたっと止める。
-  // 止まる少し前から、背景（ホバー時の暗い背景も含めて）を製品ページの明るいグレーへふわっと切り替える。
-  // 止まった画面を保存して（製品ページが 3D を描き終えるまで同じ位置に重ねる）、ページを切り替える
-  const SPIN_MS = 1300, FADE_AT = 900, FADE_MS = 700, TOTAL = FADE_AT + FADE_MS;
+  // 製品ページへ移るとき：選んだシャフトを、画面の上で時計回りに 1 回転させながら、ゆっくり消していく。
+  // 同時に、背景（ホバー時の暗い背景も含めて）を製品ページの明るいグレーへふわっと切り替え、消えきったらページを移る。
+  // 製品ページでは、シャフトが明るいグレーの上にふんわり現れる（product3d.js・site.css）
+  const SPIN_MS = 1400, FADE_AT = 300, FADE_MS = 1000, TOTAL = SPIN_MS;
   let leaving = null;   // { f：+1 鎬 / -1 Rafale, href, t0：回し始めた時刻, done }
   function go(href, f) {
     if (leaving) return;
@@ -187,21 +186,8 @@
     target = f;
     kv.classList.add('leaving');
     document.documentElement.classList.add('kv-leaving');   // ヘッダーの色も、背景と同時に切り替える（遅れないように）
-    try { sessionStorage.setItem('ng-from-kv', '1'); } catch (e) { /* 使えなくても移動はできる */ }
     if (reduce) { location.href = href; return; }
-    if (scrollY > 0) scrollTo({ top: 0, behavior: 'smooth' });   // 製品ページの最初の画面と重ねるため、KV を画面の頭に戻す
     setTimeout(() => { if (leaving && !leaving.done) { leaving.done = true; location.href = href; } }, TOTAL + 800);   // 描画が止まっても移れるように
-  }
-  // 止まった画面のうち、ウィンドウに見えている部分だけを保存する（描く面は KV より下へ広げてある）
-  function saveShot() {
-    try {
-      const pr = Math.min(devicePixelRatio, 1.5), w = innerWidth, h = innerHeight;
-      const c = document.createElement('canvas');
-      c.width = Math.round(w * pr); c.height = Math.round(h * pr);
-      const srcH = canvas.height * (kv.clientHeight / (kv.clientHeight * (1 + EXT))) * (h / kv.clientHeight);
-      c.getContext('2d').drawImage(canvas, 0, 0, canvas.width, srcH, 0, 0, c.width, c.height);
-      sessionStorage.setItem('ng-kv-shot', c.toDataURL('image/png'));
-    } catch (e) { /* 保存できなくても移動はできる（製品ページの 3D がそのまま出る） */ }
   }
   // 戻るボタンで戻ってきたとき（ページがそのまま復元されたとき）は、元の状態に戻す
   addEventListener('pageshow', e => {
@@ -303,17 +289,17 @@
   // ---------- 1コマを描く ----------
   let F = 0, last = null, clock = 0;
   const v3 = new THREE.Vector3();
-  // land：製品ページの最初の画面の姿勢へ近づける割合（0→1）。1 で、真横に寝かせて手前へ少し傾けた（-0.16）全体のカットになる
-  function poseShaft(s, side, mine, other, turn = 0, land = 0) {
+  // vanish：製品ページへ移るときに、選んだシャフトを消していく割合（0→1）
+  function poseShaft(s, side, mine, other, turn = 0, vanish = 0) {
     const k = ease(clamp(mine)), o = ease(clamp(other));
     // 2 本とも、手元を左・先端を右に向ける（シャフトの文字は手元から先端へ向かって刷られているので、こうすると正しい向きで読める）
     // 鎬は左上から右下へ、Rafale は左下から右上へ。2 本で X を作る
-    s.root.rotation.set(lerp(0, -0.16, land), 0, (side > 0 ? -A : A) * (1 - land) + turn);
+    s.root.rotation.set(0, 0, (side > 0 ? -A : A) + turn);
     // 選ばれたほうは 150% に拡大して手前へ。もう一方は奥へ下がりながら消える
-    s.root.scale.setScalar(lerp(1 + 0.5 * k - 0.12 * o, 1, land));
-    s.root.position.set(0, 0, lerp(side * -0.15 + 2.2 * k - 1.6 * o, 0, land));
-    s.spin.rotation.x = lerp(0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15, 0, land);
-    const op = 1 - o;
+    s.root.scale.setScalar(1 + 0.5 * k - 0.12 * o);
+    s.root.position.set(0, 0, side * -0.15 + 2.2 * k - 1.6 * o);
+    s.spin.rotation.x = 0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15;
+    const op = (1 - o) * (1 - vanish);
     for (const m of s.mats) { m.opacity = op; m.depthWrite = op > 0.98; }
     s.root.visible = op > 0.01;
     for (const me of s.meshes) me.castShadow = op > 0.4;
@@ -332,28 +318,25 @@
     const sh = Math.max(F, 0), rf = Math.max(-F, 0);
     // 製品ページへ移る途中：選んだシャフトを、ゆっくり始まってゆっくり止まる、時計回りの 1 回転（q：0→1）。
     // マウスによる傾きと漂う動きは q に合わせて消し、止まったときに製品ページの最初の画面と同じ姿勢にする
-    // q：シャフトが回って止まるまで（ゆっくり始まってゆっくり止まる）。bg：背景が製品ページの明るいグレーへ切り替わる進み具合
-    let q = 0, bg = 0;
+    // q：シャフトの 1 回転（ゆっくり始まってゆっくり止まる）。vanish：シャフトが消えていく進み具合。bg：背景が明るいグレーへ切り替わる進み具合
+    let q = 0, vanish = 0, bg = 0;
     if (leaving) {
       if (leaving.t0 === null) leaving.t0 = now;
       const el = now - leaving.t0, p = clamp(el / SPIN_MS);
       q = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+      vanish = ease(p);
       bg = ease(clamp((el - FADE_AT) / FADE_MS));
     }
     const turn = -q * Math.PI * 2;   // 画面の奥を向いて見ているので、マイナスが時計回り
-    poseShaft(shin, 1, sh, rf, leaving && leaving.f > 0 ? turn : 0, leaving && leaving.f > 0 ? q : 0);
-    poseShaft(raf, -1, rf, sh, leaving && leaving.f < 0 ? turn : 0, leaving && leaving.f < 0 ? q : 0);
+    poseShaft(shin, 1, sh, rf, leaving && leaving.f > 0 ? turn : 0, leaving && leaving.f > 0 ? vanish : 0);
+    poseShaft(raf, -1, rf, sh, leaving && leaving.f < 0 ? turn : 0, leaving && leaving.f < 0 ? vanish : 0);
     // マウスの位置で、少しだけ角度が変わる（ゆっくり漂う動きも少し足す）。移るときは傾きを戻す
     const drift = reduce ? 0 : Math.sin(clock * 0.5) * 0.03, still = 1 - q;
     world.rotation.set((mouse.y * 0.16 + drift) * still, mouse.x * 0.26 * still, 0);
-    // カメラも、製品ページの最初のカットと同じ位置へ（product3d.js：正面やや上から、縦長の画面では引く）
-    const asp = innerWidth / innerHeight, ds = asp < 1.6 ? Math.min(4, 1.75 / asp) : 1;
-    camera.position.set(mouse.x * 0.35 * still, lerp(-mouse.y * 0.2 * still, 1.4 * ds, q), lerp(DIST, 14 * ds, q));
+    camera.position.set(mouse.x * 0.35 * still, -mouse.y * 0.2 * still, DIST);
     camera.lookAt(v3.set(0, 0, 0));
     if (!leaving) avoid(dt);   // 移る途中はロゴ類が消えていくので、ずらさない
-    // 照明と影も製品ページに合わせる（製品ページには奥の影がない）
-    key.position.set(lerp(2.5, 3, q), 6, lerp(10, 8, q));
-    catcher.material.opacity = 0.16 * (1 - q);
+    catcher.material.opacity = 0.16 * (1 - vanish);   // 奥の影も、シャフトといっしょに消す
 
     // 背景（.kv-bg）は KV の外にあるので、ページ全体（html）に値を渡す。移るときは背景ごと消して、製品ページと同じ地にする
     const vars = document.documentElement.style;
@@ -363,10 +346,9 @@
     vars.setProperty('--mx', (mouse.x * still).toFixed(3));
     vars.setProperty('--my', (mouse.y * still).toFixed(3));
     renderer.render(scene, camera);
-    // 止まって背景も切り替わったら、その画面を保存して製品ページへ
+    // シャフトが消えきって、背景も切り替わったら製品ページへ
     if (leaving && !leaving.done && now - leaving.t0 >= TOTAL) {
       leaving.done = true;
-      saveShot();
       location.href = leaving.href;
     }
   }
