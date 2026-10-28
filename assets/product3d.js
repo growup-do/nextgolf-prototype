@@ -16,7 +16,6 @@
   const texts = [...track.querySelectorAll('.p3d-sec')].map(sec => [sec, sec.querySelector('.p3d-text')]).filter(([, t]) => t);
   const nameEl = info && info.querySelector('.p3d-name');
   if (texts.length) {
-    box.classList.add('fade');
     const showText = () => {
       const h = innerHeight;
       const named = nameEl && nameEl.getBoundingClientRect().top < h;
@@ -32,7 +31,8 @@
 
   let renderer;
   try {
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+    // preserveDrawingBuffer：ページを移るときのクロスフェード（View Transition）が撮る画面に、シャフトが写るようにする（ないと一瞬消える）
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance', preserveDrawingBuffer: true });
   } catch (e) {
     box.classList.add('no3d');
     return;

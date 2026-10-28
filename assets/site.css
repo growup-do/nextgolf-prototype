@@ -394,7 +394,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
   -webkit-mask: url("img/logo-blue.png") center / contain no-repeat; mask: url("img/logo-blue.png") center / contain no-repeat; }
 .p3d-lead { position: absolute; left: 50%; top: calc(50vh - var(--hd) + 48px); transform: translateX(-50%); width: min(90vw, 760px); text-align: center; }
 .p3d-lead .copy { font: 700 23px/1.5 var(--ja); font-feature-settings: "palt"; color: var(--k90); text-wrap: balance; word-break: keep-all; overflow-wrap: anywhere; }
-.p3d-lead .sub { font: 700 14px/1.6 var(--ja); font-feature-settings: "palt"; color: var(--k80); margin-top: 10px; }
+.p3d-lead .sub { font: 700 20px/1.6 var(--ja); font-feature-settings: "palt"; color: var(--k80); margin-top: 10px; }
 /* 4〜6：寄りのカットに添える説明文（右下・左上）。画面に固定し、1 画面に 1 段落だけをフェードインで出す（product3d.js が .on を付ける） */
 .p3d-text { position: absolute; width: min(640px, 42vw); font: 700 15px/2.1 var(--ja); color: var(--k90); }
 .p3d-text p + p { margin-top: 1em; }
@@ -405,7 +405,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .p3d.fade .p3d-text.on { opacity: 1; transform: none; transition: opacity 1s .35s, transform 1.2s .35s cubic-bezier(.2,.7,.2,1); }
 @media (prefers-reduced-motion: reduce) { .p3d.fade .p3d-text { transform: none; } }
 /* 7：縦にしたシャフト（画面の左 2 割ほど）の右を、製品名・価格・スペック・写真が流れる */
-.p3d-info { position: relative; z-index: 1; padding: 22vh 6vw 140px 24vw; pointer-events: auto; }
+.p3d-info { position: relative; z-index: 1; padding: 76vh 6vw 140px 24vw; pointer-events: auto; }   /* 上の余白：最後の段落も、ほかの段落と同じ 1 画面分読めてから製品名が入ってくる（product3d.js） */
 .p3d-info > .p3d-name:first-child { margin-top: 0; }
 .p3d-info > * { max-width: 1040px; }
 .p3d-info .lead { font: 500 15px/2.1 var(--ja); color: var(--k80); }
@@ -497,7 +497,8 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
   .at-br .p3d-text { bottom: 8vh; top: auto; }
   .at-tl .p3d-text { top: calc(var(--hd) + 4vh); }
   .p3d-lead .copy { font-size: 16px; }   /* 21 文字のコピーが 1 行に収まる大きさ */
-  .p3d-info { padding: 16vh 20px 96px 64px; }
+  .p3d-lead .sub { font-size: 14px; }   /* コピー（16px）より大きくしない */
+  .p3d-info { padding: 76vh 20px 96px 64px; }
   .p3d-name h2 { font-size: 24px; }
   :root { --hd: 64px; --px: 20px; --hd-x: 20px; }
   body { font-size: 15px; }
