@@ -12,15 +12,17 @@
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // 説明文：画面に固定し、いま見ているカットの 1 段落だけをフェードインで出す（3D が使えなくても動かす）
-  // カット k の説明は、区間の頭が画面の上に来る少し手前から、次の区間へ移り始めるまで
+  // カット k の説明は、区間の頭が画面の上に来る少し手前から、次の区間へ移り始めるまで。製品名が画面に入ってきたら、最後の段落も消す
   const texts = [...track.querySelectorAll('.p3d-sec')].map(sec => [sec, sec.querySelector('.p3d-text')]).filter(([, t]) => t);
+  const nameEl = info && info.querySelector('.p3d-name');
   if (texts.length) {
     box.classList.add('fade');
     const showText = () => {
       const h = innerHeight;
+      const named = nameEl && nameEl.getBoundingClientRect().top < h;
       for (const [sec, t] of texts) {
         const top = sec.getBoundingClientRect().top;
-        t.classList.toggle('on', top <= h * 0.25 && top > -h * 0.75);
+        t.classList.toggle('on', !named && top <= h * 0.25 && top > -h * 0.75);
       }
     };
     addEventListener('scroll', showText, { passive: true });
