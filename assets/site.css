@@ -214,8 +214,9 @@ html.kv-off .kv-bg { visibility: hidden; }
 .kv-item .go { margin-top: 10px; display: inline-flex; align-items: center; gap: 12px; font: 600 15px/1 var(--en); white-space: nowrap; transition: color .2s; }
 .kv-item .go::after { content: ""; width: 28px; height: 1px; background: currentColor; transition: width .3s, height .3s, background .2s; }
 /* 製品ページへ移るとき（シャフトが 1 回転するあいだ）は、ボタンと SCROLL を消す。製品ページの最初の画面にはないものなので */
-.kv-item:hover .go, .kv-item:focus-visible .go { color: var(--point); }
-.kv-item:hover .go::after, .kv-item:focus-visible .go::after { width: 44px; height: 2px; background: var(--point); }
+/* オレンジになるのは、ボタンそのものにカーソルを乗せたときだけ（ロゴやコピーに乗せただけでは変えない）。キーボードで選んだときも */
+.kv-item .go:hover, .kv-item:focus-visible .go { color: var(--point); }
+.kv-item .go:hover::after, .kv-item:focus-visible .go::after { width: 44px; height: 2px; background: var(--point); }
 /* 製品ページへ移るとき：ボタンと SCROLL はすぐに消し、ロゴとコピーはシャフトが回るあいだに消していく（製品ページの最初の画面にはないもの） */
 .kv3d .kv-item .go, .kv3d .kv-cue { transition: color .2s, opacity .35s; }
 .kv3d .kv-ui { transition: opacity .7s .2s; }
