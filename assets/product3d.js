@@ -124,8 +124,8 @@
   scene.add(new THREE.HemisphereLight(0xffffff, 0x9a9a9a, 0.7));
 
   // ---------- スクロールで切り替わるカット（Figma のコンテ図「NEW PRODUCT」） ----------
-  // 1 全体（真横。ロゴからラベルまでが画面に収まる大きさ）→ 2 ロゴ → 3 ラベル → 4 少し傾けた中景（説明 1）→ 5 斜めの大写し（説明 2）
-  // → 6 手元の裏（説明 3）→ 7 縦に立てて、画面の左端とスペック表の左端のまん中に置く（このまま本文が右を流れる）
+  // 1 全体（真横。ロゴからラベルまでが画面に収まる大きさ）→ 2 ロゴ → 3 ラベル → 4 少し傾けた中景 → 5 斜めの大写し
+  // → 6 手元の裏（説明文は 2〜6 のカットに、後ろから詰めて 1 段落ずつ）→ 7 縦に立てて、画面の左端とスペック表の左端のまん中に置く（このまま本文が右を流れる）
   // 各カット：focus＝画面に置くシャフト上の位置（mm）、d＝カメラの距離（'fit'：全体が画面の幅、'tall'：縦にして画面の高さの 2.4 倍）、
   // rz＝画面の上での傾き、sx・sy＝focus を置く位置（画面の中心からの、幅・高さに対する割合。右・上がプラス。'left' は縦にしたシャフトの位置）、tilt＝手前への傾き、roll＝軸まわり
   const wx = mm => (mm - LEN / 2) * U;   // シャフト上の位置（mm）→ シャフトの中心からの距離
@@ -135,13 +135,13 @@
       // 裏面の筆記体とシールは、正面から約 0.33 周の位置
       const LOGO = L.pos.logo, LABEL = L.pos.label, SCRIPT = X0 + 120, SEAL = X0 + 29, BACK = -2.6389;
       return [
-        { focus: MID, d: 'fit', rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+        { focus: LOGO + 60, d: 4.2, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
         { focus: LOGO, d: 2.5, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
         { focus: LABEL, d: 1.7, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
         { focus: LOGO + 40, d: 4.2, rz: -0.07, sx: 0.02, sy: 0.2, tilt: -0.05, roll: 0 },
         { focus: SCRIPT, d: 0.85, rz: 0.3, sx: 0.06, sy: -0.06, tilt: 0, roll: BACK },
         { focus: SEAL + 10, d: 1.2, rz: 0, sx: 0, sy: 0.08, tilt: 0, roll: BACK },
-        { focus: MID, d: 'tall', rz: -Math.PI / 2, sx: 'left', sy: 0, tilt: 0, roll: TURN },
+        { focus: MID, d: 'tall', rz: -Math.PI / 2, sx: 'left', sy: 0, tilt: 0, roll: Math.PI },   // 縦にしたら裏側を正面に
       ];
     })()
     : (() => {
