@@ -125,7 +125,7 @@ main { padding-top: var(--hd); }
 /* ===== トップ：キービジュアル（3D） ===== */
 .kv3d { position: relative; height: 100vh; height: 100svh; margin-top: calc(var(--hd) * -1); }
 /* 3D を描く面は KV より 40% 下まで広げ（kv.js の EXT）、KV の下端から先をなだらかに消す。下の製品一覧のクリックは通す */
-.kv3d canvas { position: absolute; top: 0; left: 0; width: 100%; height: 140%; display: block; z-index: 1; opacity: 0; transition: opacity 1.2s; pointer-events: none;
+.kv3d canvas { position: absolute; top: 0; left: 0; width: 100%; height: 140%; display: block; z-index: 1; opacity: 0; transition: opacity 1.2s; pointer-events: none; will-change: opacity;   /* Safari で、フェードの終わりに描画面が 1 コマ消えないように（.p3d-stage と同じ） */
   -webkit-mask-image: linear-gradient(#000 0%, #000 71.4%, rgba(0,0,0,.6) 80%, transparent 100%); mask-image: linear-gradient(#000 0%, #000 71.4%, rgba(0,0,0,.6) 80%, transparent 100%); }
 .kv3d.ready canvas { opacity: 1; }
 .kv3d.on-shaft { cursor: pointer; }
@@ -361,11 +361,13 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 
 /* 3D のある製品ページ：画面に固定した 3D の上をスクロールの区間（.p3d-track）が流れ、そのあとに本文を重ねる（product3d.js） */
 /* シャフトは、描く準備ができたら明るいグレーの上にふんわり現れる（少し大きめから、ゆっくり等倍へ） */
-.p3d-stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; opacity: 0; transform: scale(1.03);
+/* Safari：WebGL の描画面は、透明度や拡大のアニメーションが終わって合成用のレイヤーが外れる瞬間に 1 コマ消える。
+   will-change で常にレイヤーに載せておき、終わりも transform: none ではなく scale(1) にする */
+.p3d-stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; opacity: 0; transform: scale(1.03); will-change: opacity, transform;
   transition: opacity 1.4s cubic-bezier(.25,.6,.3,1), transform 1.8s cubic-bezier(.2,.7,.2,1); cursor: grab; touch-action: pan-y; }
 .p3d-stage:active { cursor: grabbing; }
-.p3d.ready .p3d-stage { opacity: 1; transform: none; }
-@media (prefers-reduced-motion: reduce) { .p3d-stage { transform: none; transition: opacity .3s; } }
+.p3d.ready .p3d-stage { opacity: 1; transform: scale(1); }
+@media (prefers-reduced-motion: reduce) { .p3d-stage, .p3d.ready .p3d-stage { transform: scale(1); transition: opacity .3s; } }
 .p3d.no3d .p3d-stage { display: none; }
 .p3d-track { position: relative; pointer-events: none; }
 .p3d-track section { min-height: 85vh; display: flex; align-items: flex-end; padding: 0 8vw 14vh; }

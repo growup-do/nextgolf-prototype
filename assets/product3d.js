@@ -260,8 +260,14 @@
   const start = () => { if (!running) { running = true; clock.getDelta(); requestAnimationFrame(loop); } };
   addEventListener('scroll', start, { passive: true });
   document.addEventListener('visibilitychange', start);
-  Promise.race([Promise.all(loads), new Promise(r => setTimeout(r, 8000))]).then(() => {
-    box.classList.add('ready');
-    start();
-  });
+  // 出し始め：見えないうちに 1 回描いて、シェーダーの準備とテクスチャの転送を済ませる。
+  // ページ移動のクロスフェードが終わってからフェードインする（重ねると、切り替わりの瞬間にシャフトがちらつく）
+  const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
+  Promise.race([Promise.all(loads), new Promise(r => setTimeout(r, 8000))])
+    .then(() => { frame(); return Promise.race([window.p3dReveal, new Promise(r => setTimeout(r, 1500))]); })
+    .then(nextFrame).then(nextFrame)
+    .then(() => {
+      box.classList.add('ready');
+      start();
+    });
 })();
