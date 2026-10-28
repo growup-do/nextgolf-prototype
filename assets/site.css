@@ -481,7 +481,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
     -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
   .at-br .p3d-text { bottom: 8vh; top: auto; }
   .at-tl .p3d-text { top: 6vh; }
-  .p3d-lead .copy { font-size: 18px; }
+  .p3d-lead .copy { font-size: 16px; }   /* 21 文字のコピーが 1 行に収まる大きさ */
   .p3d-info { padding: 16vh 20px 96px 64px; }
   .p3d-name h2 { font-size: 24px; }
   :root { --hd: 64px; --px: 20px; --hd-x: 20px; }
