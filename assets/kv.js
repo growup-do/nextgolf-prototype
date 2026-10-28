@@ -175,21 +175,38 @@
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
   const syncTarget = () => { if (!leaving) target = overUI || overShaft; };
 
-  // 製品ページへ移るとき：選んだシャフトを、画面の上で時計回りに 1 回転させてから移る。
-  // 回りながらマウスによる傾きを戻し、製品ページの最初の画面とまったく同じ位置・角度でぴたっと止める。
-  // そこでページを切り替える（site.css の View Transitions）ので、つながって見える
-  const SPIN_MS = 1100;
-  let leaving = null;   // { f：+1 鎬 / -1 Rafale, t0：回し始めた時刻 }
+  // 製品ページへ移るとき：選んだシャフトを、画面の上で時計回りに 1 回転させながら、製品ページの最初の画面と
+  // まったく同じ位置・角度（真横に寝かせた全体のカット）へ動かして、ぴたっと止める。
+  // 止まる少し前から、背景（ホバー時の暗い背景も含めて）を製品ページの明るいグレーへふわっと切り替える。
+  // 止まった画面を保存して（製品ページが 3D を描き終えるまで同じ位置に重ねる）、ページを切り替える
+  const SPIN_MS = 1300, FADE_AT = 900, FADE_MS = 700, TOTAL = FADE_AT + FADE_MS;
+  let leaving = null;   // { f：+1 鎬 / -1 Rafale, href, t0：回し始めた時刻, done }
   function go(href, f) {
     if (leaving) return;
-    leaving = { f, t0: null };
+    leaving = { f, href, t0: null, done: false };
     target = f;
     kv.classList.add('leaving');
+    document.documentElement.classList.add('kv-leaving');   // ヘッダーの色も、背景と同時に切り替える（遅れないように）
     try { sessionStorage.setItem('ng-from-kv', '1'); } catch (e) { /* 使えなくても移動はできる */ }
-    setTimeout(() => { location.href = href; }, reduce ? 0 : SPIN_MS + 80);
+    if (reduce) { location.href = href; return; }
+    if (scrollY > 0) scrollTo({ top: 0, behavior: 'smooth' });   // 製品ページの最初の画面と重ねるため、KV を画面の頭に戻す
+    setTimeout(() => { if (leaving && !leaving.done) { leaving.done = true; location.href = href; } }, TOTAL + 800);   // 描画が止まっても移れるように
+  }
+  // 止まった画面のうち、ウィンドウに見えている部分だけを保存する（描く面は KV より下へ広げてある）
+  function saveShot() {
+    try {
+      const pr = Math.min(devicePixelRatio, 1.5), w = innerWidth, h = innerHeight;
+      const c = document.createElement('canvas');
+      c.width = Math.round(w * pr); c.height = Math.round(h * pr);
+      const srcH = canvas.height * (kv.clientHeight / (kv.clientHeight * (1 + EXT))) * (h / kv.clientHeight);
+      c.getContext('2d').drawImage(canvas, 0, 0, canvas.width, srcH, 0, 0, c.width, c.height);
+      sessionStorage.setItem('ng-kv-shot', c.toDataURL('image/png'));
+    } catch (e) { /* 保存できなくても移動はできる（製品ページの 3D がそのまま出る） */ }
   }
   // 戻るボタンで戻ってきたとき（ページがそのまま復元されたとき）は、元の状態に戻す
-  addEventListener('pageshow', e => { if (e.persisted && leaving) { leaving = null; kv.classList.remove('leaving'); syncTarget(); } });
+  addEventListener('pageshow', e => {
+    if (e.persisted && leaving) { leaving = null; kv.classList.remove('leaving'); document.documentElement.classList.remove('kv-leaving'); document.documentElement.style.setProperty('--leave', 0); syncTarget(); }
+  });
   kv.querySelectorAll('.kv-item').forEach(a => a.addEventListener('click', e => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;   // 新しいタブで開くときは、そのまま
     e.preventDefault();
@@ -233,18 +250,69 @@
     setInterval(() => { if (!document.hidden) { k = (k + 1) % seq.length; target = seq[k]; } }, 3200);
   }
 
+  // ---------- ホバー時に、ロゴ・コピー・ボタンをシャフトに重ねない ----------
+  // ホバーで拡大したシャフトの軸を画面に写して直線にし、ロゴのまとまり（ロゴ・BLUE・コピー・ボタン）の四隅が
+  // その線に近すぎたら、線から離れる向きへずらす。ずらす量はホバーの進み具合に合わせる（ふだんの配置は変えない）。
+  // 画面の外やヘッダーの下には出さない。画面の縦横比でシャフトの角度が変わっても、重ならない
+  const GAP = 28;   // シャフトの縁からの余白（px）
+  const items = [...kv.querySelectorAll('.kv-item')].map(el => ({ el, f: +el.dataset.focus, parts: [...el.querySelectorAll('.lg, .col, .copy, .go')], x: 0, y: 0 }));
+  const pa = new THREE.Vector3(), pb = new THREE.Vector3();
+  function shaftLine(s) {
+    // 軸の両端（手元・先端）を画面の座標へ。描く面は KV より縦に長いので、面の大きさで換算する
+    const r = canvas.getBoundingClientRect(), half = 5.6;
+    const toScreen = v => { v.project(camera); return [r.left + (v.x + 1) / 2 * r.width, r.top + (1 - v.y) / 2 * r.height]; };
+    const a = toScreen(s.spin.localToWorld(pa.set(-half, 0, 0))), b = toScreen(s.spin.localToWorld(pb.set(half, 0, 0)));
+    const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) || 1;
+    // 太さ：拡大して手前に出ているほど太く見える（直径およそ 14mm を、カメラからの距離で換算）
+    const thick = 0.14 * s.root.scale.x * (r.height / (1 + EXT)) / (2 * Math.tan(THREE.MathUtils.degToRad(15)) * Math.max(1, camera.position.z - s.root.position.z));
+    return { a, nx: -dy / len, ny: dx / len, thick };
+  }
+  function avoid(dt) {
+    scene.updateMatrixWorld();
+    const vw = innerWidth, vh = innerHeight, k = 1 - Math.exp(-dt * 6), hd = kv.querySelector('.kv-ui').getBoundingClientRect().top;
+    for (const it of items) {
+      const w = ease(clamp(it.f > 0 ? F : -F));   // この製品へのホバーの進み具合
+      let tx = 0, ty = 0;
+      if (w > 0.01) {
+        const ln = shaftLine(it.f > 0 ? shin : raf);
+        // まとまりの四隅（いまずらしている分は差し引いて、ずらす前の位置で測る）
+        let l = Infinity, t = Infinity, rr = -Infinity, bb = -Infinity;
+        for (const p of it.parts) {
+          const b = p.getBoundingClientRect();
+          if (!b.width) continue;
+          l = Math.min(l, b.left); t = Math.min(t, b.top); rr = Math.max(rr, b.right); bb = Math.max(bb, b.bottom);
+        }
+        if (l < Infinity) {
+          l -= it.x; rr -= it.x; t -= it.y; bb -= it.y;
+          const side = Math.sign(ln.nx * ((l + rr) / 2 - ln.a[0]) + ln.ny * ((t + bb) / 2 - ln.a[1])) || 1;
+          let near = Infinity;
+          for (const [x, y] of [[l, t], [rr, t], [l, bb], [rr, bb]]) near = Math.min(near, side * (ln.nx * (x - ln.a[0]) + ln.ny * (y - ln.a[1])));
+          const push = Math.max(0, GAP + ln.thick / 2 - near) * w;
+          tx = ln.nx * side * push; ty = ln.ny * side * push;
+          // 画面の外・ヘッダーの下へは出さない
+          tx = clamp(tx, 12 - l, vw - 12 - rr);
+          ty = clamp(ty, hd + 12 - t, vh - 12 - bb);
+        }
+      }
+      it.x = lerp(it.x, tx, reduce ? 1 : k); it.y = lerp(it.y, ty, reduce ? 1 : k);
+      it.el.style.setProperty('--ax', it.x.toFixed(1) + 'px');
+      it.el.style.setProperty('--ay', it.y.toFixed(1) + 'px');
+    }
+  }
+
   // ---------- 1コマを描く ----------
   let F = 0, last = null, clock = 0;
   const v3 = new THREE.Vector3();
-  function poseShaft(s, side, mine, other, turn = 0) {
+  // land：製品ページの最初の画面の姿勢へ近づける割合（0→1）。1 で、真横に寝かせて手前へ少し傾けた（-0.16）全体のカットになる
+  function poseShaft(s, side, mine, other, turn = 0, land = 0) {
     const k = ease(clamp(mine)), o = ease(clamp(other));
     // 2 本とも、手元を左・先端を右に向ける（シャフトの文字は手元から先端へ向かって刷られているので、こうすると正しい向きで読める）
     // 鎬は左上から右下へ、Rafale は左下から右上へ。2 本で X を作る
-    s.root.rotation.set(0, 0, (side > 0 ? -A : A) + turn);
+    s.root.rotation.set(lerp(0, -0.16, land), 0, (side > 0 ? -A : A) * (1 - land) + turn);
     // 選ばれたほうは 150% に拡大して手前へ。もう一方は奥へ下がりながら消える
-    s.root.scale.setScalar(1 + 0.5 * k - 0.12 * o);
-    s.root.position.set(0, 0, side * -0.15 + 2.2 * k - 1.6 * o);
-    s.spin.rotation.x = 0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15;
+    s.root.scale.setScalar(lerp(1 + 0.5 * k - 0.12 * o, 1, land));
+    s.root.position.set(0, 0, lerp(side * -0.15 + 2.2 * k - 1.6 * o, 0, land));
+    s.spin.rotation.x = lerp(0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15, 0, land);
     const op = 1 - o;
     for (const m of s.mats) { m.opacity = op; m.depthWrite = op > 0.98; }
     s.root.visible = op > 0.01;
@@ -264,28 +332,43 @@
     const sh = Math.max(F, 0), rf = Math.max(-F, 0);
     // 製品ページへ移る途中：選んだシャフトを、ゆっくり始まってゆっくり止まる、時計回りの 1 回転（q：0→1）。
     // マウスによる傾きと漂う動きは q に合わせて消し、止まったときに製品ページの最初の画面と同じ姿勢にする
-    let q = 0;
+    // q：シャフトが回って止まるまで（ゆっくり始まってゆっくり止まる）。bg：背景が製品ページの明るいグレーへ切り替わる進み具合
+    let q = 0, bg = 0;
     if (leaving) {
       if (leaving.t0 === null) leaving.t0 = now;
-      const p = clamp((now - leaving.t0) / SPIN_MS);
+      const el = now - leaving.t0, p = clamp(el / SPIN_MS);
       q = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+      bg = ease(clamp((el - FADE_AT) / FADE_MS));
     }
     const turn = -q * Math.PI * 2;   // 画面の奥を向いて見ているので、マイナスが時計回り
-    poseShaft(shin, 1, sh, rf, leaving && leaving.f > 0 ? turn : 0);
-    poseShaft(raf, -1, rf, sh, leaving && leaving.f < 0 ? turn : 0);
-    // マウスの位置で、少しだけ角度が変わる（ゆっくり漂う動きも少し足す）
+    poseShaft(shin, 1, sh, rf, leaving && leaving.f > 0 ? turn : 0, leaving && leaving.f > 0 ? q : 0);
+    poseShaft(raf, -1, rf, sh, leaving && leaving.f < 0 ? turn : 0, leaving && leaving.f < 0 ? q : 0);
+    // マウスの位置で、少しだけ角度が変わる（ゆっくり漂う動きも少し足す）。移るときは傾きを戻す
     const drift = reduce ? 0 : Math.sin(clock * 0.5) * 0.03, still = 1 - q;
     world.rotation.set((mouse.y * 0.16 + drift) * still, mouse.x * 0.26 * still, 0);
-    camera.position.set(mouse.x * 0.35 * still, -mouse.y * 0.2 * still, DIST);
+    // カメラも、製品ページの最初のカットと同じ位置へ（product3d.js：正面やや上から、縦長の画面では引く）
+    const asp = innerWidth / innerHeight, ds = asp < 1.6 ? Math.min(4, 1.75 / asp) : 1;
+    camera.position.set(mouse.x * 0.35 * still, lerp(-mouse.y * 0.2 * still, 1.4 * ds, q), lerp(DIST, 14 * ds, q));
     camera.lookAt(v3.set(0, 0, 0));
+    if (!leaving) avoid(dt);   // 移る途中はロゴ類が消えていくので、ずらさない
+    // 照明と影も製品ページに合わせる（製品ページには奥の影がない）
+    key.position.set(lerp(2.5, 3, q), 6, lerp(10, 8, q));
+    catcher.material.opacity = 0.16 * (1 - q);
 
-    // 背景（.kv-bg）は KV の外にあるので、ページ全体（html）に値を渡す
+    // 背景（.kv-bg）は KV の外にあるので、ページ全体（html）に値を渡す。移るときは背景ごと消して、製品ページと同じ地にする
     const vars = document.documentElement.style;
-    vars.setProperty('--sh', sh.toFixed(3));
-    vars.setProperty('--rf', rf.toFixed(3));
+    vars.setProperty('--sh', (sh * (1 - bg)).toFixed(3));
+    vars.setProperty('--rf', (rf * (1 - bg)).toFixed(3));
+    vars.setProperty('--leave', bg.toFixed(3));
     vars.setProperty('--mx', (mouse.x * still).toFixed(3));
     vars.setProperty('--my', (mouse.y * still).toFixed(3));
     renderer.render(scene, camera);
+    // 止まって背景も切り替わったら、その画面を保存して製品ページへ
+    if (leaving && !leaving.done && now - leaving.t0 >= TOTAL) {
+      leaving.done = true;
+      saveShot();
+      location.href = leaving.href;
+    }
   }
 
   // 画面に見えているあいだだけ描く

@@ -49,6 +49,7 @@ button { font: inherit; color: inherit; }
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid color-mix(in srgb, rgba(255,255,255,.14) calc(var(--hdk) * 100%), rgba(0,0,0,.12)); transition: background-color .3s; }
 html.hd-dark .hd { --hdk: 1; }
+html.kv-leaving .hd { transition: none; }   /* KV から製品ページへ移るときは、背景と同時に色を変える */
 .menu-open .hd { --hdk: 0; }   /* スマホのメニューを開いたときは、明るいメニューに合わせる */
 .hd .in { height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 var(--hd-x); }
 .hd .logo svg { height: 50px; width: auto; display: block; color: inherit; }
@@ -131,8 +132,9 @@ main { padding-top: var(--hd); }
 /* 背景：ふだんは明るいグレー。片方にカーソルを合わせると、そのシリーズの背景が現れる
    画面に固定して、スクロールしても動かない（動くのはシャフトと文字だけ）。KV を抜けるころに、ぼけながら消えて
    ページの背景（--page）にブレンドで切り替わる */
+/* 製品ページへ移るときは --leave（kv.js）で背景ごと消し、ページの地（製品ページと同じ）を見せる */
 .kv-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
-  opacity: calc(1 - var(--blend)); filter: blur(calc(var(--blend) * 14px)); transform: scale(calc(1 + var(--blend) * .05)); }
+  opacity: calc((1 - var(--blend)) * (1 - var(--leave, 0))); filter: blur(calc(var(--blend) * 14px)); transform: scale(calc(1 + var(--blend) * .05)); }
 html.kv-off .kv-bg { visibility: hidden; }
 /* 切り替わった先の背景：KV よりワントーン落とした、上から光の当たるスタジオのようなグレー（製品一覧から下に敷く） */
 .bg-next, .bgl { position: fixed; inset: 0; z-index: -2; pointer-events: none; }
@@ -189,15 +191,15 @@ html.kv-off .kv-bg { visibility: hidden; }
 .kv-item.s-shinogi { --accent: color-mix(in srgb, #5ea6ff calc(var(--sh) * 100%), var(--kv-blue)); --on-accent: #fff;
   --ink: color-mix(in srgb, #e9eef7 calc(var(--sh) * 100%), var(--k70)); }
 .kv-item.s-shinogi .col { color: var(--ink); }
-.kv-item.s-shinogi .go { color: color-mix(in srgb, #fff calc(var(--sh) * 100%), var(--k90)); border-color: color-mix(in srgb, rgba(255,255,255,.6) calc(var(--sh) * 100%), rgba(0,0,0,.5));
-  background: color-mix(in srgb, rgba(255,255,255,.06) calc(var(--sh) * 100%), rgba(255,255,255,.4)); }
+.kv-item.s-shinogi .go { color: color-mix(in srgb, #fff calc(var(--sh) * 100%), var(--k90)); }
 .kv-item.s-rafale { --accent: var(--kv-green); --on-accent: var(--k90); }
-/* Rafale は、背景の明るいオレンジの上でもロゴが浮くように影を濃くし、ボタンの地も少し強める */
+/* Rafale は、ホバーで背景が暗くなってもロゴが浮くように影を濃くし、ボタンの文字を白に寄せる */
 .kv-item.s-rafale .lg { filter: drop-shadow(0 2px 14px rgba(0,0,0, calc(.08 + var(--rf) * .45))); }
-.kv-item.s-rafale .go { background: color-mix(in srgb, rgba(255,255,255,.75) calc(var(--rf) * 100%), rgba(255,255,255,.4)); }
-.kv-item { pointer-events: auto; align-self: center; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px; transition: transform .2s; }
-.kv-item.s-shinogi { justify-self: start; opacity: calc(1 - var(--rf)); transform: translateX(calc(var(--sh) * -1.5vw)) scale(calc(1 + var(--sh) * .06)); }
-.kv-item.s-rafale { justify-self: end; opacity: calc(1 - var(--sh)); transform: translateX(calc(var(--rf) * 1.5vw)) scale(calc(1 + var(--rf) * .06)); }
+.kv-item.s-rafale .go { color: color-mix(in srgb, #fff calc(var(--rf) * 100%), var(--k90)); }
+.kv-item { pointer-events: auto; align-self: center; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px; }   /* 位置は kv.js が毎コマなめらかに動かすので、transition は付けない */
+/* --ax・--ay：シャフトと重ならないように kv.js がずらす量 */
+.kv-item.s-shinogi { justify-self: start; opacity: calc(1 - var(--rf)); transform: translate(var(--ax, 0px), var(--ay, 0px)) translateX(calc(var(--sh) * -1.5vw)) scale(calc(1 + var(--sh) * .06)); }
+.kv-item.s-rafale { justify-self: end; opacity: calc(1 - var(--sh)); transform: translate(var(--ax, 0px), var(--ay, 0px)) translateX(calc(var(--rf) * 1.5vw)) scale(calc(1 + var(--rf) * .06)); }
 .kv-item .lg { display: block; width: clamp(220px, 27vw, 500px); aspect-ratio: var(--ar); background: var(--accent);
   -webkit-mask: var(--m) center / contain no-repeat; mask: var(--m) center / contain no-repeat; filter: drop-shadow(0 6px 12px rgba(0,0,0,.08)); }
 .kv-item .col { font: 600 15px/1 var(--en); color: var(--k70); }
@@ -208,14 +210,19 @@ html.kv-off .kv-bg { visibility: hidden; }
 .kv-item .copy { font: 700 23px/1.5 var(--ja); font-feature-settings: "palt"; text-align: center; }
 .kv-item.s-shinogi .copy { color: color-mix(in srgb, #fff calc(var(--sh) * 100%), var(--k90)); text-shadow: 0 2px 12px rgba(0,0,0, calc(var(--sh) * .45)); }
 .kv-item.s-rafale .copy { color: color-mix(in srgb, #fff calc(var(--rf) * 100%), var(--k90)); text-shadow: 0 2px 12px rgba(0,0,0, calc(var(--rf) * .45)); }
-.kv-item .go { margin-top: 10px; display: inline-flex; align-items: center; gap: 12px; height: 44px; padding: 0 22px; border: 1px solid rgba(0,0,0,.5); font: 600 13px/1 var(--en);
-  background: rgba(255,255,255,.4); transition: background .3s, color .3s, border-color .3s; }
-.kv-item .go::after { content: "→"; font-family: var(--ja); }
+/* ボタンは「すべての製品を見る」（.more）と同じ形：文字と細い線。ホバーでオレンジになり、線が伸びて太くなる */
+.kv-item .go { margin-top: 10px; display: inline-flex; align-items: center; gap: 12px; font: 600 15px/1 var(--en); white-space: nowrap; transition: color .2s; }
+.kv-item .go::after { content: ""; width: 28px; height: 1px; background: currentColor; transition: width .3s, height .3s, background .2s; }
 /* 製品ページへ移るとき（シャフトが 1 回転するあいだ）は、ボタンと SCROLL を消す。製品ページの最初の画面にはないものなので */
-.kv3d .kv-item .go, .kv3d .kv-cue { transition: background .3s, color .3s, border-color .3s, opacity .35s; }
+.kv-item:hover .go, .kv-item:focus-visible .go { color: var(--point); }
+.kv-item:hover .go::after, .kv-item:focus-visible .go::after { width: 44px; height: 2px; background: var(--point); }
+/* 製品ページへ移るとき：ボタンと SCROLL はすぐに消し、ロゴとコピーはシャフトが回るあいだに消していく（製品ページの最初の画面にはないもの） */
+.kv3d .kv-item .go, .kv3d .kv-cue { transition: color .2s, opacity .35s; }
+.kv3d .kv-ui { transition: opacity .7s .2s; }
 .kv3d.leaving .kv-item .go, .kv3d.leaving .kv-cue { opacity: 0; }
-.kv-item:hover .go, .kv-item:focus-visible .go, .kv-item.s-shinogi:hover .go { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }   /* FV の製品ボタンだけは、製品のロゴの色 */
-.kv-cue { grid-column: 1 / -1; justify-self: center; pointer-events: auto; display: flex; flex-direction: column; align-items: center; gap: 14px;
+.kv3d.leaving .kv-ui { opacity: 0; }
+/* SCROLL：バーはウィンドウの下端にくっつける。文字とバーはひとまとまりで、スクロールすると同時に消える（--cue は site.js） */
+.kv-cue { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); pointer-events: auto; display: flex; flex-direction: column; align-items: center; gap: 14px;
   font: 600 14px/1 var(--en); color: color-mix(in srgb, #dfe6f2 calc(max(var(--sh), var(--rf)) * 100%), var(--k80)); opacity: calc((1 - (var(--sh) + var(--rf)) * .6) * var(--cue));
   visibility: var(--cue-vis, visible); }
 /* スクロールの案内：細い線の中を、光の筋が上から下へ繰り返し流れる */
@@ -347,15 +354,12 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .p3d-track { position: relative; pointer-events: none; }
 .p3d-track section { min-height: 85vh; display: flex; align-items: flex-end; padding: 0 8vw 14vh; }
 .p3d-track section:first-child { min-height: calc(100vh - var(--hd)); }
-/* 3D の製品ページは、読み込みの前から暗い背景で始める（product3d.js が描き始めると、スクロールに合わせて書き換える） */
-html:has(.p3d[data-shaft="shinogi"]) { --sh: 1; }
-html:has(.p3d[data-shaft="rafale"]) { --rf: 1; }
-/* 最初の画面：トップの KV と同じ枠（.kv-ui）で、鎬は左、Rafale は右にロゴ・BLUE・コピー。ボタンと SCROLL は場所だけ取る */
-.p3d-track .p3d-hero { position: relative; display: block; height: calc(100vh - var(--hd)); height: calc(100svh - var(--hd)); min-height: 0; padding: 0; }
-.p3d-hero .kv-ui { inset: 0; }
-.p3d-hero .kv-item { pointer-events: none; }
-.p3d-hero .kv-item.s-rafale { grid-column: 2; }
-.p3d-hero .kv-item .go, .p3d-hero .kv-cue { visibility: hidden; }
+/* トップの KV から来たとき：KV が止まった画面を 3D が出るまで重ねておく。製品名は少し遅れて浮かび上がる */
+.p3d-shot { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; transition: opacity .4s; }
+.p3d-shot.off { opacity: 0; }
+.p3d.instant .p3d-title { animation: p3d-title-in .8s .15s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes p3d-title-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .p3d.instant .p3d-title { animation: none; } }
 /* 画面には出さず、読み上げと検索のためだけに置く文字 */
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 /* 3D のある製品ページ：3D の区間のあとに本文を重ねる */
@@ -363,8 +367,8 @@ html:has(.p3d[data-shaft="rafale"]) { --rf: 1; }
 .p3d-title .sl { font: 600 15px/1 var(--en); color: var(--accent-ink); }
 .p3d-title h1 { font: 700 clamp(44px, 7vw, 96px)/1 var(--en); margin-top: 18px; }
 .p3d-title p { font: 700 23px/2 var(--ja); color: var(--k80); margin-top: 12px; }
-.scroll-hint { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); font: 600 12px/1 var(--en); color: var(--sub); pointer-events: none; transition: opacity .4s; z-index: 1; }
-.scroll-hint::after { content: ""; display: block; width: 1px; height: 40px; background: linear-gradient(var(--sub), transparent); margin: 12px auto 0; }
+.scroll-hint { position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); font: 600 12px/1 var(--en); color: var(--sub); pointer-events: none; transition: opacity .4s; z-index: 1; }
+.scroll-hint::after { content: ""; display: block; width: 1px; height: 64px; background: var(--sub); margin: 14px auto 0; }   /* バーは下端までくっつける */
 .pbody { position: relative; z-index: 2; background: var(--page) fixed; }
 
 /* ===== 試打会・お知らせの一覧と詳細 ===== */
@@ -448,14 +452,13 @@ html:has(.p3d[data-shaft="rafale"]) { --rf: 1; }
   .ptitle { padding: 56px 0 40px; }
   .ptitle h1 { font-size: 44px; }
   /* キービジュアル：ロゴを上下に置き、交差するシャフトを真ん中に見せる */
-  .kv-ui { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr auto; padding: 20px 20px 28px; }
+  .kv-ui { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr auto; padding: 20px 20px 96px; }   /* 下は SCROLL（下端にくっつけた文字とバー）の分を空ける */
   .kv-item { padding: 8px; gap: 8px; }
   .kv-item.s-shinogi { justify-self: start; align-self: start; margin-top: 2vh; }
   .kv-item.s-rafale { justify-self: end; align-self: end; margin-bottom: 2vh; }
   .kv-item .lg { width: min(56vw, 240px); }
   .kv-item .col { font-size: 12px; }
   .kv-item .copy { font-size: 15px; }
-  .p3d-hero .kv-item.s-rafale { grid-column: 1; grid-row: 2; }
   .kv-item .go { height: 38px; padding: 0 16px; font-size: 12px; margin-top: 4px; }
   .kv-cue { font-size: 12px; gap: 10px; }
   .kv-cue i { height: 48px; }

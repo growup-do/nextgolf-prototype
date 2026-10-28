@@ -1,5 +1,4 @@
-// 3D のある製品ページ：最初の画面はトップの KV でこの製品にホバーしたときと同じ構図（暗い背景に、斜めに迫るシャフト）。
-// スクロールに合わせて、シャフトがまっすぐになりながら全体 → ロゴ → ラベル → … とカメラが寄っていき、背景は明るいグレーに戻る
+// 3D のある製品ページ：スクロールに合わせて、シャフトの全体 → ロゴ → ラベル → … とカメラが寄っていく
 // シャフトの形とテクスチャは KV と同じ（印刷データから作った assets/kv-data.js）。どちらのシャフトかは .p3d の data-shaft
 // three.js と素材は、file:// で開いても読めるよう通常の <script> で読み込む
 (() => {
@@ -10,14 +9,32 @@
   const canvas = box.querySelector('.p3d-stage');
   const track = box.querySelector('.p3d-track');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // トップの KV でシャフトを選んで来たときは、3D をふわっと出さずにすぐ出す（KV のシャフトから、つながって見えるように）
-  try { if (sessionStorage.getItem('ng-from-kv')) { sessionStorage.removeItem('ng-from-kv'); box.classList.add('instant'); } } catch (e) { /* 使えなければふつうに出す */ }
+  // トップの KV でシャフトを選んで来たときは、3D をふわっと出さずにすぐ出す。
+  // KV が止まったときの画面（kv.js が保存）を、3D が描き終わるまで同じ位置に重ねておき、つながって見えるようにする
+  let shot = null;
+  try {
+    if (sessionStorage.getItem('ng-from-kv')) {
+      sessionStorage.removeItem('ng-from-kv');
+      box.classList.add('instant');
+      const url = sessionStorage.getItem('ng-kv-shot');
+      sessionStorage.removeItem('ng-kv-shot');
+      if (url && scrollY === 0) {
+        shot = new Image();
+        shot.className = 'p3d-shot';
+        shot.alt = '';
+        shot.src = url;
+        canvas.after(shot);
+      }
+    }
+  } catch (e) { /* 使えなければふつうに出す */ }
+  const dropShot = () => { if (!shot) return; const s = shot; shot = null; s.classList.add('off'); setTimeout(() => s.remove(), 500); };
 
   let renderer;
   try {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
   } catch (e) {
     box.classList.add('no3d');
+    dropShot();
     return;
   }
   renderer.setClearColor(0x000000, 0);
@@ -108,14 +125,11 @@
 
   // ---------- スクロールで切り替わるカット ----------
   const wx = mm => (mm - LEN / 2) * U;   // シャフト上の位置（mm）→ ワールド x
-  // 最初のカット：KV のホバー時と同じ。鎬は左上から右下、Rafale は左下から右上へ傾け、150% にして手前へ（カメラの距離は resize で決める）
-  const HERO = { look: [0, 0, 0], off: [0, 0, 12], tilt: 0, roll: 0.45, rz: 0, sc: 1.5 };
   const shots = KIND === 'rafale'
     ? (() => {
       // 裏面の筆記体とシールは、正面から約 0.33 周の位置
       const LOGO = L.pos.logo, LABEL = L.pos.label, SCRIPT = X0 + 120, SEAL = X0 + 29, BACK = -2.6389;
       return [
-        HERO,
         { look: [0, 0, 0], off: [0, 1.4, 14], tilt: -0.16, roll: 0 },
         { look: [wx(LOGO), 0, 0], off: [0, 0.06, 3.2], tilt: 0, roll: 0 },
         { look: [wx(LABEL), 0, 0], off: [0.1, 0.05, 2.4], tilt: 0, roll: 0 },
@@ -128,7 +142,6 @@
       // ロゴ・ラベル・先端シール・手元のシール（シールは裏側）
       const LOGO = X0 + 140, LABEL = X0 + L.b_mm - 60, TIP = LEN - 140, SEAL = X0 + 12;
       return [
-        HERO,
         { look: [0, 0, 0], off: [0, 1.4, 14], tilt: -0.16, roll: 0 },
         { look: [wx(LOGO), 0, 0], off: [0, 0.14, 1.9], tilt: 0, roll: 0 },
         { look: [wx(LABEL), 0, 0], off: [0.1, 0.08, 0.95], tilt: 0, roll: 0 },
@@ -167,12 +180,6 @@
     renderer.setSize(w, h, false);
     camera.aspect = aspect;
     distScale = aspect < 1.6 ? Math.min(4, 1.75 / aspect) : 1;   // 縦長の画面では引いて、横の見える幅を保つ
-    // 最初のカットの傾きと距離は、KV（kv.js の layout）と同じ計算。KV で手前に出している分だけカメラを近づける
-    const A = Math.atan(Math.min(1.3, Math.max(0.4, 0.72 / aspect)));
-    const t = Math.tan(THREE.MathUtils.degToRad(15)), m = aspect < 1 ? 0.95 : 1.12;
-    const dist = Math.max(11.2 * Math.cos(A) * m / (2 * t * aspect), 11.2 * Math.sin(A) * m / (2 * t), 10);
-    HERO.rz = KIND === 'rafale' ? A : -A;
-    HERO.off = [0, 0, (dist - (KIND === 'rafale' ? 2.35 : 2.05)) / distScale];   // KV では鎬を 2.05、Rafale を 2.35 手前に出している
     camera.updateProjectionMatrix();
   }
   addEventListener('resize', resize);
@@ -199,14 +206,7 @@
     spin.position.x = -look.x;
     root.rotation.x = lerp(a.tilt, b.tilt, t);
     root.rotation.y = follow.x * 0.22;
-    root.rotation.z = lerp(a.rz || 0, b.rz || 0, t) - follow.y * 0.08;
-    root.scale.setScalar(lerp(a.sc || 1, b.sc || 1, t));
-    // 最初のカットにいるあいだは、KV のホバー時の背景（.kv-bg）を出し、ヘッダーも暗くする（site.css が --sh・--rf を使う）
-    const hero = 1 - ease(Math.min(s, 1));
-    const vars = document.documentElement.style;
-    vars.setProperty(KIND === 'rafale' ? '--rf' : '--sh', hero.toFixed(3));
-    vars.setProperty('--mx', follow.x.toFixed(3));
-    vars.setProperty('--my', follow.y.toFixed(3));
+    root.rotation.z = -follow.y * 0.08;
     if (drag === null) {
       vel *= 0.93;
       user += vel;
@@ -234,5 +234,7 @@
   Promise.race([Promise.all(loads), new Promise(r => setTimeout(r, 8000))]).then(() => {
     box.classList.add('ready');
     start();
+    // 3D の最初の 1 コマが出たら、重ねておいた KV の画面を外す
+    requestAnimationFrame(() => requestAnimationFrame(dropShot));
   });
 })();
