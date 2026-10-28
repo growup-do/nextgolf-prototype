@@ -103,36 +103,45 @@
   scene.add(key);
   scene.add(new THREE.HemisphereLight(0xffffff, 0x9a9a9a, 0.7));
 
-  // ---------- スクロールで切り替わるカット ----------
-  const wx = mm => (mm - LEN / 2) * U;   // シャフト上の位置（mm）→ ワールド x
+  // ---------- スクロールで切り替わるカット（Figma のコンテ図「NEW PRODUCT」） ----------
+  // 1 全体（真横・画面いっぱい）→ 2 ロゴ → 3 ラベル → 4 少し傾けた中景（説明 1）→ 5 斜めの大写し（説明 2）
+  // → 6 手元の裏（説明 3）→ 7 縦に立てて画面の左に置く（このまま本文が右を流れる）
+  // 各カット：focus＝画面に置くシャフト上の位置（mm）、d＝カメラの距離（'fit'：全体が画面の幅、'tall'：縦にして画面の高さの 2.4 倍）、
+  // rz＝画面の上での傾き、sx・sy＝focus を置く位置（画面の中心からの、幅・高さに対する割合。右・上がプラス。'left' は縦にしたシャフトの位置）、tilt＝手前への傾き、roll＝軸まわり
+  const wx = mm => (mm - LEN / 2) * U;   // シャフト上の位置（mm）→ シャフトの中心からの距離
+  const MID = LEN / 2, TURN = Math.PI * 2;
   const shots = KIND === 'rafale'
     ? (() => {
       // 裏面の筆記体とシールは、正面から約 0.33 周の位置
       const LOGO = L.pos.logo, LABEL = L.pos.label, SCRIPT = X0 + 120, SEAL = X0 + 29, BACK = -2.6389;
       return [
-        { look: [0, 0, 0], off: [0, 1.4, 14], tilt: -0.16, roll: 0 },
-        { look: [wx(LOGO), 0, 0], off: [0, 0.06, 3.2], tilt: 0, roll: 0 },
-        { look: [wx(LABEL), 0, 0], off: [0.1, 0.05, 2.4], tilt: 0, roll: 0 },
-        { look: [wx(SCRIPT), 0, 0], off: [0.1, 0.05, 2.0], tilt: 0, roll: BACK },
-        { look: [wx(SEAL + 10), 0, 0], off: [0.12, 0.04, 1.3], tilt: 0, roll: BACK },
-        { look: [0, 0, 0], off: [-4, 2.6, 12.5], tilt: -0.3, roll: Math.PI * 2 },
+        { focus: MID, d: 'fit', rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+        { focus: LOGO, d: 2.5, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+        { focus: LABEL, d: 1.7, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+        { focus: LOGO + 40, d: 4.2, rz: -0.07, sx: 0.02, sy: 0.2, tilt: -0.05, roll: 0 },
+        { focus: SCRIPT, d: 0.85, rz: 0.3, sx: 0.06, sy: -0.06, tilt: 0, roll: BACK },
+        { focus: SEAL + 10, d: 1.2, rz: 0, sx: 0, sy: 0.08, tilt: 0, roll: BACK },
+        { focus: MID, d: 'tall', rz: -Math.PI / 2, sx: 'left', sy: 0, tilt: 0, roll: TURN },
       ];
     })()
     : (() => {
-      // ロゴ・ラベル・先端シール・手元のシール（シールは裏側）
-      const LOGO = X0 + 140, LABEL = X0 + L.b_mm - 60, TIP = LEN - 140, SEAL = X0 + 12;
+      // ロゴ・ラベル（先端側の BLUE の帯）・手元のシール（シールは裏側）
+      const LOGO = X0 + 140, LABEL = X0 + L.b_mm - 60, SEAL = X0 + 12;
       return [
-        { look: [0, 0, 0], off: [0, 1.4, 14], tilt: -0.16, roll: 0 },
-        { look: [wx(LOGO), 0, 0], off: [0, 0.14, 1.9], tilt: 0, roll: 0 },
-        { look: [wx(LABEL), 0, 0], off: [0.1, 0.08, 0.95], tilt: 0, roll: 0 },
-        { look: [wx(TIP), 0, 0], off: [-0.1, 0.07, 0.85], tilt: 0, roll: 0 },
-        { look: [wx(SEAL + 25), 0, 0], off: [0.15, 0.05, 0.75], tilt: 0, roll: Math.PI },
-        { look: [0, 0, 0], off: [-4, 2.6, 12.5], tilt: -0.3, roll: Math.PI * 2 },
+        { focus: MID, d: 'fit', rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+        { focus: LOGO, d: 1.6, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+        { focus: LABEL, d: 0.9, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+        { focus: LOGO + 70, d: 3.3, rz: -0.07, sx: 0.02, sy: 0.2, tilt: -0.05, roll: 0 },
+        { focus: X0 + L.b_mm + 90, d: 0.5, rz: 0.32, sx: 0.08, sy: -0.06, tilt: 0, roll: 0.5 },
+        { focus: SEAL + 25, d: 1.15, rz: 0, sx: 0, sy: 0.08, tilt: 0, roll: Math.PI },
+        { focus: MID, d: 'tall', rz: -Math.PI / 2, sx: 'left', sy: 0, tilt: 0, roll: TURN },
       ];
     })();
   const lerp = (a, b, t) => a + (b - a) * t;
   const ease = t => t * t * (3 - 2 * t);
-  const look = new THREE.Vector3(), off = new THREE.Vector3();
+  const clamp01 = x => Math.min(1, Math.max(0, x));
+  const TAN = Math.tan(THREE.MathUtils.degToRad(15));   // 縦の画角 30°の半分
+  const look = new THREE.Vector3();
 
   // ドラッグで軸まわりに回す（慣性つき）。手を離すと徐々に正面へ戻る
   let drag = null, vel = 0, user = 0;
@@ -154,57 +163,74 @@
   });
   document.addEventListener('mouseleave', () => { mouse.x = 0; mouse.y = 0; });
 
-  let distScale = 1;
+  let aspect = 1, distScale = 1;
   function resize() {
-    const w = innerWidth, h = innerHeight, aspect = w / h;
+    const w = innerWidth, h = innerHeight;
+    aspect = w / h;
     renderer.setSize(w, h, false);
     camera.aspect = aspect;
-    distScale = aspect < 1.6 ? Math.min(4, 1.75 / aspect) : 1;   // 縦長の画面では引いて、横の見える幅を保つ
+    distScale = aspect < 1.6 ? Math.min(4, 1.75 / aspect) : 1;   // 縦長の画面では寄りのカットを引いて、横の見える幅を保つ
     camera.updateProjectionMatrix();
   }
   addEventListener('resize', resize);
   resize();
+  // カメラの距離：'fit' は全体が画面の幅に少しはみ出すくらい、'tall' は縦にしたシャフトが画面の高さの 2.4 倍
+  const dist = d => d === 'fit' ? LEN * U * 1.03 / (2 * TAN * aspect) : d === 'tall' ? LEN * U / (2.4 * 2 * TAN) : d * distScale;
+
+  // スクロールの位置 → カットの番号（小数）。各カットは、その区間の頭が画面の上に来たところでぴったりその構図になり、
+  // 区間の前後 15% ずつはその構図のまま止めて、文字を読みやすくする
+  const marks = [...track.querySelectorAll('.p3d-sec'), box.querySelector('.p3d-info')].filter(Boolean);
+  const info = box.querySelector('.p3d-info');
+  const pageTop = el => el.getBoundingClientRect().top + scrollY;
+  function shotAt(y) {
+    const a = marks.map((el, k) => (k === 0 ? 0 : pageTop(el)));
+    if (y >= a[a.length - 1]) return a.length - 1;
+    let k = 0;
+    while (k < a.length - 2 && y >= a[k + 1]) k++;
+    const f = (y - a[k]) / Math.max(1, a[k + 1] - a[k]);
+    return k + ease(clamp01((f - 0.15) / 0.7));
+  }
 
   const clock = new THREE.Clock();
   function frame() {
     const dt = Math.min(clock.getDelta(), 0.05);
-    // スクロールの量は 3D の区間（.p3d-track）だけで数える
-    const max = track.offsetTop + track.offsetHeight - innerHeight;
-    const s = max > 0 ? Math.min(Math.max(scrollY / max, 0), 1) * (shots.length - 1) : 0;
-    const i = Math.min(Math.floor(s), shots.length - 2);
-    const t = ease(s - i);
+    const s = Math.min(shotAt(scrollY), shots.length - 1);
+    const i = Math.min(Math.floor(s), shots.length - 2), t = s - i;
     const a = shots[i], b = shots[i + 1];
-    look.set(...a.look.map((v, k) => lerp(v, b.look[k], t)));
-    off.set(...a.off.map((v, k) => lerp(v, b.off[k], t))).multiplyScalar(distScale);
-    camera.position.copy(look).add(off);
-    camera.lookAt(look);
-    // 見ている位置を支点に傾ける（寄りのカットでもシャフトが画面から外れない）
+    // 距離は対数で補間する（全体の引きから大写しまで、同じ速さで寄っていくように見せる）
+    const d = Math.exp(lerp(Math.log(dist(a.d)), Math.log(dist(b.d)), t));
+    // 'left'：縦にしたシャフトの位置。本文の左の余白に収まるよう、スマホでは画面の端へ寄せる
+    const sxOf = v => v === 'left' ? (aspect < 1 ? -0.42 : -0.31) : v;
+    const sx = lerp(sxOf(a.sx), sxOf(b.sx), t), sy = lerp(a.sy, b.sy, t);
+    // focus をシャフトの回転の中心に置き、その点が画面の (sx, sy) に来るようにカメラをずらす
+    spin.position.x = -wx(lerp(a.focus, b.focus, t));
+    const lx = -sx * 2 * d * TAN * aspect, ly = -sy * 2 * d * TAN;
+    camera.position.set(lx, ly + d * 0.03, d);
+    camera.lookAt(look.set(lx, ly, 0));
+    // マウスの位置で、少しだけ角度を変える
     const k = Math.min(1, dt * 4);
     follow.x += ((reduce ? 0 : mouse.x) - follow.x) * k;
     follow.y += ((reduce ? 0 : mouse.y) - follow.y) * k;
-    root.position.x = look.x;
-    spin.position.x = -look.x;
-    root.rotation.x = lerp(a.tilt, b.tilt, t);
-    root.rotation.y = follow.x * 0.22;
-    root.rotation.z = -follow.y * 0.08;
+    root.position.set(0, 0, 0);
+    root.rotation.set(lerp(a.tilt, b.tilt, t) + follow.y * 0.04, follow.x * 0.12, lerp(a.rz, b.rz, t));
     if (drag === null) {
       vel *= 0.93;
       user += vel;
       if (Math.abs(vel) < 0.002) {
-        const home = Math.round(user / (Math.PI * 2)) * Math.PI * 2;
+        const home = Math.round(user / TURN) * TURN;
         user += (home - user) * Math.min(1, dt * 2.5);
       }
     }
-    const idle = reduce ? 0 : Math.sin(clock.elapsedTime * 0.5) * 0.12;
-    spin.rotation.x = lerp(a.roll, b.roll, t) + user + idle - follow.y * 0.9;
+    const idle = reduce ? 0 : Math.sin(clock.elapsedTime * 0.5) * 0.08;
+    spin.rotation.x = lerp(a.roll, b.roll, t) + user + idle - follow.y * 0.5;
     renderer.render(scene, camera);
   }
 
-  // 3D の区間を過ぎたら本文に隠れるので、描くのを休む
+  // 本文（縦にしたシャフトの右を流れる部分）を過ぎて、不透明な本文（.pbody）が画面を覆ったら、描くのを休む
+  const cover = document.querySelector('.pbody');
   let running = false;
   const loop = () => {
-    const max = track.offsetTop + track.offsetHeight - innerHeight;
-    if (document.hidden || scrollY > max + innerHeight) { running = false; return; }
+    if (document.hidden || (cover && cover.getBoundingClientRect().top < 0)) { running = false; return; }
     frame();
     requestAnimationFrame(loop);
   };

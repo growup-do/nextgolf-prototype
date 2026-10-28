@@ -370,6 +370,39 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .scroll-hint { position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); font: 600 12px/1 var(--en); color: var(--sub); pointer-events: none; transition: opacity .4s; z-index: 1; }
 .scroll-hint::after { content: ""; display: block; width: 1px; height: 64px; background: var(--sub); margin: 14px auto 0; }   /* バーは下端までくっつける */
 .pbody { position: relative; z-index: 2; background: var(--page) fixed; }
+/* ===== 3D の製品ページ（Figma のコンテ図「NEW PRODUCT」）：1 区間 = 1 画面。区間の頭が画面の上に来たところで、そのカットになる ===== */
+.p3d-track .p3d-sec { display: block; position: relative; min-height: 0; height: 100vh; height: 100svh; padding: 0; }
+.p3d-track .p3d-sec.p3d-hero { height: calc(100vh - var(--hd)); height: calc(100svh - var(--hd)); }
+.p3d-sec.s-shinogi, .p3d-info.s-shinogi { --accent: var(--kv-blue); }
+.p3d-sec.s-rafale, .p3d-info.s-rafale { --accent: var(--kv-green); }
+/* 1：シャフトは画面のまん中を真横に通る。ロゴはその上、コピーとひとことはその下 */
+.p3d-mark { position: absolute; left: 50%; top: calc(50vh - var(--hd) - 44px); transform: translate(-50%, -100%); display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.p3d-mark .lg { display: block; width: clamp(220px, 28vw, 440px); aspect-ratio: var(--ar); background: var(--accent);
+  -webkit-mask: var(--m) center / contain no-repeat; mask: var(--m) center / contain no-repeat; }
+.p3d-mark .col-logo { display: inline-block; vertical-align: top; height: 26px;   /* 高さと縦横比から幅を決める（block だと幅が 0 になる） */ aspect-ratio: var(--ar); background: var(--accent);
+  -webkit-mask: url("img/logo-blue.png") center / contain no-repeat; mask: url("img/logo-blue.png") center / contain no-repeat; }
+.p3d-lead { position: absolute; left: 50%; top: calc(50vh - var(--hd) + 48px); transform: translateX(-50%); width: min(90vw, 760px); text-align: center; }
+.p3d-lead .copy { font: 700 23px/1.5 var(--ja); font-feature-settings: "palt"; color: var(--k90); text-wrap: balance; word-break: keep-all; overflow-wrap: anywhere; }
+.p3d-lead .sub { font: 700 14px/1.6 var(--ja); font-feature-settings: "palt"; color: var(--k80); margin-top: 10px; }
+/* 4〜6：寄りのカットに添える説明文（右下・左上） */
+.p3d-text { position: absolute; width: min(640px, 42vw); font: 700 15px/2.1 var(--ja); color: var(--k90); }
+.p3d-text p + p { margin-top: 1em; }
+.at-br .p3d-text { right: 5vw; bottom: 10vh; }
+.at-tl .p3d-text { left: 5vw; top: 8vh; }
+/* 7：縦にしたシャフト（画面の左 2 割ほど）の右を、締めの一文・製品名・価格・スペック・写真が流れる */
+.p3d-info { position: relative; z-index: 1; padding: 22vh 6vw 140px 24vw; pointer-events: auto; }
+.p3d-info > * { max-width: 1040px; }
+.p3d-info .closing { font: 700 20px/1.8 var(--ja); color: var(--k90); }
+.p3d-info .lead { font: 500 15px/2.1 var(--ja); color: var(--k80); }
+.p3d-info .lead p + p { margin-top: 1em; }
+.p3d-name { margin-top: 72px; }
+.p3d-name h2 { font: 700 30px/1.3 var(--ja); color: var(--accent); }
+.p3d-name .mij { display: block; font: 600 13px/1 var(--en); color: var(--accent); margin-top: 8px; }
+.p3d-name .price { margin-top: 18px; font-size: 14px; color: var(--k80); }
+.p3d-name .price b { font: 700 24px/1 var(--en); color: var(--accent); margin: 0 4px 0 14px; }
+.p3d-info .spec-wrap { margin-top: 40px; background: rgba(255,255,255,.45); }
+.p3d-info .gallery { margin-top: 56px; }
+
 
 /* ===== 試打会・お知らせの一覧と詳細 ===== */
 .list-wrap { max-width: 880px; }
@@ -443,6 +476,14 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
   .shops { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 760px) {
+  /* 3D の製品ページ：説明文は画面の幅いっぱい、縦のシャフトは左端に寄せ、本文はその右 */
+  .p3d-text { width: auto; left: 20px !important; right: 20px !important; font-size: 14px; line-height: 2; padding: 16px; background: rgba(240,240,240,.72);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  .at-br .p3d-text { bottom: 8vh; top: auto; }
+  .at-tl .p3d-text { top: 6vh; }
+  .p3d-lead .copy { font-size: 18px; }
+  .p3d-info { padding: 16vh 20px 96px 64px; }
+  .p3d-name h2 { font-size: 24px; }
   :root { --hd: 64px; --px: 20px; --hd-x: 20px; }
   body { font-size: 15px; }
   .hd .logo svg { height: 34px; }
