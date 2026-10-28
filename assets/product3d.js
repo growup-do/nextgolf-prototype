@@ -8,7 +8,25 @@
   const KIND = box.dataset.shaft;               // 'shinogi' か 'rafale'
   const canvas = box.querySelector('.p3d-stage');
   const track = box.querySelector('.p3d-track');
+  const info = box.querySelector('.p3d-info');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // 説明文：画面に固定し、いま見ているカットの 1 段落だけをフェードインで出す（3D が使えなくても動かす）
+  // カット k の説明は、区間の頭が画面の上に来る少し手前から、次の区間へ移り始めるまで
+  const texts = [...track.querySelectorAll('.p3d-sec')].map(sec => [sec, sec.querySelector('.p3d-text')]).filter(([, t]) => t);
+  if (texts.length) {
+    box.classList.add('fade');
+    const showText = () => {
+      const h = innerHeight;
+      for (const [sec, t] of texts) {
+        const top = sec.getBoundingClientRect().top;
+        t.classList.toggle('on', top <= h * 0.25 && top > -h * 0.75);
+      }
+    };
+    addEventListener('scroll', showText, { passive: true });
+    addEventListener('resize', showText);
+    showText();
+  }
 
   let renderer;
   try {
@@ -104,8 +122,8 @@
   scene.add(new THREE.HemisphereLight(0xffffff, 0x9a9a9a, 0.7));
 
   // ---------- スクロールで切り替わるカット（Figma のコンテ図「NEW PRODUCT」） ----------
-  // 1 全体（真横・画面いっぱい）→ 2 ロゴ → 3 ラベル → 4 少し傾けた中景（説明 1）→ 5 斜めの大写し（説明 2）
-  // → 6 手元の裏（説明 3）→ 7 縦に立てて画面の左に置く（このまま本文が右を流れる）
+  // 1 全体（真横。ロゴからラベルまでが画面に収まる大きさ）→ 2 ロゴ → 3 ラベル → 4 少し傾けた中景（説明 1）→ 5 斜めの大写し（説明 2）
+  // → 6 手元の裏（説明 3）→ 7 縦に立てて、画面の左端とスペック表の左端のまん中に置く（このまま本文が右を流れる）
   // 各カット：focus＝画面に置くシャフト上の位置（mm）、d＝カメラの距離（'fit'：全体が画面の幅、'tall'：縦にして画面の高さの 2.4 倍）、
   // rz＝画面の上での傾き、sx・sy＝focus を置く位置（画面の中心からの、幅・高さに対する割合。右・上がプラス。'left' は縦にしたシャフトの位置）、tilt＝手前への傾き、roll＝軸まわり
   const wx = mm => (mm - LEN / 2) * U;   // シャフト上の位置（mm）→ シャフトの中心からの距離
@@ -128,7 +146,7 @@
       // ロゴ・ラベル（先端側の BLUE の帯）・手元のシール（シールは裏側）
       const LOGO = X0 + 140, LABEL = X0 + L.b_mm - 60, SEAL = X0 + 12;
       return [
-        { focus: MID, d: 'fit', rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+        { focus: LOGO + 50, d: 4.2, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
         { focus: LOGO, d: 1.6, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
         { focus: LABEL, d: 0.9, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
         { focus: LOGO + 70, d: 3.3, rz: -0.07, sx: 0.02, sy: 0.2, tilt: -0.05, roll: 0 },
@@ -163,7 +181,7 @@
   });
   document.addEventListener('mouseleave', () => { mouse.x = 0; mouse.y = 0; });
 
-  let aspect = 1, distScale = 1;
+  let aspect = 1, distScale = 1, leftX = -0.31;
   function resize() {
     const w = innerWidth, h = innerHeight;
     aspect = w / h;
@@ -171,6 +189,10 @@
     camera.aspect = aspect;
     distScale = aspect < 1.6 ? Math.min(4, 1.75 / aspect) : 1;   // 縦長の画面では寄りのカットを引いて、横の見える幅を保つ
     camera.updateProjectionMatrix();
+    // 縦にしたシャフトの位置：画面の左端とスペック表（なければ本文）の左端のまん中
+    const ref = info && (info.querySelector('.spec-wrap') || info);
+    const left = ref ? ref.getBoundingClientRect().left + parseFloat(ref === info ? getComputedStyle(info).paddingLeft : 0) : w * 0.38;
+    leftX = left / 2 / w - 0.5;
   }
   addEventListener('resize', resize);
   resize();
@@ -179,8 +201,7 @@
 
   // スクロールの位置 → カットの番号（小数）。各カットは、その区間の頭が画面の上に来たところでぴったりその構図になり、
   // 区間の前後 15% ずつはその構図のまま止めて、文字を読みやすくする
-  const marks = [...track.querySelectorAll('.p3d-sec'), box.querySelector('.p3d-info')].filter(Boolean);
-  const info = box.querySelector('.p3d-info');
+  const marks = [...track.querySelectorAll('.p3d-sec'), info].filter(Boolean);
   const pageTop = el => el.getBoundingClientRect().top + scrollY;
   function shotAt(y) {
     const a = marks.map((el, k) => (k === 0 ? 0 : pageTop(el)));
@@ -199,8 +220,8 @@
     const a = shots[i], b = shots[i + 1];
     // 距離は対数で補間する（全体の引きから大写しまで、同じ速さで寄っていくように見せる）
     const d = Math.exp(lerp(Math.log(dist(a.d)), Math.log(dist(b.d)), t));
-    // 'left'：縦にしたシャフトの位置。本文の左の余白に収まるよう、スマホでは画面の端へ寄せる
-    const sxOf = v => v === 'left' ? (aspect < 1 ? -0.42 : -0.31) : v;
+    // 'left'：縦にしたシャフトの位置（resize で計算）
+    const sxOf = v => v === 'left' ? leftX : v;
     const sx = lerp(sxOf(a.sx), sxOf(b.sx), t), sy = lerp(a.sy, b.sy, t);
     // focus をシャフトの回転の中心に置き、その点が画面の (sx, sy) に来るようにカメラをずらす
     spin.position.x = -wx(lerp(a.focus, b.focus, t));
@@ -226,7 +247,7 @@
     renderer.render(scene, camera);
   }
 
-  // 本文（縦にしたシャフトの右を流れる部分）を過ぎて、不透明な本文（.pbody）が画面を覆ったら、描くのを休む
+  // 本文（縦にしたシャフトの右を流れる部分）を過ぎて、半透明の本文（.pbody）が画面を覆ったら、最後の絵のまま描くのを休む
   const cover = document.querySelector('.pbody');
   let running = false;
   const loop = () => {

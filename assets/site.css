@@ -317,8 +317,8 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .phero h1 { font: 700 80px/1 var(--en); margin-top: 20px; }
 /* 強調リード文：23px Bold / 2 */
 .phero .catch { font: 700 23px/2 var(--ja); margin-top: 24px; color: var(--k90); max-width: 760px; }
-.phero .price { margin-top: 28px; font-size: 14px; line-height: 1.5; color: var(--sub); }
-.phero .price b { font: 700 26px/1 var(--en); color: var(--fg); margin: 0 4px; }
+.phero .price { margin-top: 28px; font-size: 14px; line-height: 1.5; color: #000; }
+.phero .price b { font: 700 26px/1 var(--en); color: #000; margin: 0 4px; }
 .phero .strip { margin-top: 56px; width: 112%; margin-left: -6%; height: 22px; transform: rotate(-3deg); }
 .pvisual { aspect-ratio: 21 / 9; overflow: hidden; background: var(--k10); }
 .pvisual img { width: 100%; height: 100%; object-fit: cover; }
@@ -326,7 +326,17 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .pvisual.full { aspect-ratio: auto; }
 .pvisual.full img { height: auto; }
 .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.gallery img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; }
+.gallery img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; cursor: zoom-in; }
+/* 写真の拡大表示（入力欄のない表示専用なので、×・背景・Esc のどれでも閉じる） */
+.lb { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 64px 72px; background: rgba(20,20,20,.88);
+  opacity: 0; visibility: hidden; transition: opacity .3s, visibility .3s; cursor: zoom-out; }
+.lb.open { opacity: 1; visibility: visible; }
+.lb img { max-width: 100%; max-height: 100%; object-fit: contain; cursor: default; }
+.lb button { position: absolute; border: 0; background: none; color: #fff; cursor: pointer; font: 300 40px/1 var(--en); padding: 12px; }
+.lb .x { top: 12px; right: 16px; }
+.lb .prev { left: 8px; top: 50%; transform: translateY(-50%); }
+.lb .next { right: 8px; top: 50%; transform: translateY(-50%); }
+@media (max-width: 760px) { .lb { padding: 56px 12px; } .lb .prev, .lb .next { top: auto; bottom: 4px; transform: none; } }
 .feat { display: grid; grid-template-columns: 280px 1fr; gap: 64px; }
 .feat h2 { font: 600 15px/1 var(--en); color: var(--accent-ink); position: sticky; top: calc(var(--hd) + 40px); align-self: start; }
 /* 小見出し：27px Bold / 1.5 */
@@ -369,7 +379,8 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .p3d-title p { font: 700 23px/2 var(--ja); color: var(--k80); margin-top: 12px; }
 .scroll-hint { position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); font: 600 12px/1 var(--en); color: var(--sub); pointer-events: none; transition: opacity .4s; z-index: 1; }
 .scroll-hint::after { content: ""; display: block; width: 1px; height: 64px; background: var(--sub); margin: 14px auto 0; }   /* バーは下端までくっつける */
-.pbody { position: relative; z-index: 2; background: var(--page) fixed; }
+/* 3D の区間のあとの本文（試打会・取扱店から下）：地を少し透かしてぼかし、後ろの 3D のシャフトがうっすら見えるようにする */
+.pbody { position: relative; z-index: 2; background: rgba(232,232,232,.5); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 /* ===== 3D の製品ページ（Figma のコンテ図「NEW PRODUCT」）：1 区間 = 1 画面。区間の頭が画面の上に来たところで、そのカットになる ===== */
 .p3d-track .p3d-sec { display: block; position: relative; min-height: 0; height: 100vh; height: 100svh; padding: 0; }
 .p3d-track .p3d-sec.p3d-hero { height: calc(100vh - var(--hd)); height: calc(100svh - var(--hd)); }
@@ -384,22 +395,26 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .p3d-lead { position: absolute; left: 50%; top: calc(50vh - var(--hd) + 48px); transform: translateX(-50%); width: min(90vw, 760px); text-align: center; }
 .p3d-lead .copy { font: 700 23px/1.5 var(--ja); font-feature-settings: "palt"; color: var(--k90); text-wrap: balance; word-break: keep-all; overflow-wrap: anywhere; }
 .p3d-lead .sub { font: 700 14px/1.6 var(--ja); font-feature-settings: "palt"; color: var(--k80); margin-top: 10px; }
-/* 4〜6：寄りのカットに添える説明文（右下・左上） */
+/* 4〜6：寄りのカットに添える説明文（右下・左上）。画面に固定し、1 画面に 1 段落だけをフェードインで出す（product3d.js が .on を付ける） */
 .p3d-text { position: absolute; width: min(640px, 42vw); font: 700 15px/2.1 var(--ja); color: var(--k90); }
 .p3d-text p + p { margin-top: 1em; }
+.p3d-text p.closing { margin-top: 2.1em; }   /* 締めの一文は 1 行あける */
 .at-br .p3d-text { right: 5vw; bottom: 10vh; }
-.at-tl .p3d-text { left: 5vw; top: 8vh; }
-/* 7：縦にしたシャフト（画面の左 2 割ほど）の右を、締めの一文・製品名・価格・スペック・写真が流れる */
+.at-tl .p3d-text { left: 5vw; top: calc(var(--hd) + 6vh); }
+.p3d.fade .p3d-text { position: fixed; opacity: 0; transform: translateY(18px); transition: opacity .35s, transform .35s; }
+.p3d.fade .p3d-text.on { opacity: 1; transform: none; transition: opacity 1s .35s, transform 1.2s .35s cubic-bezier(.2,.7,.2,1); }
+@media (prefers-reduced-motion: reduce) { .p3d.fade .p3d-text { transform: none; } }
+/* 7：縦にしたシャフト（画面の左 2 割ほど）の右を、製品名・価格・スペック・写真が流れる */
 .p3d-info { position: relative; z-index: 1; padding: 22vh 6vw 140px 24vw; pointer-events: auto; }
+.p3d-info > .p3d-name:first-child { margin-top: 0; }
 .p3d-info > * { max-width: 1040px; }
-.p3d-info .closing { font: 700 20px/1.8 var(--ja); color: var(--k90); }
 .p3d-info .lead { font: 500 15px/2.1 var(--ja); color: var(--k80); }
 .p3d-info .lead p + p { margin-top: 1em; }
 .p3d-name { margin-top: 72px; }
 .p3d-name h2 { font: 700 30px/1.3 var(--ja); color: var(--accent); }
 .p3d-name .mij { display: block; font: 600 13px/1 var(--en); color: var(--accent); margin-top: 8px; }
-.p3d-name .price { margin-top: 18px; font-size: 14px; color: var(--k80); }
-.p3d-name .price b { font: 700 24px/1 var(--en); color: var(--accent); margin: 0 4px 0 14px; }
+.p3d-name .price { margin-top: 18px; font-size: 14px; color: #000; }
+.p3d-name .price b { font: 700 24px/1 var(--en); color: #000; margin: 0 4px 0 14px; }
 .p3d-info .spec-wrap { margin-top: 40px; background: rgba(255,255,255,.45); }
 .p3d-info .gallery { margin-top: 56px; }
 
@@ -480,7 +495,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
   .p3d-text { width: auto; left: 20px !important; right: 20px !important; font-size: 14px; line-height: 2; padding: 16px; background: rgba(240,240,240,.72);
     -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
   .at-br .p3d-text { bottom: 8vh; top: auto; }
-  .at-tl .p3d-text { top: 6vh; }
+  .at-tl .p3d-text { top: calc(var(--hd) + 4vh); }
   .p3d-lead .copy { font-size: 16px; }   /* 21 文字のコピーが 1 行に収まる大きさ */
   .p3d-info { padding: 16vh 20px 96px 64px; }
   .p3d-name h2 { font-size: 24px; }

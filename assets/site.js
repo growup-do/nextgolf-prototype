@@ -11,6 +11,41 @@
   addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
   addEventListener('resize', () => { if (innerWidth > 1080) setMenu(false); });
 
+  // 製品の写真：クリックで大きく表示（入力欄のない表示専用なので、×・背景・Esc で閉じる。← → で前後の写真へ）
+  document.querySelectorAll('.gallery').forEach(g => {
+    const imgs = [...g.querySelectorAll('img')];
+    if (!imgs.length) return;
+    const lb = document.createElement('div');
+    lb.className = 'lb';
+    lb.setAttribute('role', 'dialog');
+    lb.setAttribute('aria-modal', 'true');
+    lb.setAttribute('aria-label', '写真の拡大表示');
+    lb.innerHTML = '<img alt=""><button class="x" type="button" aria-label="閉じる">×</button>'
+      + (imgs.length > 1 ? '<button class="prev" type="button" aria-label="前の写真">‹</button><button class="next" type="button" aria-label="次の写真">›</button>' : '');
+    document.body.appendChild(lb);
+    const big = lb.querySelector('img');
+    let cur = 0;
+    const show = k => { cur = (k + imgs.length) % imgs.length; big.src = imgs[cur].currentSrc || imgs[cur].src; };
+    const close = () => { lb.classList.remove('open'); document.documentElement.style.overflow = ''; };
+    imgs.forEach((img, k) => img.addEventListener('click', () => {
+      show(k);
+      lb.classList.add('open');
+      document.documentElement.style.overflow = 'hidden';
+      lb.querySelector('.x').focus();
+    }));
+    lb.addEventListener('click', e => {
+      if (e.target.closest('.prev')) show(cur - 1);
+      else if (e.target.closest('.next')) show(cur + 1);
+      else if (e.target !== big) close();
+    });
+    addEventListener('keydown', e => {
+      if (!lb.classList.contains('open')) return;
+      if (e.key === 'Escape') close();
+      else if (e.key === 'ArrowLeft') show(cur - 1);
+      else if (e.key === 'ArrowRight') show(cur + 1);
+    });
+  });
+
   // ヘッダーの下に暗いフッターが来たら、ヘッダーも暗くする（KV の鎬の暗い背景は CSS が --sh から計算する）
   const ft = document.querySelector('.ft'), hd = document.querySelector('.hd');
   if (ft && hd) {
