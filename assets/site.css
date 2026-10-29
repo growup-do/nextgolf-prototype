@@ -421,7 +421,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .p3d-page .scroll-hint { color: color-mix(in srgb, #dfe6f2 calc(var(--fv, 1) * 100%), var(--sub)); }
 .p3d-page .scroll-hint::after { background: currentColor; }
 /* 4〜6：寄りのカットに添える説明文（右下・左上）。画面に固定し、1 画面に 1 段落だけをフェードインで出す（product3d.js が .on を付ける） */
-.p3d-text { position: absolute; width: min(720px, 50vw); font: 700 24px/1.8 var(--ja); font-feature-settings: "palt"; color: var(--k90); }
+.p3d-text { position: absolute; width: min(720px, 50vw); font: 700 19.2px/1.8 var(--ja);   /* 24px の 80% */ font-feature-settings: "palt"; color: var(--k90); }
 .p3d-text p + p { margin-top: 1em; }
 .p3d-text p.closing { margin-top: 2.1em; }   /* 締めの一文は 1 行あける */
 .at-br .p3d-text { right: 5vw; bottom: 10vh; }
