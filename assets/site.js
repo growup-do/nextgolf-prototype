@@ -138,6 +138,16 @@
     });
   });
 
+  // 取扱店：上の地域ボタンがヘッダーの下に隠れたら、地域の帯をヘッダーの下に出す
+  const anav = document.querySelector('.area-nav'), afind = document.querySelector('.shopfind');
+  if (anav && afind) {
+    const hd = document.querySelector('.hd');
+    const toggle = () => anav.classList.toggle('show', afind.getBoundingClientRect().bottom < (hd ? hd.offsetHeight : 0));
+    addEventListener('scroll', toggle, { passive: true });
+    addEventListener('resize', toggle);
+    toggle();
+  }
+
   // 3D ページの「SCROLL」表示は、スクロールを始めたら消す
   const hint = document.querySelector('.scroll-hint');
   if (hint) addEventListener('scroll', () => { hint.style.opacity = scrollY > 40 ? 0 : 1; }, { passive: true });
