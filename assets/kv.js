@@ -1,7 +1,7 @@
 // トップのキービジュアル：鎬BLUE と Rafale RS1.0 の 3D シャフトが交差する（テクスチャは build_tex_kv.py で作る）
 // ・マウスの位置で、シーン全体の角度が少し変わる
 // ・SHINOGI（ロゴ・ボタン・シャフト）にカーソルを合わせると、鎬が 150% に拡大して手前に迫り、
-//   Rafale は小さくなって奥へ下がり、Rafale のロゴ類は薄くなる（Rafale に合わせたときはその逆）。背景は明るいまま
+//   Rafale は小さくなって奥へ下がり、シャフトもロゴ類も薄くなる（Rafale に合わせたときはその逆）。背景は明るいまま
 // ・製品ページへ移るときに、そのシリーズの暗い背景（製品ページの最初の画面と同じ）が現れる
 // three.js（assets/three.js）と素材（assets/kv-data.js）は、file:// で開いても読めるよう通常の <script> で読み込む
 (() => {
@@ -302,11 +302,11 @@
     // 2 本とも、手元を左・先端を右に向ける（シャフトの文字は手元から先端へ向かって刷られているので、こうすると正しい向きで読める）
     // 鎬は左上から右下へ、Rafale は左下から右上へ。2 本で X を作る
     s.root.rotation.set(0, 0, (side > 0 ? -A : A) + turn);
-    // 選ばれたほうは 150% に拡大して手前へ。もう一方は 70% に縮んで奥へ下がる
+    // 選ばれたほうは 150% に拡大して手前へ。もう一方は 70% に縮んで奥へ下がり、不透明度 20% まで薄くなる（ロゴ類と同じ）
     s.root.scale.setScalar(1 + 0.5 * k - 0.3 * o);
     s.root.position.set(0, 0, side * -0.15 + 2.2 * k - 1.2 * o);
     s.spin.rotation.x = 0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15;
-    const op = 1 - vanish;
+    const op = (1 - 0.8 * o) * (1 - vanish);
     for (const m of s.mats) { m.opacity = op; m.depthWrite = op > 0.98; }
     s.root.visible = op > 0.01;
     for (const me of s.meshes) me.castShadow = op > 0.4;
