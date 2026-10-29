@@ -139,8 +139,8 @@
   const KV_ROLL = 0.45;   // KV でホバーしたときの、軸まわりの向き（kv.js の 0.3 + 0.15）
   const shots = KIND === 'rafale'
     ? (() => {
-      // 裏面の筆記体とシールは、正面から約 0.33 周の位置
-      const LOGO = L.pos.logo, LABEL = L.pos.label, SCRIPT = X0 + 120, SEAL = X0 + 29, BACK = -2.6389;
+      // 裏面の筆記体とシールは、羽のマークとロゴの真裏（半周）。build_tex_kv.py でシールを半周の位置にそろえている
+      const LOGO = L.pos.logo, LABEL = L.pos.label, SCRIPT = X0 + 120, SEAL = X0 + 29, BACK = -Math.PI;
       return [
         { focus: MID, d: 'kv', rz: 'kv', sx: 0, sy: 0, tilt: 0, roll: KV_ROLL },
         { focus: LOGO, d: 2.5, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
