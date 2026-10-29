@@ -1,7 +1,8 @@
 // トップのキービジュアル：鎬BLUE と Rafale RS1.0 の 3D シャフトが交差する（テクスチャは build_tex_kv.py で作る）
 // ・マウスの位置で、シーン全体の角度が少し変わる
 // ・SHINOGI（ロゴ・ボタン・シャフト）にカーソルを合わせると、鎬が 150% に拡大して手前に迫り、
-//   Rafale は消えて鎬の背景が現れる（Rafale に合わせたときはその逆）
+//   Rafale は小さくなって奥へ下がり、Rafale のロゴ類は薄くなる（Rafale に合わせたときはその逆）。背景は明るいまま
+// ・製品ページへ移るときに、そのシリーズの暗い背景（製品ページの最初の画面と同じ）が現れる
 // three.js（assets/three.js）と素材（assets/kv-data.js）は、file:// で開いても読めるよう通常の <script> で読み込む
 (() => {
   const kv = document.querySelector('.kv3d');
@@ -178,8 +179,8 @@
   const syncTarget = () => { if (!leaving) target = overUI || overShaft || slide; };
 
   // 製品ページへ移るとき：選んだシャフトを、画面の上で時計回りに 1 回転させながら、ゆっくり消していく。
-  // 同時に、背景（ホバー時の暗い背景も含めて）を製品ページの明るいグレーへふわっと切り替え、消えきったらページを移る。
-  // 製品ページでは、シャフトが明るいグレーの上にふんわり現れる（product3d.js・site.css）
+  // 同時に、背景をそのシリーズの暗い背景（製品ページの最初の画面と同じ）へふわっと切り替え、消えきったらページを移る。
+  // 製品ページでは、同じ背景の上にシャフトがふんわり現れる（product3d.js・site.css）
   const SPIN_MS = 1400, FADE_AT = 300, FADE_MS = 1000, TOTAL = SPIN_MS;
   let leaving = null;   // { f：+1 鎬 / -1 Rafale, href, t0：回し始めた時刻, done }
   function go(href, f) {
@@ -193,7 +194,11 @@
   }
   // 戻るボタンで戻ってきたとき（ページがそのまま復元されたとき）は、元の状態に戻す
   addEventListener('pageshow', e => {
-    if (e.persisted && leaving) { leaving = null; kv.classList.remove('leaving'); document.documentElement.classList.remove('kv-leaving'); document.documentElement.style.setProperty('--leave', 0); syncTarget(); }
+    if (e.persisted && leaving) {
+      leaving = null; kv.classList.remove('leaving'); document.documentElement.classList.remove('kv-leaving');
+      for (const v of ['--shb', '--rfb']) document.documentElement.style.setProperty(v, 0);
+      syncTarget();
+    }
   });
   kv.querySelectorAll('.kv-item').forEach(a => a.addEventListener('click', e => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;   // 新しいタブで開くときは、そのまま
@@ -218,7 +223,7 @@
     const c = canvas.getBoundingClientRect();
     ndc.set(((e.clientX - c.left) / c.width) * 2 - 1, -(((e.clientY - c.top) / c.height) * 2 - 1));
     ray.setFromCamera(ndc, camera);
-    const hits = ray.intersectObjects([...(F > -0.5 ? shin.meshes : []), ...(F < 0.5 ? raf.meshes : [])], false);
+    const hits = ray.intersectObjects([...shin.meshes, ...raf.meshes], false);
     overShaft = hits.length ? (shin.meshes.includes(hits[0].object) ? 1 : -1) : 0;
     kv.classList.toggle('on-shaft', !!overShaft);
     syncTarget();
@@ -297,11 +302,11 @@
     // 2 本とも、手元を左・先端を右に向ける（シャフトの文字は手元から先端へ向かって刷られているので、こうすると正しい向きで読める）
     // 鎬は左上から右下へ、Rafale は左下から右上へ。2 本で X を作る
     s.root.rotation.set(0, 0, (side > 0 ? -A : A) + turn);
-    // 選ばれたほうは 150% に拡大して手前へ。もう一方は奥へ下がりながら消える
-    s.root.scale.setScalar(1 + 0.5 * k - 0.12 * o);
-    s.root.position.set(0, 0, side * -0.15 + 2.2 * k - 1.6 * o);
+    // 選ばれたほうは 150% に拡大して手前へ。もう一方は 70% に縮んで奥へ下がる
+    s.root.scale.setScalar(1 + 0.5 * k - 0.3 * o);
+    s.root.position.set(0, 0, side * -0.15 + 2.2 * k - 1.2 * o);
     s.spin.rotation.x = 0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15;
-    const op = (1 - o) * (1 - vanish);
+    const op = 1 - vanish;
     for (const m of s.mats) { m.opacity = op; m.depthWrite = op > 0.98; }
     s.root.visible = op > 0.01;
     for (const me of s.meshes) me.castShadow = op > 0.4;
@@ -318,9 +323,9 @@
     mouse.y = lerp(mouse.y, reduce ? 0 : mouse.ty, mp);
 
     const sh = Math.max(F, 0), rf = Math.max(-F, 0);
-    // 製品ページへ移る途中：選んだシャフトを、ゆっくり始まってゆっくり止まる、時計回りの 1 回転（q：0→1）。
+    // 製品ページへ移る途中：選んだシャフトを、ゆっくり始まってゆっくり止まる、時計回りの 1 回転（q：0→1）。もう一方はそのまま消す。
     // マウスによる傾きと漂う動きは q に合わせて消し、止まったときに製品ページの最初の画面と同じ姿勢にする
-    // q：シャフトの 1 回転（ゆっくり始まってゆっくり止まる）。vanish：シャフトが消えていく進み具合。bg：背景が明るいグレーへ切り替わる進み具合
+    // q：シャフトの 1 回転（ゆっくり始まってゆっくり止まる）。vanish：シャフトが消えていく進み具合。bg：暗い背景へ切り替わる進み具合
     let q = 0, vanish = 0, bg = 0;
     if (leaving) {
       if (leaving.t0 === null) leaving.t0 = now;
@@ -330,8 +335,8 @@
       bg = ease(clamp((el - FADE_AT) / FADE_MS));
     }
     const turn = -q * Math.PI * 2;   // 画面の奥を向いて見ているので、マイナスが時計回り
-    poseShaft(shin, 1, sh, rf, leaving && leaving.f > 0 ? turn : 0, leaving && leaving.f > 0 ? vanish : 0);
-    poseShaft(raf, -1, rf, sh, leaving && leaving.f < 0 ? turn : 0, leaving && leaving.f < 0 ? vanish : 0);
+    poseShaft(shin, 1, sh, rf, leaving && leaving.f > 0 ? turn : 0, vanish);
+    poseShaft(raf, -1, rf, sh, leaving && leaving.f < 0 ? turn : 0, vanish);
     // マウスの位置で、少しだけ角度が変わる（ゆっくり漂う動きも少し足す）。移るときは傾きを戻す
     const drift = reduce ? 0 : Math.sin(clock * 0.5) * 0.03, still = 1 - q;
     world.rotation.set((mouse.y * 0.16 + drift) * still, mouse.x * 0.26 * still, 0);
@@ -340,11 +345,12 @@
     if (!leaving) avoid(dt);   // 移る途中はロゴ類が消えていくので、ずらさない
     catcher.material.opacity = 0.16 * (1 - vanish);   // 奥の影も、シャフトといっしょに消す
 
-    // 背景（.kv-bg）は KV の外にあるので、ページ全体（html）に値を渡す。移るときは背景ごと消して、製品ページと同じ地にする
+    // 背景（.kv-bg）は KV の外にあるので、ページ全体（html）に値を渡す。移るときは、選んだほうの暗い背景（製品ページの最初の画面と同じ）を出す
     const vars = document.documentElement.style;
-    vars.setProperty('--sh', (sh * (1 - bg)).toFixed(3));
-    vars.setProperty('--rf', (rf * (1 - bg)).toFixed(3));
-    vars.setProperty('--leave', bg.toFixed(3));
+    vars.setProperty('--sh', sh.toFixed(3));
+    vars.setProperty('--rf', rf.toFixed(3));
+    vars.setProperty('--shb', (leaving && leaving.f > 0 ? bg : 0).toFixed(3));
+    vars.setProperty('--rfb', (leaving && leaving.f < 0 ? bg : 0).toFixed(3));
     vars.setProperty('--mx', (mouse.x * still).toFixed(3));
     vars.setProperty('--my', (mouse.y * still).toFixed(3));
     renderer.render(scene, camera);

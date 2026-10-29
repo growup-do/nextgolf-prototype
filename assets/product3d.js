@@ -13,6 +13,12 @@
 
   // 説明文：画面に固定し、いま見ているカットの 1 段落だけをフェードインで出す（3D が使えなくても動かす）
   // カット k の説明は、区間の頭が画面の上に来る少し手前から、次の区間へ移り始めるまで。製品名が画面に入ってきたら、最後の段落も消す
+  // 最初の画面の暗い背景（トップの KV でホバーしたときと同じ）：スクロールし始めたら、明るいグレーへ消していく（--fv：1→0。site.css）
+  const fv = () => document.documentElement.style.setProperty('--fv', Math.max(0, 1 - scrollY / (innerHeight * 0.6)).toFixed(3));
+  addEventListener('scroll', fv, { passive: true });
+  addEventListener('resize', fv);
+  fv();
+
   const texts = [...track.querySelectorAll('.p3d-sec')].map(sec => [sec, sec.querySelector('.p3d-text')]).filter(([, t]) => t);
   const nameEl = info && info.querySelector('.p3d-name');
   if (texts.length) {
@@ -124,18 +130,19 @@
   scene.add(new THREE.HemisphereLight(0xffffff, 0x9a9a9a, 0.7));
 
   // ---------- スクロールで切り替わるカット（Figma のコンテ図「NEW PRODUCT」） ----------
-  // 1 全体（真横。ロゴからラベルまでが画面に収まる大きさ）→ 2 ロゴ → 3 ラベル → 4 少し傾けた中景 → 5 斜めの大写し
+  // 1 トップの KV でホバーしたときと同じ構図（斜めに大きく。'kv'）→ 2 ロゴ → 3 ラベル → 4 少し傾けた中景 → 5 斜めの大写し
   // → 6 手元の裏（説明文は 2〜6 のカットに、後ろから詰めて 1 段落ずつ）→ 7 縦に立てて、画面の左端とスペック表の左端のまん中に置く（このまま本文が右を流れる）
-  // 各カット：focus＝画面に置くシャフト上の位置（mm）、d＝カメラの距離（'fit'：全体が画面の幅、'tall'：縦にして画面の高さの 2.4 倍）、
-  // rz＝画面の上での傾き、sx・sy＝focus を置く位置（画面の中心からの、幅・高さに対する割合。右・上がプラス。'left' は縦にしたシャフトの位置）、tilt＝手前への傾き、roll＝軸まわり
+  // 各カット：focus＝画面に置くシャフト上の位置（mm）、d＝カメラの距離（'fit'：全体が画面の幅、'tall'：縦にして画面の高さの 2.4 倍、'kv'：KV のホバー時と同じ大きさ）、
+  // rz＝画面の上での傾き（'kv'：KV と同じ斜め）、sx・sy＝focus を置く位置（画面の中心からの、幅・高さに対する割合。右・上がプラス。'left' は縦にしたシャフトの位置）、tilt＝手前への傾き、roll＝軸まわり
   const wx = mm => (mm - LEN / 2) * U;   // シャフト上の位置（mm）→ シャフトの中心からの距離
   const MID = LEN / 2, TURN = Math.PI * 2;
+  const KV_ROLL = 0.45;   // KV でホバーしたときの、軸まわりの向き（kv.js の 0.3 + 0.15）
   const shots = KIND === 'rafale'
     ? (() => {
       // 裏面の筆記体とシールは、正面から約 0.33 周の位置
       const LOGO = L.pos.logo, LABEL = L.pos.label, SCRIPT = X0 + 120, SEAL = X0 + 29, BACK = -2.6389;
       return [
-        { focus: LOGO + 60, d: 4.2, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+        { focus: MID, d: 'kv', rz: 'kv', sx: 0, sy: 0, tilt: 0, roll: KV_ROLL },
         { focus: LOGO, d: 2.5, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
         { focus: LABEL, d: 1.7, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
         { focus: LOGO + 40, d: 4.2, rz: -0.07, sx: 0.02, sy: 0.2, tilt: -0.05, roll: 0 },
@@ -148,7 +155,7 @@
       // ロゴ・ラベル（先端側の BLUE の帯）・手元のシール（シールは裏側）
       const LOGO = X0 + 140, LABEL = X0 + L.b_mm - 60, SEAL = X0 + 12;
       return [
-        { focus: LOGO + 50, d: 4.2, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+        { focus: MID, d: 'kv', rz: 'kv', sx: 0, sy: 0, tilt: 0, roll: KV_ROLL },
         { focus: LOGO, d: 1.6, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
         { focus: LABEL, d: 0.9, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
         { focus: LOGO + 70, d: 3.3, rz: -0.07, sx: 0.02, sy: 0.2, tilt: -0.05, roll: 0 },
@@ -183,7 +190,7 @@
   });
   document.addEventListener('mouseleave', () => { mouse.x = 0; mouse.y = 0; });
 
-  let aspect = 1, distScale = 1, leftX = -0.31;
+  let aspect = 1, distScale = 1, leftX = -0.31, kvA = 0.38, kvD = 6;
   function resize() {
     const w = innerWidth, h = innerHeight;
     aspect = w / h;
@@ -191,6 +198,10 @@
     camera.aspect = aspect;
     distScale = aspect < 1.6 ? Math.min(4, 1.75 / aspect) : 1;   // 縦長の画面では寄りのカットを引いて、横の見える幅を保つ
     camera.updateProjectionMatrix();
+    // KV と同じ構図（kv.js の layout と同じ計算）。KV のシャフトは 150% に拡大して 2.2 手前にあるので、等倍のシャフトに直した距離にする
+    kvA = Math.atan(Math.min(1.3, Math.max(0.4, 0.72 / aspect)));
+    const m = aspect < 1 ? 0.95 : 1.12, ex = 11.2 * Math.cos(kvA) * m, ey = 11.2 * Math.sin(kvA) * m;
+    kvD = (Math.max(ex / (2 * TAN * aspect), ey / (2 * TAN), 10) - 2.2) / 1.5;
     // 縦にしたシャフトの位置：画面の左端とスペック表（なければ本文）の左端のまん中
     const ref = info && (info.querySelector('.spec-wrap') || info);
     const left = ref ? ref.getBoundingClientRect().left + parseFloat(ref === info ? getComputedStyle(info).paddingLeft : 0) : w * 0.38;
@@ -199,7 +210,7 @@
   addEventListener('resize', resize);
   resize();
   // カメラの距離：'fit' は全体が画面の幅に少しはみ出すくらい、'tall' は縦にしたシャフトが画面の高さの 2.4 倍
-  const dist = d => d === 'fit' ? LEN * U * 1.03 / (2 * TAN * aspect) : d === 'tall' ? LEN * U / (2.4 * 2 * TAN) : d * distScale;
+  const dist = d => d === 'kv' ? kvD : d === 'fit' ? LEN * U * 1.03 / (2 * TAN * aspect) : d === 'tall' ? LEN * U / (2.4 * 2 * TAN) : d * distScale;
 
   // スクロールの位置 → カットの番号（小数）。各カットは、その区間の頭が画面の上に来たところでぴったりその構図になり、
   // 区間の前後 15% ずつはその構図のまま止めて、文字を読みやすくする
@@ -235,7 +246,9 @@
     follow.x += ((reduce ? 0 : mouse.x) - follow.x) * k;
     follow.y += ((reduce ? 0 : mouse.y) - follow.y) * k;
     root.position.set(0, 0, 0);
-    root.rotation.set(lerp(a.tilt, b.tilt, t) + follow.y * 0.04, follow.x * 0.12, lerp(a.rz, b.rz, t));
+    // 'kv'：鎬は左上から右下へ、Rafale は左下から右上へ（KV の X と同じ向き）
+    const rzOf = v => v === 'kv' ? (KIND === 'rafale' ? kvA : -kvA) : v;
+    root.rotation.set(lerp(a.tilt, b.tilt, t) + follow.y * 0.04, follow.x * 0.12, lerp(rzOf(a.rz), rzOf(b.rz), t));
     if (drag === null) {
       vel *= 0.93;
       user += vel;

@@ -19,6 +19,8 @@
   --hd-x: 48px;   /* ヘッダーのロゴとメニューは、画面の左右の端から 48px の位置に固定 */
   /* トップの KV の状態（kv.js・site.js が書き換える）：鎬／Rafale へのフォーカス、マウスの位置、背景の切り替えの進み具合 */
   --sh: 0; --rf: 0; --mx: 0; --my: 0; --blend: 0; --cue: 1;
+  /* 鎬・Rafale の暗い背景を出す割合（トップでは製品ページへ移るとき、製品ページでは最初の画面） */
+  --shb: 0; --rfb: 0;
 }
 /* ホバーのない端末（スマホ）は、KV を最初から SHINOGI のホバー状態で見せる（kv.js が動き出す前から。2 本並んだ状態を一瞬も見せない） */
 @media (hover: none) and (prefers-reduced-motion: no-preference) { html:not(.no3d):has(.kv3d) { --sh: 1; } }
@@ -45,7 +47,7 @@ button { font: inherit; color: inherit; }
 /* ===== ヘッダー（常に固定） =====
    後ろが暗いとき（--hdk：0〜1）は、地を濃いグレーに、ロゴと文字を白にする。
    KV で鎬・Rafale の暗い背景が出ているとき（どちらかへのフォーカス × KV の背景が残っている割合）と、フッターの上に来たとき（site.js が .hd-dark） */
-.hd { view-transition-name: site-header; --hdk: calc(max(var(--sh), var(--rf)) * (1 - var(--blend))); position: fixed; top: 0; left: 0; right: 0; height: var(--hd); z-index: 50;
+.hd { view-transition-name: site-header; --hdk: calc(max(var(--shb), var(--rfb)) * (1 - var(--blend))); position: fixed; top: 0; left: 0; right: 0; height: var(--hd); z-index: 50;
   background: color-mix(in srgb, rgba(25,25,25,.82) calc(var(--hdk) * 100%), rgba(246,246,246,.72));
   color: color-mix(in srgb, #fff calc(var(--hdk) * 100%), var(--k90));
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
@@ -131,12 +133,12 @@ main { padding-top: var(--hd); }
   -webkit-mask-image: linear-gradient(#000 0%, #000 71.4%, rgba(0,0,0,.6) 80%, transparent 100%); mask-image: linear-gradient(#000 0%, #000 71.4%, rgba(0,0,0,.6) 80%, transparent 100%); }
 .kv3d.ready canvas { opacity: 1; }
 .kv3d.on-shaft { cursor: pointer; }
-/* 背景：ふだんは明るいグレー。片方にカーソルを合わせると、そのシリーズの背景が現れる
+/* 背景：明るいグレー（ホバーしても変えない）
    画面に固定して、スクロールしても動かない（動くのはシャフトと文字だけ）。KV を抜けるころに、ぼけながら消えて
    ページの背景（--page）にブレンドで切り替わる */
-/* 製品ページへ移るときは --leave（kv.js）で背景ごと消し、ページの地（製品ページと同じ）を見せる */
+/* 製品ページへ移るときは、選んだほうの暗い背景（--shb・--rfb、kv.js）を出す。製品ページの最初の画面と同じ背景 */
 .kv-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
-  opacity: calc((1 - var(--blend)) * (1 - var(--leave, 0))); filter: blur(calc(var(--blend) * 14px)); transform: scale(calc(1 + var(--blend) * .05)); }
+  opacity: calc(1 - var(--blend)); filter: blur(calc(var(--blend) * 14px)); transform: scale(calc(1 + var(--blend) * .05)); }
 html.kv-off .kv-bg { visibility: hidden; }
 /* 切り替わった先の背景：KV よりワントーン落とした、上から光の当たるスタジオのようなグレー（製品一覧から下に敷く） */
 .bg-next, .bgl { position: fixed; inset: 0; z-index: -2; pointer-events: none; }
@@ -154,18 +156,18 @@ html.kv-off .kv-bg { visibility: hidden; }
 /* 鎬の背景：侍と刀、その奥でスイングするゴルファーの写真。画面の半分ほどの大きさで右上寄りに置き（拡大したシャフトは
    左上から右下へ斜めに通るので、その線の右上に寄せて重なりを減らす）、
    まわりは写真の地と同じ暗い紺。写真の端はぼかして、地に溶け込ませる */
-.kv-bg .b-shinogi { opacity: var(--sh); background: radial-gradient(60% 70% at 75% 40%, #0d1730 0%, #070b16 70%); }
+.kv-bg .b-shinogi { opacity: var(--shb); background: radial-gradient(60% 70% at 75% 40%, #0d1730 0%, #070b16 70%); }
 .kv-bg .b-shinogi .photo { position: absolute; inset: auto; left: 75%; top: 40%; width: min(56vw, 150vh, 1100px); aspect-ratio: 1536 / 1024;
   background: url("img/kv-shinogi-hover.jpg") center / cover no-repeat;
   -webkit-mask-image: radial-gradient(closest-side, #000 58%, rgba(0,0,0,.6) 78%, transparent 100%); mask-image: radial-gradient(closest-side, #000 58%, rgba(0,0,0,.6) 78%, transparent 100%);
   -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
-  transform: translate(-50%, -50%) scale(calc(1.06 - var(--sh) * .06)) translate(calc(var(--mx) * -14px), calc(var(--my) * -10px)); }
+  transform: translate(-50%, -50%) scale(calc(1.06 - var(--shb) * .06)) translate(calc(var(--mx) * -14px), calc(var(--my) * -10px)); }
 /* Rafale の背景：上に緑からオレンジへ流れる光の筋、下は黒へ溶ける横長の画像。画面の上に合わせて敷き、下は同じ黒で続ける
    （高さが画面の 7 割より低くならないよう、幅は「画面幅」と「画面の高さ × 1.83」の大きいほう）。現れるとき、左から少し流れ込む */
-.kv-bg .b-rafale { opacity: var(--rf); background: #000; }
+.kv-bg .b-rafale { opacity: var(--rfb); background: #000; }
 .kv-bg .b-rafale .photo { position: absolute; inset: 0; background: url("img/kv-rafale-hover.jpg") center 40px / max(100%, 183vh) auto no-repeat;
   transform-origin: 50% 40px;   /* 背景の層は画面より 40px 大きいので、画像の上端を画面の上端にそろえる */
-  transform: translateX(calc((var(--rf) - 1) * 80px + var(--mx) * -18px)) scale(1.06); }
+  transform: translateX(calc((var(--rfb) - 1) * 80px + var(--mx) * -18px)) scale(1.06); }
 /* ホバー時の演出（シャフト/kv素材/ の AI から。形だけの白い画像をマスクにして、色は CSS で）。どれも動かさず、透過させて背景になじませる
    外側の要素に位置と大きさ、内側の要素に形（マスク）と色
    鎬：「Shinogi」の筆記体と「鎬」の文字組を、左下の暗い紺の空間にうっすらと */
@@ -189,19 +191,19 @@ html.kv-off .kv-bg { visibility: hidden; }
 .kv-bg .b-rafale .f3 > i { -webkit-mask: url("img/kv-rafale-f3.png") center / contain no-repeat; mask: url("img/kv-rafale-f3.png") center / contain no-repeat; }
 /* 前面の文字とロゴ */
 .kv-ui { position: absolute; inset: var(--hd) 0 0; z-index: 2; pointer-events: none; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr auto; padding: 4vh 5vw 5vh; }
-/* 鎬は、ホバーで背景が暗くなるのに合わせて、ロゴを明るい青に、文字とボタンを白に寄せる（--sh：0〜1） */
-.kv-item.s-shinogi { --accent: color-mix(in srgb, #5ea6ff calc(var(--sh) * 100%), var(--kv-blue)); --on-accent: #fff;
-  --ink: color-mix(in srgb, #e9eef7 calc(var(--sh) * 100%), var(--k70)); }
+/* 背景は、ホバーしても明るいまま。製品ページへ移るときに鎬の暗い背景が出てくるのに合わせて、ロゴを明るい青に、文字とボタンを白に寄せる（--shb：0〜1） */
+.kv-item.s-shinogi { --accent: color-mix(in srgb, #5ea6ff calc(var(--shb) * 100%), var(--kv-blue)); --on-accent: #fff;
+  --ink: color-mix(in srgb, #e9eef7 calc(var(--shb) * 100%), var(--k70)); }
 .kv-item.s-shinogi .col { color: var(--ink); }
-.kv-item.s-shinogi .go { color: color-mix(in srgb, #fff calc(var(--sh) * 100%), var(--k90)); }
+.kv-item.s-shinogi .go { color: color-mix(in srgb, #fff calc(var(--shb) * 100%), var(--k90)); }
 .kv-item.s-rafale { --accent: var(--kv-green); --on-accent: var(--k90); }
-/* Rafale は、ホバーで背景が暗くなってもロゴが浮くように影を濃くし、ボタンの文字を白に寄せる */
-.kv-item.s-rafale .lg { filter: drop-shadow(0 2px 14px rgba(0,0,0, calc(.08 + var(--rf) * .45))); }
-.kv-item.s-rafale .go { color: color-mix(in srgb, #fff calc(var(--rf) * 100%), var(--k90)); }
+/* Rafale も同じ。移るときに背景が暗くなってもロゴが浮くように影を濃くし、ボタンの文字を白に寄せる */
+.kv-item.s-rafale .lg { filter: drop-shadow(0 2px 14px rgba(0,0,0, calc(.08 + var(--rfb) * .45))); }
+.kv-item.s-rafale .go { color: color-mix(in srgb, #fff calc(var(--rfb) * 100%), var(--k90)); }
 .kv-item { pointer-events: auto; align-self: center; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px; }   /* 位置は kv.js が毎コマなめらかに動かすので、transition は付けない */
-/* --ax・--ay：シャフトと重ならないように kv.js がずらす量 */
-.kv-item.s-shinogi { justify-self: start; opacity: calc(1 - var(--rf)); transform: translate(var(--ax, 0px), var(--ay, 0px)) translateX(calc(var(--sh) * -1.5vw)) scale(calc(1 + var(--sh) * .06)); }
-.kv-item.s-rafale { justify-self: end; opacity: calc(1 - var(--sh)); transform: translate(var(--ax, 0px), var(--ay, 0px)) translateX(calc(var(--rf) * 1.5vw)) scale(calc(1 + var(--rf) * .06)); }
+/* --ax・--ay：シャフトと重ならないように kv.js がずらす量。選ばれていないほうのロゴ・コピー・ボタンは、不透明度 20% まで薄くする */
+.kv-item.s-shinogi { justify-self: start; opacity: calc(1 - var(--rf) * .8); transform: translate(var(--ax, 0px), var(--ay, 0px)) translateX(calc(var(--sh) * -1.5vw)) scale(calc(1 + var(--sh) * .06)); }
+.kv-item.s-rafale { justify-self: end; opacity: calc(1 - var(--sh) * .8); transform: translate(var(--ax, 0px), var(--ay, 0px)) translateX(calc(var(--rf) * 1.5vw)) scale(calc(1 + var(--rf) * .06)); }
 .kv-item .lg { display: block; width: clamp(220px, 27vw, 500px); aspect-ratio: var(--ar); background: var(--accent);
   -webkit-mask: var(--m) center / contain no-repeat; mask: var(--m) center / contain no-repeat; filter: drop-shadow(0 6px 12px rgba(0,0,0,.08)); }
 .kv-item .col { font: 600 15px/1 var(--en); color: var(--k70); }
@@ -210,8 +212,8 @@ html.kv-off .kv-bg { visibility: hidden; }
 /* 製品のコピー（強調リード文 23px）。ふだんは明るい地の上なので K90、ホバーで背景が暗くなると白に変わる */
 /* 「」！！などの約物は、全角のままだと前後が空いて見えるので、フォントの詰め情報（palt）で詰める（字間を広げる指定ではない） */
 .kv-item .copy { font: 700 23px/1.5 var(--ja); font-feature-settings: "palt"; text-align: center; }
-.kv-item.s-shinogi .copy { color: color-mix(in srgb, #fff calc(var(--sh) * 100%), var(--k90)); text-shadow: 0 2px 12px rgba(0,0,0, calc(var(--sh) * .45)); }
-.kv-item.s-rafale .copy { color: color-mix(in srgb, #fff calc(var(--rf) * 100%), var(--k90)); text-shadow: 0 2px 12px rgba(0,0,0, calc(var(--rf) * .45)); }
+.kv-item.s-shinogi .copy { color: color-mix(in srgb, #fff calc(var(--shb) * 100%), var(--k90)); text-shadow: 0 2px 12px rgba(0,0,0, calc(var(--shb) * .45)); }
+.kv-item.s-rafale .copy { color: color-mix(in srgb, #fff calc(var(--rfb) * 100%), var(--k90)); text-shadow: 0 2px 12px rgba(0,0,0, calc(var(--rfb) * .45)); }
 /* ボタンは「すべての製品を見る」（.more）と同じ形：文字と細い線。ホバーでオレンジになり、線が伸びて太くなる */
 .kv-item .go { margin-top: 10px; display: inline-flex; align-items: center; gap: 12px; font: 600 15px/1 var(--en); white-space: nowrap; transition: color .2s; }
 .kv-item .go::after { content: ""; width: 28px; height: 1px; background: currentColor; transition: width .3s, height .3s, background .2s; }
@@ -226,11 +228,11 @@ html.kv-off .kv-bg { visibility: hidden; }
 .kv3d.leaving .kv-ui { opacity: 0; }
 /* SCROLL：バーはウィンドウの下端にくっつける。文字とバーはひとまとまりで、スクロールすると同時に消える（--cue は site.js） */
 .kv-cue { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); pointer-events: auto; display: flex; flex-direction: column; align-items: center; gap: 14px;
-  font: 600 14px/1 var(--en); color: color-mix(in srgb, #dfe6f2 calc(max(var(--sh), var(--rf)) * 100%), var(--k80)); opacity: calc((1 - (var(--sh) + var(--rf)) * .6) * var(--cue));
+  font: 600 14px/1 var(--en); color: color-mix(in srgb, #dfe6f2 calc(max(var(--shb), var(--rfb)) * 100%), var(--k80)); opacity: calc((1 - (var(--sh) + var(--rf)) * .6) * var(--cue));
   visibility: var(--cue-vis, visible); }
 /* スクロールの案内：細い線の中を、光の筋が上から下へ繰り返し流れる */
 .kv-cue i { position: relative; display: block; width: 1px; height: 64px; background: rgba(0,0,0,.14); overflow: hidden; }
-.kv-cue i::after { content: ""; position: absolute; left: 0; top: 0; width: 1px; height: 100%; background: color-mix(in srgb, #fff calc(max(var(--sh), var(--rf)) * 100%), var(--k90)); animation: kv-cue 2s cubic-bezier(.65,0,.35,1) infinite; }
+.kv-cue i::after { content: ""; position: absolute; left: 0; top: 0; width: 1px; height: 100%; background: color-mix(in srgb, #fff calc(max(var(--shb), var(--rfb)) * 100%), var(--k90)); animation: kv-cue 2s cubic-bezier(.65,0,.35,1) infinite; }
 .kv-cue span { animation: kv-cue-text 2s ease-in-out infinite; }
 @keyframes kv-cue { 0% { transform: translateY(-100%); } 50% { transform: translateY(0); } 100% { transform: translateY(100%); } }
 @keyframes kv-cue-text { 0%, 100% { transform: translateY(0); opacity: 1; } 50% { transform: translateY(4px); opacity: .55; } }
@@ -370,7 +372,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .cta .more { margin-top: 28px; }
 
 /* 3D のある製品ページ：画面に固定した 3D の上をスクロールの区間（.p3d-track）が流れ、そのあとに本文を重ねる（product3d.js） */
-/* シャフトは、描く準備ができたら明るいグレーの上にふんわり現れる（少し大きめから、ゆっくり等倍へ） */
+/* シャフトは、描く準備ができたら最初の画面の暗い背景の上にふんわり現れる（少し大きめから、ゆっくり等倍へ） */
 /* Safari：WebGL の描画面は、透明度や拡大のアニメーションが終わって合成用のレイヤーが外れる瞬間に 1 コマ消える。
    will-change で常にレイヤーに載せておき、終わりも transform: none ではなく scale(1) にする */
 .p3d-stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; opacity: 0; transform: scale(1.03); will-change: opacity, transform;
@@ -398,15 +400,26 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .p3d-track .p3d-sec.p3d-hero { height: calc(100vh - var(--hd)); height: calc(100svh - var(--hd)); }
 .p3d-sec.s-shinogi, .p3d-info.s-shinogi { --accent: var(--kv-blue); }
 .p3d-sec.s-rafale, .p3d-info.s-rafale { --accent: var(--kv-green); }
-/* 1：シャフトは画面のまん中を真横に通る。ロゴはその上、コピーとひとことはその下 */
-.p3d-mark { position: absolute; left: 50%; top: calc(50vh - var(--hd) - 72px); transform: translate(-50%, -100%); display: flex; flex-direction: column; align-items: center; gap: 14px; }
-.p3d-mark .lg { display: block; width: clamp(220px, 28vw, 440px); aspect-ratio: var(--ar); background: var(--accent);
+/* 1：トップの KV でホバーしたときと同じ構図。暗い背景の上に、拡大したシャフトが斜めに通り、
+   ロゴ・コピー・ひとことのまとまりはその横（鎬は左、Rafale は右）に置く */
+/* 暗い背景（.p3d-bg）は最初の画面だけ。スクロールすると明るいグレーへ消えていく（--fv：1→0、product3d.js） */
+.p3d-page { --shb: var(--fv, 1); --rfb: var(--fv, 1); }
+.p3d-bg { opacity: var(--fv, 1); }
+.p3d-fv { position: absolute; top: 57%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center;
+  opacity: var(--fv, 1); }
+.p3d-hero.s-shinogi .p3d-fv { left: 3.5vw; }
+.p3d-hero.s-rafale .p3d-fv { right: 3.5vw; }
+.p3d-mark { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.p3d-hero.s-shinogi { --accent: #5ea6ff; }   /* 暗い背景の上なので、KV のホバー時と同じ明るい青 */
+.p3d-mark .lg { display: block; width: clamp(220px, 27vw, 500px); aspect-ratio: var(--ar); background: var(--accent);
   -webkit-mask: var(--m) center / contain no-repeat; mask: var(--m) center / contain no-repeat; }
-.p3d-mark .col-logo { display: inline-block; vertical-align: top; height: 26px;   /* 高さと縦横比から幅を決める（block だと幅が 0 になる） */ aspect-ratio: var(--ar); background: var(--accent);
+.p3d-hero.s-rafale .p3d-mark .lg { filter: drop-shadow(0 2px 14px rgba(0,0,0,.5)); }
+.p3d-mark .col-logo { display: inline-block; vertical-align: top; height: 22px;   /* 高さと縦横比から幅を決める（block だと幅が 0 になる） */ aspect-ratio: var(--ar); background: var(--accent);
   -webkit-mask: url("img/logo-blue.png") center / contain no-repeat; mask: url("img/logo-blue.png") center / contain no-repeat; }
-.p3d-lead { position: absolute; left: 50%; top: calc(50vh - var(--hd) + 76px); transform: translateX(-50%); width: min(90vw, 760px); text-align: center; }
-.p3d-lead .copy { font: 700 23px/1.5 var(--ja); font-feature-settings: "palt"; color: var(--k90); text-wrap: balance; word-break: keep-all; overflow-wrap: anywhere; }
-.p3d-lead .sub { font: 700 20px/1.6 var(--ja); font-feature-settings: "palt"; color: var(--k80); margin-top: 10px; }
+.p3d-lead .copy { font: 700 23px/1.5 var(--ja); font-feature-settings: "palt"; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.45); word-break: keep-all; overflow-wrap: anywhere; }
+.p3d-lead .sub { font: 700 20px/1.6 var(--ja); font-feature-settings: "palt"; color: #e9eef7; text-shadow: 0 2px 12px rgba(0,0,0,.45); margin-top: 10px; }
+.p3d-page .scroll-hint { color: color-mix(in srgb, #dfe6f2 calc(var(--fv, 1) * 100%), var(--sub)); }
+.p3d-page .scroll-hint::after { background: currentColor; }
 /* 4〜6：寄りのカットに添える説明文（右下・左上）。画面に固定し、1 画面に 1 段落だけをフェードインで出す（product3d.js が .on を付ける） */
 .p3d-text { position: absolute; width: min(720px, 50vw); font: 700 24px/1.8 var(--ja); font-feature-settings: "palt"; color: var(--k90); }
 .p3d-text p + p { margin-top: 1em; }
