@@ -248,7 +248,11 @@
     root.position.set(0, 0, 0);
     // 'kv'：鎬は左上から右下へ、Rafale は左下から右上へ（KV の X と同じ向き）
     const rzOf = v => v === 'kv' ? (KIND === 'rafale' ? kvA : -kvA) : v;
-    root.rotation.set(lerp(a.tilt, b.tilt, t) + follow.y * 0.04, follow.x * 0.12, lerp(rzOf(a.rz), rzOf(b.rz), t));
+    // 最後の縦のカットでは、マウスと漂う動きで軸まわりに回さない（裏面のシールを正面に向けたままにする）
+    const calm = 1 - clamp01(s - (shots.length - 2));
+    // 縦にしたシャフトは画面の左に寄せるので、カメラからは右斜めに見える。その角度だけ軸まわりに回して、シールをカメラの真正面に向ける
+    const face = Math.atan2(lx, d) * (1 - calm);
+    root.rotation.set(lerp(a.tilt, b.tilt, t) + follow.y * 0.04, follow.x * 0.12 * calm + face, lerp(rzOf(a.rz), rzOf(b.rz), t));
     if (drag === null) {
       vel *= 0.93;
       user += vel;
@@ -257,8 +261,6 @@
         user += (home - user) * Math.min(1, dt * 2.5);
       }
     }
-    // 最後の縦のカットでは、マウスと漂う動きで軸まわりに回さない（裏面のシールを正面に向けたままにする）
-    const calm = 1 - clamp01(s - (shots.length - 2));
     const idle = reduce ? 0 : Math.sin(clock.elapsedTime * 0.5) * 0.08;
     spin.rotation.x = lerp(a.roll, b.roll, t) + user + (idle - follow.y * 0.5) * calm;
     renderer.render(scene, camera);
