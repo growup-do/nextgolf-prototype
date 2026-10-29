@@ -257,8 +257,10 @@
         user += (home - user) * Math.min(1, dt * 2.5);
       }
     }
+    // 最後の縦のカットでは、マウスと漂う動きで軸まわりに回さない（裏面のシールを正面に向けたままにする）
+    const calm = 1 - clamp01(s - (shots.length - 2));
     const idle = reduce ? 0 : Math.sin(clock.elapsedTime * 0.5) * 0.08;
-    spin.rotation.x = lerp(a.roll, b.roll, t) + user + idle - follow.y * 0.5;
+    spin.rotation.x = lerp(a.roll, b.roll, t) + user + (idle - follow.y * 0.5) * calm;
     renderer.render(scene, camera);
   }
 
