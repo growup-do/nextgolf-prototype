@@ -69,16 +69,16 @@
   const drawEvent = async el => {
     const id = new URLSearchParams(location.search).get('id');
     const { list } = await events();
-    const k = list.findIndex(e => e.id === id);   // list は掲載日の新しい順
+    const k = list.findIndex(e => e.id === id);
     if (k < 0) { el.innerHTML = '<div class="empty">この試打会は見つかりませんでした。</div><div class="back"><a class="more" href="events.html">試打会の一覧へ</a></div>'; return; }
-    const e = list[k], newer = list[k - 1];
+    const e = list[k];
     // 中身が空白・改行だけの項目は出さない（空の行ができて、罫線が 2 本並んで見えるため）
     const row = (dt, dd) => dd && dd.replace(/<br>/g, '').trim() ? `<dt>${dt}</dt><dd>${dd}</dd>` : '';
     const info = '<dl class="ev-info">' + row('日程', `${e.day.y}年${e.day.m}月${e.day.d}日（${'日月火水木金土'[e.day.w]}）`) + row('時間', esc(e.time)) +
       row('主催', esc(e.host)) + row('会場', esc(e.place)) + row('住所', esc(e.address)) + row('問い合わせ', esc(e.contact).replace(/\n/g, '<br>')) + '</dl>';
     el.innerHTML = `<div class="meta">${STATE[e.state]}<span>${ymd(jst(e.date))} 掲載</span></div><h1>${esc(e.title)}</h1>${info}` +
       (e.body ? `<div class="body">${e.body}</div>` : '') +
-      `<div class="back"><a class="more" href="events.html">試打会の一覧へ</a>${newer ? `<a class="more" href="event.html?id=${esc(newer.id)}">ひとつ新しい試打会</a>` : ''}</div>`;
+      `<div class="back"><a class="more" href="events.html">試打会の一覧へ</a></div>`;
     setTitle(e.title);
   };
 

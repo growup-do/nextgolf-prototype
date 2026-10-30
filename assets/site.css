@@ -447,13 +447,14 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .list-wrap { max-width: 880px; }
 .ev-group + .ev-group { margin-top: 72px; }
 .ev-group h2 { font: 600 15px/1 var(--en); color: var(--sub); margin-bottom: 8px; }
-.article { max-width: 820px; }
+.article { max-width: 820px; margin-inline: auto; }
 .article .meta { display: flex; align-items: center; gap: 16px; font: 400 15px/1 var(--en); color: var(--sub); }
 /* 見出し：38px Bold */
 .article h1 { font: 700 38px/1.6 var(--ja); margin-top: 20px; }
 .article .body { margin-top: 48px; padding-top: 48px; border-top: 1px solid var(--line); color: var(--k80); }
+.article .ev-info + .body { padding-top: 0; border-top: 0; }   /* 試打会：表の最後の罫線と本文の上の罫線が 2 本並ばないように */
 .article .body a { text-decoration: underline; text-underline-offset: 3px; word-break: break-all; }
-.article .back { margin-top: 72px; padding-top: 40px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 16px; }
+.article .back { margin-top: 72px; padding-top: 40px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 16px; }
 .ev-info { margin-top: 40px; display: grid; grid-template-columns: 120px 1fr; border-top: 1px solid var(--line); }
 .ev-info dt, .ev-info dd { padding: 18px 0; border-bottom: 1px solid var(--line); }
 .ev-info dt { color: var(--sub); font-size: 14px; }
@@ -572,7 +573,7 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .cta h3 { font-size: 22px; }
   .p3d-title p { font-size: 17px; }
   .article h1 { font-size: 26px; }
-  .article .back { flex-direction: column; }
+  .article .back { flex-direction: column; align-items: flex-end; }
   .ev-info { grid-template-columns: 88px 1fr; }
   .shops { grid-template-columns: 1fr; }
   .area > h2 { font-size: 27px; }
