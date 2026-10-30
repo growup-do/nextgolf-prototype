@@ -297,19 +297,21 @@
   let F = target, last = null, clock = 0, out = 0, outT = 0;   // スライドショーの端末は、最初から SHINOGI のホバー状態
   const v3 = new THREE.Vector3();
   // vanish：製品ページへ移るときに、選んだシャフトを消していく割合（0→1）
-  // out：FV から下へスクロールした進み具合（0→1。少し遅れてついていく）。軸まわりに回りながら X が開き、
-  // 鎬は左へ、Rafale は右へ滑って画面の外へ出ていく（薄くはしない）
+  // out：FV から下へスクロールした進み具合（0→1。少し遅れてついていく）。画面の上で回って縦に立ちながら、
+  // 鎬は左へ、Rafale は右へ滑って画面の外へ出ていく（薄くはしない）。鎬は時計回り、Rafale は反時計回りで、左右対称に立つ
   function poseShaft(s, side, mine, other, turn = 0, vanish = 0, out = 0) {
     const k = ease(clamp(mine)), o = ease(clamp(other)), u = ease(clamp(out));
     // 2 本とも、手元を左・先端を右に向ける（シャフトの文字は手元から先端へ向かって刷られているので、こうすると正しい向きで読める）
     // 鎬は左上から右下へ、Rafale は左下から右上へ。2 本で X を作る
-    s.root.rotation.set(0, 0, (side > 0 ? -A : A) * (1 + 0.35 * u) + turn);
+    const up = ease(clamp(out / 0.75));   // 縦に立つ進み具合（横へ出きる前に立ちきる）
+    const ang = lerp(side > 0 ? -A : A, side > 0 ? -Math.PI / 2 : Math.PI / 2, up);
+    s.root.rotation.set(0, 0, ang + turn);
     // 選ばれたほうは 150% に拡大して手前へ。もう一方は 70% に縮んで奥へ下がり、不透明度 20% まで薄くなる（ロゴ類と同じ）
     s.root.scale.setScalar(1 + 0.5 * k - 0.3 * o);
     // 横へ出す量：その奥行きで見えている幅の半分＋シャフトの長さの半分。少し遅れて動き始め、最後に加速して抜ける
     const z = side * -0.15 + 2.2 * k - 1.2 * o - 1.5 * u;
     const exit = Math.pow(clamp((out - 0.08) / 0.92), 1.6);
-    const reach = (DIST - z) * Math.tan(THREE.MathUtils.degToRad(15)) * camera.aspect + s.half * s.root.scale.x + 0.5;
+    const reach = (DIST - z) * Math.tan(THREE.MathUtils.degToRad(15)) * camera.aspect + s.half * s.root.scale.x * Math.abs(Math.cos(ang)) + 0.6;
     s.root.position.set(-side * reach * exit, 0.6 * u, z);
     s.spin.rotation.x = 0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15 + side * 1.6 * u;
     const op = (1 - 0.8 * o) * (1 - vanish);
