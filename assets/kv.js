@@ -15,6 +15,8 @@
     ln.dataset.hov = slug || '';
     ln.classList.toggle('hs', side === 'shinogi');
     ln.classList.toggle('hr', side === 'rafale');
+    document.documentElement.classList.toggle('ln-hs', side === 'shinogi');   // 地（.ln-bgl）は画面に固定した別の層なので、html にも付ける
+    document.documentElement.classList.toggle('ln-hr', side === 'rafale');
     ln.querySelectorAll('.ln-names a').forEach(a => a.classList.toggle('on', a.dataset.slug === slug));
     ln.querySelectorAll('.ln-photo img').forEach(im => im.classList.toggle('on', im.dataset.slug === slug));
   };
@@ -270,20 +272,25 @@
 
   // ---------- 製品一覧のシャフト ----------
   // 鎬BLUE・RS1.0 は KV の 2 本をそのまま使い、ほかは KV のあとで読み込む（assets/lineup-data.js。テクスチャは小さくしたもの）
-  // 並べる位置は HTML の目印（.ln-slot）から。半分の高さに対する長さ（鎬 1.53・Rafale 1.75 倍。Figma）になる奥行きに置き、
-  // 手元を上にして、目印の傾きだけ縦から傾ける。軸まわりの向きは 1 本ずつ変えて、不揃いに見せる
+  // シリーズごとに、名前の順に等間隔の円（回転木馬）に立てて並べ、ゆっくり回す（鎬は右回り、Rafale は左回り）。
+  // 円の中心と半径は HTML の目印（.ln-ring）から。半分の高さに対する長さ（鎬 1.53・Rafale 1.75 倍。Figma）になる奥行きに置く。
+  // シャフトは円の外を向けて回す（いちばん手前に来たものは、ロゴが正面を向く）
   const members = [];
   const TAN = Math.tan(THREE.MathUtils.degToRad(15)), TURN = Math.PI * 2;
-  const ROLLS = [0.3, -0.8, 1.2, -0.4, 0.9, -1.4, 0.5, -0.2];
+  const RINGS = {};
+  for (const kind of ['shinogi', 'rafale']) {
+    const half = lineup && lineup.querySelector(`.ln-half[data-side="${kind}"]`);
+    if (!half) continue;
+    const order = [...half.querySelectorAll('.ln-names a')].map(a => a.dataset.slug);
+    RINGS[kind] = { half, el: half.querySelector('.ln-ring'), order, rot: 0, dir: kind === 'rafale' ? -1 : 1 };
+  }
   const logoOf = (L, kind) => kind === 'rafale'
     ? { mm: L.pos ? L.pos.logo : L.x0 + 120, roll: 0 }
     : (L.marks && L.marks[0]) ? { mm: L.marks[0].mm, roll: L.marks[0].roll } : { mm: L.x0 + 140, roll: 0 };
   function addMember(slug, kind, s, L) {
-    const slot = lineup && lineup.querySelector(`.ln-slot[data-slug="${slug}"]`);
-    if (!slot) return;
-    const i = members.length;
-    members.push({ slug, kind, s, L, slot, half: slot.closest('.ln-half'), tilt: (+slot.dataset.tilt || 0) * Math.PI / 180,
-      roll0: ROLLS[i % ROLLS.length], logo: logoOf(L, kind), h: 0, f: 1, kv: s === shin || s === raf });
+    const g = RINGS[kind], i = g ? g.order.indexOf(slug) : -1;
+    if (i < 0) return;
+    members.push({ slug, kind, s, L, g, i, half: g.half, logo: logoOf(L, kind), h: 0, f: 1, kv: s === shin || s === raf });
   }
   addMember('shinogi-blue', 'shinogi', shin, D.layShinogi);
   addMember('rafale-rs1', 'rafale', raf, D.layRafale);
@@ -314,31 +321,51 @@
     };
     document.head.appendChild(sc);
   }
-  // 製品一覧の並びでの姿勢。h：寄りの進み具合（0→1）。寄るときは、ロゴのあたりを目印の位置に置いて 2.73 倍に（Figma）、まっすぐ立てて正面を向ける
+  // 回転木馬での姿勢。h：寄りの進み具合（0→1）。寄るときは（回して手前に持ってきてから）ロゴのあたりを円の中心の位置に置いて 2.73 倍に（Figma）
   const easeIO = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-  function slotPose(m) {
-    const r = m.slot.getBoundingClientRect(), vw = canvas.clientWidth, vh = canvas.clientHeight;
-    const h = easeIO(m.h);
-    const Lpx = (m.kind === 'rafale' ? 1.75 : 1.53) * m.half.clientHeight * lerp(1, 2.73, h);
-    const d = Math.max(1.5, m.L.length * U * vh / (2 * TAN * Lpx));
-    const wx = (r.left / vw * 2 - 1) * TAN * d * camera.aspect, wy = -(r.top / vh * 2 - 1) * TAN * d;
-    const ang = -Math.PI / 2 + m.tilt * (1 - h);
-    const fx = (lerp(m.L.length / 2, m.logo.mm, h) - m.L.length / 2) * U;
-    return { x: wx - Math.cos(ang) * fx, y: wy - Math.sin(ang) * fx, z: DIST - d, ang, roll: lerp(m.roll0, m.logo.roll, h) };
+  const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+  function ringPose(m) {
+    const r = m.g.el.getBoundingClientRect(), vw = canvas.clientWidth, vh = canvas.clientHeight;
+    const cx = r.left + r.width / 2, cy = r.top, h = easeIO(m.h);
+    const L0 = (m.kind === 'rafale' ? 1.75 : 1.53) * m.half.clientHeight;
+    const depth = Lpx => Math.max(1.5, m.L.length * U * vh / (2 * TAN * Lpx));
+    const at = (d, fx) => ({ x: (cx / vw * 2 - 1) * TAN * d * camera.aspect, y: -(cy / vh * 2 - 1) * TAN * d - fx, z: DIST - d });
+    // 円の上の位置（奥行き d0 の面で、半径 r.width / 2 px）
+    const d0 = depth(L0), R = r.width / 2 * 2 * TAN * d0 / vh;
+    const th = m.g.rot + TURN * m.i / m.g.order.length;   // 折り返さない（軸まわりの向きが途中で跳ばないように）
+    const c0 = at(d0, 0);
+    const P = { x: c0.x + R * Math.sin(th), y: c0.y, z: c0.z + R * Math.cos(th) };
+    if (h > 0) {   // 寄り：ロゴのあたりを中心の高さに
+      const C = at(depth(L0 * lerp(1, 2.73, h)), -(m.logo.mm - m.L.length / 2) * U * h);
+      P.x = lerp(P.x, C.x, h); P.y = lerp(P.y, C.y, h); P.z = lerp(P.z, C.z, h);
+    }
+    // 手元を上に立てる（root を -90° 回すと、シャフトの軸まわりの回転は縦軸まわりの逆向きになるので、円の角度を引く）
+    return { ...P, ang: -Math.PI / 2, roll: m.logo.roll - th };
   }
+  const RING_SPEED = TURN / 48;   // 48 秒で 1 周
   function poseMembers(dt) {
     const hov = lineup ? lineup.dataset.hov || '' : '', side = hov ? (hov.startsWith('rafale') ? 'rafale' : 'shinogi') : '';
     const k = reduce ? 1 : 1 - Math.exp(-dt * 5);
+    // 回す：ホバーしたシャフトがあれば、それがいちばん手前に来るまで、近いほうへ回す
+    for (const [kind, g] of Object.entries(RINGS)) {
+      const hm = members.find(m => m.slug === hov && m.kind === kind);
+      if (hm) {
+        const tgt = -TURN * hm.i / g.order.length;
+        g.rot += wrap(tgt - g.rot) * (reduce ? 1 : 1 - Math.exp(-dt * 4));
+      } else if (!reduce) g.rot += g.dir * RING_SPEED * dt;
+    }
     for (const m of members) {
       m.h = lerp(m.h, m.slug === hov ? 1 : 0, k);
       m.f = lerp(m.f, side === m.kind && m.slug !== hov ? 0.2 : 1, k);   // 同じ側のほかのシャフトは 20% まで薄く（Figma）
       if (m.kv) continue;   // KV の 2 本は poseShaft で（KV からの移り変わりと合わせる）
-      const P = slotPose(m);
+      const P = ringPose(m);
       m.s.root.rotation.set(0, 0, P.ang);
       m.s.root.scale.setScalar(1);
       m.s.root.position.set(P.x, P.y, P.z);
       m.s.spin.rotation.x = P.roll;
-      for (const mt of m.s.mats) { mt.opacity = m.f; mt.depthWrite = m.f > 0.98; }
+      const op = m.f * clamp(hand * 1.4);   // KV から移るあいだは、背景のブレンドといっしょに浮かび上がる
+      for (const mt of m.s.mats) { mt.opacity = op; mt.depthWrite = op > 0.98; }
+      m.op = op;
     }
   }
 
@@ -408,7 +435,7 @@
     let roll = 0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15;
     let op = (1 - 0.8 * o) * (1 - vanish);
     if (member && hand > 0) {
-      const P = slotPose(member), m = easeIO(clamp(hand));
+      const P = ringPose(member), m = easeIO(clamp(hand));
       ang = lerp(ang, P.ang + (side > 0 ? 0 : TURN), m);
       sc = lerp(sc, 1, m); x = lerp(x, P.x, m); y = lerp(y, P.y, m); z = lerp(z, P.z, m);
       roll = lerp(roll, P.roll + (side > 0 ? TURN : 0), m);
@@ -441,8 +468,9 @@
       const ms = members.filter(m => m.kind === kind && (!m.kv || landed));
       if (!ms.length) continue;
       const hr = ms[0].half.getBoundingClientRect();
-      for (const m of members) m.s.root.visible = ms.includes(m) && (m.kv ? vis[members.indexOf(m)] : m.f > 0.01);
-      if (cut(hr.top, hr.bottom)) renderer.render(scene, camera);
+      for (const m of members) m.s.root.visible = ms.includes(m) && (m.kv ? vis[members.indexOf(m)] : m.op > 0.01);
+      // 上端で切るのは、上にもう一方の半分があるとき（スマホの Rafale）だけ。それ以外は浮かび上がりながら KV に重なってよい
+      if (cut(hr.top > lr.top + 1 ? hr.top : 0, hr.bottom)) renderer.render(scene, camera);
     }
     members.forEach((m, i) => { m.s.root.visible = vis[i]; });
     catcher.visible = cv;

@@ -99,7 +99,9 @@
 
   // セクションごとの固定背景：セクションの頭が画面の下 3/4 まで来たら切り替え始め、1/4 で切り替え終わる
   // （後ろのセクションの背景ほど上に重なっているので、不透明度を上げるだけで前の背景から移り変わる）
-  const layers = [...document.querySelectorAll('.bgl[data-bg]')].map(l => [l, document.querySelector(`.sec[data-bg="${l.dataset.bg}"]`)]).filter(([, s]) => s);
+  // 製品一覧（鎬は白・Rafale は黒の半々）も同じ。スマホでは 2 つが上下に並ぶので、黒い地の上端を Rafale の頭に合わせる（--lnrt）
+  const layers = [...document.querySelectorAll('.bgl[data-bg]')].map(l => [l, document.querySelector(`[data-bg="${l.dataset.bg}"]:not(.bgl)`)]).filter(([, s]) => s);
+  const lnR = document.querySelector('.lineup .s-rafale');
   if (layers.length) {
     let tk = false;
     const swap = () => {
@@ -108,6 +110,7 @@
         const p = Math.min(1, Math.max(0, (innerHeight * 0.75 - s.getBoundingClientRect().top) / (innerHeight * 0.5)));
         l.style.opacity = (p * p * (3 - 2 * p)).toFixed(3);
       }
+      if (lnR) root.style.setProperty('--lnrt', Math.min(innerHeight, Math.max(0, lnR.getBoundingClientRect().top)).toFixed(1) + 'px');
     };
     addEventListener('scroll', () => { if (!tk) { tk = true; requestAnimationFrame(swap); } }, { passive: true });
     addEventListener('resize', swap);
@@ -120,7 +123,7 @@
   // 中身は上から順に少しずつ遅らせて出す（見出し・カード・試打会やお知らせの行・地図・地域ボタン）
   // 試打会とお知らせの行は microCMS から読み込んだあとに入るので、cms.js が描き終えてからもう一度呼ぶ
   const tag = () => reveals.forEach(r => {
-    r.querySelectorAll('.series-h, .cards > *, .ev, .nw, .empty, .jmap, .areas > a').forEach((el, i) => {
+    r.querySelectorAll('.series-h, .cards > *, .ev, .nw, .empty, .jmap, .areas > a, .ln-logo, .ln-names li').forEach((el, i) => {
       el.classList.add('rv');
       el.style.setProperty('--i', Math.min(i, 10));
     });
