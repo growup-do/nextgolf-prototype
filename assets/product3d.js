@@ -142,7 +142,47 @@
   const KV_ROLL = 0.45;   // KV でホバーしたときの、軸まわりの向き（kv.js の 0.3 + 0.15）
   const mark = k => (L.marks || [])[k] || { mm: X0 + 140, roll: 0 };
   const TIP = LEN - 140;   // 先端シールの中心（build_tex.py）
+  const LAB = L.label_mm || X0 + L.b_mm - 60;   // 展開図とは別に貼ったラベルの中心（Black-50・SP-40）
+  // 最後の説明文は右側に長く出ることがあるので、そのカットではシャフトを左に立て気味に置く（次の縦のカットへつながる）
+  const LEFT = (focus, d, roll = 0) => ({ focus, d, rz: -1.2, sx: -0.3, sy: 0, tilt: 0, roll });
+  const KV0 = { focus: MID, d: 'kv', rz: 'kv', sx: 0, sy: 0, tilt: 0, roll: KV_ROLL };
+  const TALL = (roll = TURN) => ({ focus: MID, d: 'tall', rz: -Math.PI / 2, sx: 'left', sy: 0, tilt: 0, roll });
   const SHOTS = {
+    // Athlete S-60：ラベル → ロゴを斜めに → 先端シール → 手元の炎 → 立てた全体
+    'shinogi-athlete-s-60': () => [KV0,
+      { focus: mark(1).mm, d: 1.2, rz: 0, sx: 0, sy: 0, tilt: 0, roll: mark(1).roll },
+      { focus: mark(0).mm, d: 1.6, rz: -0.15, sx: 0, sy: 0.04, tilt: 0, roll: 0 },
+      { focus: TIP, d: 0.62, rz: 0.25, sx: 0.05, sy: 0, tilt: 0, roll: 0 },
+      { focus: X0 + 40, d: 1.0, rz: 0, sx: 0, sy: -0.1, tilt: 0, roll: Math.PI / 2 },
+      LEFT(MID, 2.6), TALL()],
+    // Black-50：炎 → ラベル → 引きの全体 → 先端シール → 立てた全体
+    'shinogi-black-50': () => [KV0,
+      { focus: X0 + 120, d: 1.5, rz: 0.1, sx: 0, sy: 0, tilt: 0, roll: 0 },
+      { focus: LAB, d: 1.0, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+      { focus: MID - 60, d: 3.4, rz: -0.1, sx: 0, sy: 0.2, tilt: 0.06, roll: 0.4 },
+      { focus: TIP, d: 0.6, rz: -0.22, sx: -0.04, sy: 0.04, tilt: 0, roll: 0 },
+      LEFT(LAB - 120, 1.6), TALL()],
+    // SP-40：金のマーク → 1/3 周ずつずれた線の版 → ラベル → 引きの全体 → 立てた全体
+    'shinogi-sp-40': () => [KV0,
+      { focus: mark(0).mm, d: 0.8, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+      { focus: X0 + 200, d: 1.3, rz: 0.12, sx: 0, sy: 0, tilt: 0, roll: TURN / 3 },
+      { focus: LAB, d: 1.0, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+      { focus: MID, d: 3.4, rz: 0.08, sx: 0, sy: -0.2, tilt: -0.05, roll: TURN * 2 / 3 },
+      LEFT(X0 + 150, 1.4), TALL()],
+    // Rafale KT1.0：裏のラベル → オレンジの帯 → ロゴ → シール（裏）→ 立てた全体（裏を正面に）
+    'rafale-kt1': () => [KV0,
+      { focus: L.pos.label, d: 1.7, rz: 0, sx: 0, sy: 0, tilt: 0, roll: L.pos.label_roll },
+      { focus: L.pos.ring, d: 0.9, rz: 0.2, sx: 0, sy: 0, tilt: 0, roll: 0 },
+      { focus: L.pos.logo + 40, d: 2.6, rz: -0.06, sx: 0, sy: 0.18, tilt: -0.05, roll: 0 },
+      { focus: X0 + 39, d: 1.2, rz: 0, sx: 0, sy: 0.08, tilt: 0, roll: -Math.PI },
+      LEFT(X0 + 120, 1.5, -Math.PI), TALL(Math.PI)],
+    // Rafale Ma1.0：ロゴ → ラベル → 筆記体（裏）→ 青の帯 → 立てた全体（裏を正面に）
+    'rafale-ma1': () => [KV0,
+      { focus: L.pos.logo, d: 2.5, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+      { focus: L.pos.label, d: 1.7, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+      { focus: X0 + 120, d: 0.85, rz: 0.3, sx: 0.06, sy: -0.06, tilt: 0, roll: -Math.PI },
+      { focus: L.pos.ring, d: 0.9, rz: -0.25, sx: 0, sy: 0.05, tilt: 0, roll: 0 },
+      LEFT(X0 + 60, 1.5, -Math.PI), TALL(Math.PI)],
     // Athlete FW：ロゴ → 展開図の中のラベル（裏側へ回す）→ 低い位置からの中景 → 先端シール → 炎の先 → 縦
     'shinogi-athlete-fw': () => [
       { focus: MID, d: 'kv', rz: 'kv', sx: 0, sy: 0, tilt: 0, roll: KV_ROLL },
@@ -210,6 +250,12 @@
   //  Athlete FW（フェアウェイから払い打つ）：低く払うように、切り替えの途中で手前へ傾きながら横へ流れ、4 分の 1 周ひねって戻る
   //  Athlete T-60（ツアー向けの精密さ）：止まっているときは揺らさない。切り替えはわずかに行き過ぎてから、カチッと止まる。光が軸のまわりを 1 周する
   //  White-50（白）：ゆっくり浮かぶ。切り替えの途中で少し遠ざかってから寄り直し（息をするように）、止まっているあいだは上下にただよう
+  //  Athlete S-60：振り子のように、切り替えのたびに左右交互に大きく振れて戻る。止まっているあいだも小さく揺れる
+  //  Black-50（黒）：切り替えの途中でぐっと手前へ寄りながら先端をこちらへ向け、光はシャフトの裏から回り込む（逆光）
+  //  SP-40（3 版を 1/3 周ずつずらした柄）：切り替えのたびに、1/3 周ずつ 3 段で 1 周する
+  //  Rafale KT1.0（The wind is a tailwind＝追い風）：背中を押されるように、すっと右へ流れてから戻る。RS1.0 とは逆向きに 1 回転
+  //  Rafale Ma1.0：うなずくように手前へ傾き、少し遠ざかる。光は上下に動く。止まっているあいだは上下にただよう
+  // sway：止まっているあいだの、画面の上での小さな揺れ
   // gust(t, w, i)：切り替えの途中だけ足す動き（t：0→1、w：途中で 1。i：カットの番号）。dz：カメラの距離の倍率、sx：横のずれ、bob：上下のただよい
   const backOut = t => t <= 0 ? 0 : 1 + 2.2 * Math.pow(t - 1, 3) + 1.2 * Math.pow(t - 1, 2);   // 0 で -0.0000… にならないように
   const STYLE = {
@@ -222,6 +268,21 @@
     'shinogi-white-50': { hold: 0.1, curve: t => (1 - Math.cos(Math.PI * t)) / 2, idle: 0.06, bob: 0.06,
       gust: (t, w) => ({ roll: 0, rz: 0.05 * w, yaw: -0.18 * w, tilt: 0, sx: 0, dz: 1 + 0.45 * w }),
       light: (t, w) => [lerp(2, 0, w), 9, 6] },
+    'shinogi-athlete-s-60': { hold: 0.18, curve: t => (1 - Math.cos(Math.PI * t)) / 2, idle: 0.02, sway: 0.03,
+      gust: (t, w, i) => ({ roll: 0, rz: (i % 2 ? 0.38 : -0.38) * w, yaw: 0, tilt: 0, sx: 0, dz: 1 }),
+      light: () => [3, 6, 8] },
+    'shinogi-black-50': { hold: 0.2, curve: t => t * t * t * (t * (t * 6 - 15) + 10), idle: 0.03,
+      gust: (t, w) => ({ roll: 0, rz: 0, yaw: 0.35 * w, tilt: 0, sx: 0, dz: 1 - 0.3 * w }),
+      light: (t, w) => [lerp(3, -2, w), 4, lerp(8, -6, w)] },
+    'shinogi-sp-40': { hold: 0.15, curve: ease, idle: 0.03,
+      gust: t => ({ roll: TURN * (Math.floor(t * 3) + ease((t * 3) % 1)) / 3 * (t < 1 ? 1 : 0), rz: 0, yaw: 0, tilt: 0, sx: 0, dz: 1 }),
+      light: () => [3, 6, 8] },
+    'rafale-kt1': { hold: 0.08, curve: t => 1 - Math.pow(1 - t, 3), idle: 0.1,
+      gust: (t, w) => ({ roll: -TURN * t, rz: -0.15 * w, yaw: 0, tilt: 0, sx: 0.25 * w, dz: 1 }),
+      light: (t, w) => [lerp(3, 14, w), 6, 8] },
+    'rafale-ma1': { hold: 0.14, curve: t => (1 - Math.cos(Math.PI * t)) / 2, idle: 0.08, bob: 0.05,
+      gust: (t, w) => ({ roll: 0, rz: 0, yaw: -0.2 * w, tilt: 0.4 * w, sx: 0, dz: 1 + 0.25 * w }),
+      light: t => [3, 6 * Math.cos(TURN * t), 8] },
   }[SLUG];
   const MOVE = STYLE || (KIND === 'rafale'
     ? { hold: 0.06, curve: ease, idle: 0.14 }
@@ -320,7 +381,8 @@
     const calm = 1 - clamp01(s - (shots.length - 2));
     // 縦にしたシャフトは画面の左に寄せるので、カメラからは右斜めに見える。その角度だけ軸まわりに回して、シールをカメラの真正面に向ける
     const face = Math.atan2(lx, d) * (1 - calm);
-    root.rotation.set(lerp(a.tilt, b.tilt, t) + (gust.tilt || 0) + follow.y * 0.04, follow.x * 0.12 * calm + face + gust.yaw, lerp(rzOf(a.rz), rzOf(b.rz), t) + gust.rz);
+    root.rotation.set(lerp(a.tilt, b.tilt, t) + (gust.tilt || 0) + follow.y * 0.04, follow.x * 0.12 * calm + face + gust.yaw, lerp(rzOf(a.rz), rzOf(b.rz), t) + gust.rz +
+      (reduce || !MOVE.sway ? 0 : Math.sin(clock.elapsedTime * 0.8) * MOVE.sway * calm));
     if (drag === null) {
       vel *= 0.93;
       user += vel;
