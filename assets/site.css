@@ -224,6 +224,8 @@ html.kv-off .kv-bg { visibility: hidden; }
 /* 製品ページへ移るとき：ボタンと SCROLL はすぐに消し、ロゴとコピーはシャフトが回るあいだに消していく（製品ページの最初の画面にはないもの） */
 .kv3d .kv-item .go, .kv3d .kv-cue { transition: color .2s, opacity .35s; }
 .kv3d .kv-ui { transition: opacity .7s .2s; }
+/* FV から下へスクロールすると、ロゴ類はシャフトより先に、少し上へ抜けながら消える（--kvout は kv.js が書く） */
+.kv3d.ready:not(.leaving) .kv-ui { opacity: calc(1 - var(--kvout, 0) * 2.2); translate: 0 calc(var(--kvout, 0) * -60px); transition: none; }
 .kv3d.leaving .kv-item .go, .kv3d.leaving .kv-cue { opacity: 0; }
 .kv3d.leaving .kv-ui { opacity: 0; }
 /* SCROLL：バーはウィンドウの下端にくっつける。文字とバーはひとまとまりで、スクロールすると同時に消える（--cue は site.js） */
