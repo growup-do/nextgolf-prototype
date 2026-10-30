@@ -227,6 +227,16 @@
       { focus: TIP + 60, d: 0.9, rz: -1.2, sx: -0.3, sy: 0, tilt: 0, roll: 0 },   // 最後の説明文は右側に長く出るので、シャフトは左に立て気味に
       { focus: MID, d: 'tall', rz: -Math.PI / 2, sx: 'left', sy: 0, tilt: 0, roll: TURN },
     ],
+    // FW-60：手元の筆の SHINOGI（側面）→ 金の「鎬」→ 灰から黒へ散る墨の飛沫 → 引きの全体 → 黒い先端 → 縦（White-50 とは逆に、手元から先端へ）
+    'shinogi-fw-60': () => [
+      { focus: MID, d: 'kv', rz: 'kv', sx: 0, sy: 0, tilt: 0, roll: KV_ROLL },
+      { focus: X0 + 35, d: 1.2, rz: 0, sx: 0, sy: 0, tilt: 0, roll: -1.63 },
+      { focus: mark(0).mm, d: 1.0, rz: 0.12, sx: 0, sy: 0, tilt: 0, roll: 0 },
+      { focus: X0 + 195, d: 1.4, rz: -0.14, sx: -0.02, sy: -0.04, tilt: 0, roll: 0.5 },
+      { focus: MID - 20, d: 3.4, rz: 0.07, sx: 0, sy: 0.2, tilt: 0.05, roll: 0 },
+      { focus: TIP + 60, d: 0.9, rz: -1.2, sx: -0.3, sy: 0, tilt: 0, roll: 0 },   // 最後の説明文は右側に長く出るので、シャフトは左に立て気味に
+      { focus: MID, d: 'tall', rz: -Math.PI / 2, sx: 'left', sy: 0, tilt: 0, roll: TURN },
+    ],
   };
   const shots = SHOTS[SLUG] ? SHOTS[SLUG]() : KIND === 'rafale'
     ? (() => {
@@ -282,6 +292,10 @@
     'shinogi-white-50': { hold: 0.1, curve: t => (1 - Math.cos(Math.PI * t)) / 2, idle: 0.06, bob: 0.06,
       gust: (t, w) => ({ roll: 0, rz: 0.05 * w, yaw: -0.18 * w, tilt: 0, sx: 0, dz: 1 + 0.45 * w }),
       light: (t, w) => [lerp(2, 0, w), 9, 6] },
+    // FW-60（灰から黒へ散る墨）：筆を払うように、すっと左へ流れながら 1 周ひねる。光も筆の向きに右から左へ走る
+    'shinogi-fw-60': { hold: 0.14, curve: t => 1 - Math.pow(1 - t, 4), idle: 0.04,
+      gust: (t, w) => ({ roll: TURN * ease(t) * (t < 1 ? 1 : 0), rz: 0.1 * w, yaw: 0, tilt: 0, sx: -0.22 * w, dz: 1 + 0.15 * w }),
+      light: (t, w) => [lerp(8, -8, t), 5, 8] },
     'shinogi-athlete-s-60': { hold: 0.18, curve: t => (1 - Math.cos(Math.PI * t)) / 2, idle: 0.02, sway: 0.03,
       gust: (t, w, i) => ({ roll: 0, rz: (i % 2 ? 0.38 : -0.38) * w, yaw: 0, tilt: 0, sx: 0, dz: 1 }),
       light: () => [3, 6, 8] },
