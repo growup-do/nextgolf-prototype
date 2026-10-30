@@ -481,7 +481,7 @@ html:has(.area-nav) { scroll-padding-top: calc(var(--hd) + 90px); }   /* 地域�
 .shop a { display: inline-block; margin-top: 12px; font: 600 14px/1 var(--en); text-decoration: underline; text-underline-offset: 3px; }
 /* 本文や一覧の中のリンク：ホバーで下線と文字をポイントカラーに */
 .shop a:hover, .article .body a:hover, .info dd a:hover, .form .agree a:hover, .policy a:hover { text-decoration-color: var(--point); text-decoration-thickness: 2px; color: var(--point); }
-.shop .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; }   /* 新しいタブで開く印 */
+a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: none; }   /* 新しいタブで開く印（site.js が付ける） */
 .policy a { text-decoration: underline; text-underline-offset: 3px; }
 
 /* ===== 会社概要・お問い合わせ・プライバシーポリシー ===== */

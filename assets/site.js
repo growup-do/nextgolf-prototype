@@ -186,4 +186,14 @@
     t.style.display = 'block';
     t.scrollIntoView({ block: 'center' });
   });
+  // 新しいタブで開くリンク（target="_blank"）には、文字の後ろに印を付ける。microCMS の本文など、あとから描くリンクにも付ける
+  // アイコンだけのリンク（SNS など。aria-label 付き）には付けない
+  const EXT = '<svg class="ext" viewBox="0 0 16 16" width="12" height="12" role="img" aria-label="（新しいタブで開きます）"><path d="M9 2h5v5M14 2 7.5 8.5M12 9.5V14H2V4h4.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
+  const markExt = () => {
+    for (const a of document.querySelectorAll('a[target="_blank"]:not([aria-label])')) {
+      if (!a.querySelector('.ext') && a.textContent.trim()) a.insertAdjacentHTML('beforeend', EXT);
+    }
+  };
+  markExt();
+  new MutationObserver(markExt).observe(document.body, { childList: true, subtree: true });
 })();

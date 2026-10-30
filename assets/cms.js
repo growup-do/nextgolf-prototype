@@ -72,7 +72,8 @@
     const k = list.findIndex(e => e.id === id);   // list は掲載日の新しい順
     if (k < 0) { el.innerHTML = '<div class="empty">この試打会は見つかりませんでした。</div><div class="back"><a class="more" href="events.html">試打会の一覧へ</a></div>'; return; }
     const e = list[k], newer = list[k - 1];
-    const row = (dt, dd) => dd ? `<dt>${dt}</dt><dd>${dd}</dd>` : '';
+    // 中身が空白・改行だけの項目は出さない（空の行ができて、罫線が 2 本並んで見えるため）
+    const row = (dt, dd) => dd && dd.replace(/<br>/g, '').trim() ? `<dt>${dt}</dt><dd>${dd}</dd>` : '';
     const info = '<dl class="ev-info">' + row('日程', `${e.day.y}年${e.day.m}月${e.day.d}日（${'日月火水木金土'[e.day.w]}）`) + row('時間', esc(e.time)) +
       row('主催', esc(e.host)) + row('会場', esc(e.place)) + row('住所', esc(e.address)) + row('問い合わせ', esc(e.contact).replace(/\n/g, '<br>')) + '</dl>';
     el.innerHTML = `<div class="meta">${STATE[e.state]}<span>${ymd(jst(e.date))} 掲載</span></div><h1>${esc(e.title)}</h1>${info}` +
@@ -134,7 +135,6 @@
   };
 
   // 新しいタブで開くリンクの印（四角から右上へ抜ける矢印）
-  const EXT = '<svg class="ext" viewBox="0 0 16 16" width="12" height="12" role="img" aria-label="（新しいタブで開きます）"><path d="M9 2h5v5M14 2 7.5 8.5M12 9.5V14H2V4h4.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
   const drawShops = async el => {
     const list = await shops();
     el.innerHTML = C.areas.map(([aid, aname]) => {
@@ -144,7 +144,7 @@
         const items = inArea.filter(s => s.p.id === pid).map(s =>
           `<div class="shop"><b>${esc(s.name)}</b>${s.trial ? '<span class="tag">試打できます</span>' : ''}` +
           `<p>${s.zip ? `〒${esc(s.zip)}　` : ''}${esc(s.address)}${s.tel ? `<br>TEL ${esc(s.tel)}` : ''}</p>` +
-          (/^https?:\/\//.test(s.url || '') ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">WEBSITE${EXT}</a>` : '') + '</div>').join('');
+          (/^https?:\/\//.test(s.url || '') ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">WEBSITE</a>` : '') + '</div>').join('');
         return `<div class="pref" id="pref-${pid}"><h3>${esc(p.name)}</h3><div class="shops">${items}</div></div>`;
       }).join('');
       return `<section class="area" id="area-${aid}"><h2>${esc(aname)}<span>${inArea.length} SHOPS</span></h2>${prefs || '<div class=empty style=margin-top:24px>現在、この地域の取扱店はありません。</div>'}</section>`;
