@@ -109,7 +109,7 @@
     const root = new THREE.Group();   // 位置・傾き・大きさ
     root.add(spin);
     world.add(root);
-    return { root, spin, mats, meshes };
+    return { root, spin, mats, meshes, half: LEN / 2 * U };
   }
 
   const shin = makeShaft(D.layShinogi, (X0, L) => {
@@ -297,7 +297,8 @@
   let F = target, last = null, clock = 0, out = 0, outT = 0;   // スライドショーの端末は、最初から SHINOGI のホバー状態
   const v3 = new THREE.Vector3();
   // vanish：製品ページへ移るときに、選んだシャフトを消していく割合（0→1）
-  // out：FV から下へスクロールした進み具合（0→1。少し遅れてついていく）。軸まわりに回りながら X が開き、奥へ下がって、後半で消えていく
+  // out：FV から下へスクロールした進み具合（0→1。少し遅れてついていく）。軸まわりに回りながら X が開き、
+  // 鎬は左へ、Rafale は右へ滑って画面の外へ出ていく（薄くはしない）
   function poseShaft(s, side, mine, other, turn = 0, vanish = 0, out = 0) {
     const k = ease(clamp(mine)), o = ease(clamp(other)), u = ease(clamp(out));
     // 2 本とも、手元を左・先端を右に向ける（シャフトの文字は手元から先端へ向かって刷られているので、こうすると正しい向きで読める）
@@ -305,9 +306,13 @@
     s.root.rotation.set(0, 0, (side > 0 ? -A : A) * (1 + 0.35 * u) + turn);
     // 選ばれたほうは 150% に拡大して手前へ。もう一方は 70% に縮んで奥へ下がり、不透明度 20% まで薄くなる（ロゴ類と同じ）
     s.root.scale.setScalar(1 + 0.5 * k - 0.3 * o);
-    s.root.position.set(0, 0.6 * u, side * -0.15 + 2.2 * k - 1.2 * o - 4 * u);
+    // 横へ出す量：その奥行きで見えている幅の半分＋シャフトの長さの半分。少し遅れて動き始め、最後に加速して抜ける
+    const z = side * -0.15 + 2.2 * k - 1.2 * o - 1.5 * u;
+    const exit = Math.pow(clamp((out - 0.08) / 0.92), 1.6);
+    const reach = (DIST - z) * Math.tan(THREE.MathUtils.degToRad(15)) * camera.aspect + s.half * s.root.scale.x + 0.5;
+    s.root.position.set(-side * reach * exit, 0.6 * u, z);
     s.spin.rotation.x = 0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15 + side * 1.6 * u;
-    const op = (1 - 0.8 * o) * (1 - vanish) * (1 - ease(clamp((out - 0.4) / 0.6)));
+    const op = (1 - 0.8 * o) * (1 - vanish);
     for (const m of s.mats) { m.opacity = op; m.depthWrite = op > 0.98; }
     s.root.visible = op > 0.01;
     for (const me of s.meshes) me.castShadow = op > 0.4;
@@ -350,7 +355,7 @@
     camera.position.set(mouse.x * 0.35 * still, -mouse.y * 0.2 * still, DIST);
     camera.lookAt(v3.set(0, 0, 0));
     if (!leaving) avoid(dt);   // 移る途中はロゴ類が消えていくので、ずらさない
-    catcher.material.opacity = 0.16 * (1 - vanish) * (1 - clamp(out * 1.6));   // 奥の影も、シャフトといっしょに消す
+    catcher.material.opacity = 0.16 * (1 - vanish);   // 奥の影も、シャフトといっしょに消す（スクロールのときは、影もシャフトと一緒に横へ出ていく）
 
     // 背景（.kv-bg）は KV の外にあるので、ページ全体（html）に値を渡す。移るときは、選んだほうの暗い背景（製品ページの最初の画面と同じ）を出す
     const vars = document.documentElement.style;
