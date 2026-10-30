@@ -186,9 +186,9 @@
     // Rafale KT FW：ロゴ → オレンジの帯 → 裏のラベル → 筆記体（裏）→ 立てた全体（文章が左上のカットは下へ、右下のカットは上へ置く）
     'rafale-kt-fw': () => [KV0,
       { focus: L.pos.logo, d: 2.4, rz: 0.08, sx: 0, sy: 0, tilt: 0, roll: 0 },
-      { focus: L.pos.ring, d: 0.9, rz: 0.2, sx: 0, sy: -0.14, tilt: 0, roll: 0 },
+      { focus: L.pos.ring, d: 0.9, rz: 0.12, sx: 0, sy: -0.25, tilt: 0, roll: 0 },
       { focus: L.pos.label, d: 1.6, rz: -0.08, sx: 0, sy: 0.12, tilt: 0, roll: L.pos.label_roll },
-      { focus: X0 + 120, d: 0.9, rz: 0.25, sx: 0.04, sy: -0.12, tilt: 0, roll: -Math.PI },
+      { focus: X0 + 120, d: 0.9, rz: 0.06, sx: 0.04, sy: -0.24, tilt: 0, roll: -Math.PI },
       LEFT(X0 + 100, 1.5, -Math.PI), TALL(Math.PI)],
     // Athlete GX：赤い SHINOGI → ラベル → 手元の裏（六角のマーク）→ 先端シール → 引きの全体 → 縦
     'shinogi-athlete-gx': () => [KV0,
