@@ -150,7 +150,7 @@
       { focus: mark(1).mm, d: 1.25, rz: 0, sx: 0, sy: 0, tilt: 0, roll: mark(1).roll },
       { focus: mark(0).mm + 160, d: 3.1, rz: 0.09, sx: -0.02, sy: -0.18, tilt: 0.1, roll: 0.3 },
       { focus: TIP, d: 0.6, rz: -0.26, sx: -0.06, sy: 0.05, tilt: 0, roll: 0 },
-      { focus: X0 + L.b_mm - 40, d: 0.95, rz: 0, sx: 0, sy: 0.26, tilt: 0, roll: -0.6 },   // 説明文は右下なので、シャフトは上に
+      { focus: X0 + L.b_mm - 40, d: 1.1, rz: -1.2, sx: -0.3, sy: 0, tilt: 0, roll: -0.6 },   // 最後の説明文は右側に長く出るので、シャフトは左に立て気味に（次の縦のカットへつながる）
       { focus: MID, d: 'tall', rz: -Math.PI / 2, sx: 'left', sy: 0, tilt: 0, roll: TURN },
     ],
     // Athlete T-60：ラベルから入り、ロゴ → 先端シール → 手元の大写し → 傾けた全体 → 縦（FW とは逆の順で見せる）
@@ -160,7 +160,7 @@
       { focus: mark(0).mm, d: 1.45, rz: 0.18, sx: 0, sy: 0, tilt: 0, roll: 0 },
       { focus: TIP, d: 0.62, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
       { focus: X0 + 30, d: 0.8, rz: -0.32, sx: 0.06, sy: -0.04, tilt: 0, roll: Math.PI / 2 },
-      { focus: MID + 60, d: 3.6, rz: 0.12, sx: 0, sy: 0.3, tilt: -0.06, roll: 0 },   // 説明文は右下なので、シャフトは上に
+      { focus: MID + 60, d: 2.6, rz: -1.2, sx: -0.3, sy: 0, tilt: -0.06, roll: 0 },   // 最後の説明文は右側に長く出るので、シャフトは左に立て気味に
       { focus: MID, d: 'tall', rz: -Math.PI / 2, sx: 'left', sy: 0, tilt: 0, roll: TURN },
     ],
     // White-50：金の「鎬」→ 手元の筆の SHINOGI（側面）→ 白から黒へ変わる筆の模様 → 引きの全体 → 黒い先端 → 縦
@@ -170,7 +170,7 @@
       { focus: X0 + 35, d: 1.2, rz: 0, sx: 0, sy: 0, tilt: 0, roll: -1.63 },
       { focus: X0 + 175, d: 1.5, rz: 0.16, sx: 0.02, sy: -0.04, tilt: 0, roll: 0.4 },
       { focus: MID - 40, d: 3.4, rz: -0.08, sx: 0, sy: 0.2, tilt: -0.05, roll: 0 },
-      { focus: TIP + 60, d: 0.7, rz: 0.22, sx: -0.06, sy: 0.24, tilt: 0, roll: 0 },   // 説明文は右下なので、シャフトは上に
+      { focus: TIP + 60, d: 0.9, rz: -1.2, sx: -0.3, sy: 0, tilt: 0, roll: 0 },   // 最後の説明文は右側に長く出るので、シャフトは左に立て気味に
       { focus: MID, d: 'tall', rz: -Math.PI / 2, sx: 'left', sy: 0, tilt: 0, roll: TURN },
     ],
   };
