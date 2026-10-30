@@ -211,7 +211,7 @@
   //  Athlete T-60（ツアー向けの精密さ）：止まっているときは揺らさない。切り替えはわずかに行き過ぎてから、カチッと止まる。光が軸のまわりを 1 周する
   //  White-50（白）：ゆっくり浮かぶ。切り替えの途中で少し遠ざかってから寄り直し（息をするように）、止まっているあいだは上下にただよう
   // gust(t, w, i)：切り替えの途中だけ足す動き（t：0→1、w：途中で 1。i：カットの番号）。dz：カメラの距離の倍率、sx：横のずれ、bob：上下のただよい
-  const backOut = t => 1 + 2.2 * Math.pow(t - 1, 3) + 1.2 * Math.pow(t - 1, 2);
+  const backOut = t => t <= 0 ? 0 : 1 + 2.2 * Math.pow(t - 1, 3) + 1.2 * Math.pow(t - 1, 2);   // 0 で -0.0000… にならないように
   const STYLE = {
     'shinogi-athlete-fw': { hold: 0.12, curve: ease, idle: 0.05,
       gust: (t, w, i) => ({ roll: Math.PI * Math.sin(Math.PI * t) * 0.5, rz: -0.12 * w, yaw: 0, tilt: 0.35 * w, sx: (i % 2 ? 0.16 : -0.16) * w, dz: 1 }),
