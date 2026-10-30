@@ -110,9 +110,9 @@
         [X0 + L.b_mm, LEN, 100, { color: srgb(L.body), ...o }]];
     })()
     : (() => {
-      const B = L.b_mm, half = X0 + B / 2;
-      return [[0, X0, 40, { color: srgb(L.grey) }], [X0, half, 240, { map: texture(T.B1) }],
-        [half, X0 + B, 240, { map: texture(T.B2), metalness: 0.2 }], [X0 + B, LEN, 160, { map: texture(T.C), metalness: 0.3, roughness: 0.38 }]];
+      const B = L.b_mm, half = X0 + B / 2, M = L.metal ? { metalness: 0.62, roughness: 0.26 } : {};   // 銀の地の製品（FW-60）は金属らしく
+      return [[0, X0, 40, { color: srgb(L.grey), ...M }], [X0, half, 240, { map: texture(T.B1), ...M }],
+        [half, X0 + B, 240, { map: texture(T.B2), metalness: 0.2, ...M }], [X0 + B, LEN, 160, { map: texture(T.C), metalness: 0.3, roughness: 0.38 }]];
     })();
   const shaft = new THREE.Group();
   for (const [a, b, nx, opts] of parts) shaft.add(new THREE.Mesh(tube(a, b, nx), paint(opts)));

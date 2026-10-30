@@ -310,9 +310,9 @@
               [X0 + L.b_mm, L.length, 60, { color: srgb(L.body), ...o }]];
           }
           : (X0, L) => {
-            const B = L.b_mm, half = X0 + B / 2;
-            return [[0, X0, 30, { color: srgb(L.grey) }], [X0, half, 80, { map: texture(t.B1) }],
-              [half, X0 + B, 80, { map: texture(t.B2), metalness: 0.2 }], [X0 + B, L.length, 60, { map: texture(t.C), metalness: 0.3, roughness: 0.38 }]];
+            const B = L.b_mm, half = X0 + B / 2, M = L.metal ? { metalness: 0.62, roughness: 0.26 } : {};   // 銀の地の製品（FW-60）は金属らしく
+            return [[0, X0, 30, { color: srgb(L.grey), ...M }], [X0, half, 80, { map: texture(t.B1), ...M }],
+              [half, X0 + B, 80, { map: texture(t.B2), metalness: 0.2, ...M }], [X0 + B, L.length, 60, { map: texture(t.C), metalness: 0.3, roughness: 0.38 }]];
           });
         for (const me of s.meshes) me.castShadow = false;
         s.root.visible = false;
