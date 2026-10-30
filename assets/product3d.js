@@ -176,12 +176,12 @@
       { focus: L.pos.logo + 40, d: 2.6, rz: -0.06, sx: 0, sy: 0.18, tilt: -0.05, roll: 0 },
       { focus: X0 + 39, d: 1.2, rz: 0, sx: 0, sy: 0.08, tilt: 0, roll: -Math.PI },
       LEFT(X0 + 120, 1.5, -Math.PI), TALL(Math.PI)],
-    // Rafale Ma1.0：ロゴ → ラベル → 筆記体（裏）→ 青の帯 → 立てた全体（裏を正面に）
+    // Rafale Ma1.0：ロゴ → ラベル → 筆記体（裏）→ 青の帯（裏）→ 立てた全体（裏を正面に）
     'rafale-ma1': () => [KV0,
       { focus: L.pos.logo, d: 2.5, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
       { focus: L.pos.label, d: 1.7, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
       { focus: X0 + 120, d: 0.85, rz: 0.3, sx: 0.06, sy: -0.06, tilt: 0, roll: -Math.PI },
-      { focus: L.pos.ring, d: 0.9, rz: -0.25, sx: 0, sy: 0.05, tilt: 0, roll: 0 },
+      { focus: L.pos.ring, d: 0.9, rz: 0.22, sx: 0, sy: -0.16, tilt: 0, roll: -Math.PI },   // 帯のすぐ隣に表のラベルがあるので、帯は裏から。文章（左上）を避けて下へ
       LEFT(X0 + 60, 1.5, -Math.PI), TALL(Math.PI)],
     // Athlete FW：ロゴ → 展開図の中のラベル（裏側へ回す）→ 低い位置からの中景 → 先端シール → 炎の先 → 縦
     'shinogi-athlete-fw': () => [
