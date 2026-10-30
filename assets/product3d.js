@@ -160,7 +160,7 @@
       { focus: X0 + 120, d: 1.5, rz: 0.1, sx: 0, sy: 0, tilt: 0, roll: 0 },
       { focus: LAB, d: 1.0, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
       { focus: MID - 60, d: 3.4, rz: -0.1, sx: 0, sy: 0.2, tilt: 0.06, roll: 0.4 },
-      { focus: TIP, d: 0.6, rz: -0.22, sx: -0.04, sy: 0.04, tilt: 0, roll: 0 },
+      { focus: TIP, d: 0.6, rz: 0.2, sx: 0.04, sy: -0.12, tilt: 0, roll: 0 },   // 文章（左上）を避けて、右上がりに下へ
       LEFT(LAB - 120, 1.6), TALL()],
     // SP-40：金のマーク → 1/3 周ずつずれた線の版 → ラベル → 引きの全体 → 立てた全体
     'shinogi-sp-40': () => [KV0,
