@@ -4,8 +4,33 @@
 //   Rafale は小さくなって奥へ下がり、シャフトもロゴ類も薄くなる（Rafale に合わせたときはその逆）。背景は明るいまま
 // ・製品ページへ移るときに、そのシリーズの暗い背景（製品ページの最初の画面と同じ）が現れる
 // three.js（assets/three.js）と素材（assets/kv-data.js）は、file:// で開いても読めるよう通常の <script> で読み込む
+// ・スクロールすると、2 本は下の製品一覧（.lineup）の自分の位置へ収まる。製品一覧のほかのシャフトも同じシーンで描く
+//   （描く面は画面に固定。KV と製品一覧で、描く範囲を分けて 2 回描く）
+
+// 製品一覧：製品名に合わせると、その側の地が広がり（.hs / .hr）、名前の横に製品写真が出る。3D のシャフトの寄りは下の本体で
+(() => {
+  const ln = document.querySelector('.lineup');
+  if (!ln) return;
+  const hover = (slug, side) => {
+    ln.dataset.hov = slug || '';
+    ln.classList.toggle('hs', side === 'shinogi');
+    ln.classList.toggle('hr', side === 'rafale');
+    ln.querySelectorAll('.ln-names a').forEach(a => a.classList.toggle('on', a.dataset.slug === slug));
+    ln.querySelectorAll('.ln-photo img').forEach(im => im.classList.toggle('on', im.dataset.slug === slug));
+  };
+  ln.querySelectorAll('.ln-half').forEach(h => h.querySelectorAll('.ln-names a').forEach(a => {
+    const on = () => hover(a.dataset.slug, h.dataset.side), off = () => hover(null, null);
+    a.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') on(); });
+    a.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') off(); });
+    a.addEventListener('focus', on);
+    a.addEventListener('blur', off);
+  }));
+})();
+
 (() => {
   const kv = document.querySelector('.kv3d');
+  const lineup = document.querySelector('.lineup');
+  const VER = (document.currentScript && document.currentScript.src.split('?')[1]) || '';
   const THREE = window.THREE, D = window.KV_DATA;
   if (!kv || !THREE || !D) return;
   const canvas = kv.querySelector('canvas');
@@ -153,10 +178,10 @@
   // 横長の画面では X を寝かせ、縦長の画面では立てる。2本の先端が画面に収まる距離にカメラを置く
   // 描く面（canvas）は KV より下へ EXT の割合だけ広げる。拡大したシャフトや影が KV の下で切れないように
   // （構図は KV の範囲で決め、はみ出した分も同じカメラで続けて描く。はみ出した部分は CSS で下へ向けて消していく）
-  const EXT = 0.4;
+  const EXT = 0;   // 描く面は画面に固定したので、下へ広げない（製品一覧まで同じ面で描く）
   let A = 0.38, DIST = 13.5;
   function layout() {
-    const w = kv.clientWidth, h = kv.clientHeight, asp = w / h;
+    const w = canvas.clientWidth || kv.clientWidth, h = canvas.clientHeight || kv.clientHeight, asp = w / h;
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.setSize(w, Math.round(h * (1 + EXT)), false);
     camera.aspect = asp;
@@ -214,7 +239,7 @@
     el.addEventListener('blur', () => { overUI = 0; syncTarget(); });
   });
   kv.addEventListener('pointermove', e => {
-    if (e.pointerType !== 'mouse') return;
+    if (e.pointerType !== 'mouse' || hand > 0.05) return;
     const r = kv.getBoundingClientRect();
     mouse.tx = clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1, 1);
     mouse.ty = clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1);
@@ -241,6 +266,80 @@
   if (noHover && !reduce) {
     slide = target = 1;
     setInterval(() => { if (!document.hidden) { slide = -slide; syncTarget(); } }, 4000);
+  }
+
+  // ---------- 製品一覧のシャフト ----------
+  // 鎬BLUE・RS1.0 は KV の 2 本をそのまま使い、ほかは KV のあとで読み込む（assets/lineup-data.js。テクスチャは小さくしたもの）
+  // 並べる位置は HTML の目印（.ln-slot）から。半分の高さに対する長さ（鎬 1.53・Rafale 1.75 倍。Figma）になる奥行きに置き、
+  // 手元を上にして、目印の傾きだけ縦から傾ける。軸まわりの向きは 1 本ずつ変えて、不揃いに見せる
+  const members = [];
+  const TAN = Math.tan(THREE.MathUtils.degToRad(15)), TURN = Math.PI * 2;
+  const ROLLS = [0.3, -0.8, 1.2, -0.4, 0.9, -1.4, 0.5, -0.2];
+  const logoOf = (L, kind) => kind === 'rafale'
+    ? { mm: L.pos ? L.pos.logo : L.x0 + 120, roll: 0 }
+    : (L.marks && L.marks[0]) ? { mm: L.marks[0].mm, roll: L.marks[0].roll } : { mm: L.x0 + 140, roll: 0 };
+  function addMember(slug, kind, s, L) {
+    const slot = lineup && lineup.querySelector(`.ln-slot[data-slug="${slug}"]`);
+    if (!slot) return;
+    const i = members.length;
+    members.push({ slug, kind, s, L, slot, half: slot.closest('.ln-half'), tilt: (+slot.dataset.tilt || 0) * Math.PI / 180,
+      roll0: ROLLS[i % ROLLS.length], logo: logoOf(L, kind), h: 0, f: 1, kv: s === shin || s === raf });
+  }
+  addMember('shinogi-blue', 'shinogi', shin, D.layShinogi);
+  addMember('rafale-rs1', 'rafale', raf, D.layRafale);
+  function loadLineup() {
+    if (!lineup) return;
+    const sc = document.createElement('script');
+    sc.src = 'assets/lineup-data.js' + (VER ? '?' + VER : '');
+    sc.onload = () => {
+      const LD = window.LINEUP_DATA || {};
+      for (const [slug, d] of Object.entries(LD)) {
+        const L = d.lay, t = d.tex;
+        const s = makeShaft(L, d.kind === 'rafale'
+          ? (X0, L) => {
+            const third = L.b_mm / 3, o = { roughness: 0.32, metalness: 0.2 };
+            return [[0, X0, 30, { color: srgb(L.body), ...o }], [X0, X0 + third, 80, { map: texture(t.R1), ...o }],
+              [X0 + third, X0 + third * 2, 80, { map: texture(t.R2), ...o }], [X0 + third * 2, X0 + L.b_mm, 80, { map: texture(t.R3), ...o }],
+              [X0 + L.b_mm, L.length, 60, { color: srgb(L.body), ...o }]];
+          }
+          : (X0, L) => {
+            const B = L.b_mm, half = X0 + B / 2;
+            return [[0, X0, 30, { color: srgb(L.grey) }], [X0, half, 80, { map: texture(t.B1) }],
+              [half, X0 + B, 80, { map: texture(t.B2), metalness: 0.2 }], [X0 + B, L.length, 60, { map: texture(t.C), metalness: 0.3, roughness: 0.38 }]];
+          });
+        for (const me of s.meshes) me.castShadow = false;
+        s.root.visible = false;
+        addMember(slug, d.kind, s, L);
+      }
+    };
+    document.head.appendChild(sc);
+  }
+  // 製品一覧の並びでの姿勢。h：寄りの進み具合（0→1）。寄るときは、ロゴのあたりを目印の位置に置いて 2.73 倍に（Figma）、まっすぐ立てて正面を向ける
+  const easeIO = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  function slotPose(m) {
+    const r = m.slot.getBoundingClientRect(), vw = canvas.clientWidth, vh = canvas.clientHeight;
+    const h = easeIO(m.h);
+    const Lpx = (m.kind === 'rafale' ? 1.75 : 1.53) * m.half.clientHeight * lerp(1, 2.73, h);
+    const d = Math.max(1.5, m.L.length * U * vh / (2 * TAN * Lpx));
+    const wx = (r.left / vw * 2 - 1) * TAN * d * camera.aspect, wy = -(r.top / vh * 2 - 1) * TAN * d;
+    const ang = -Math.PI / 2 + m.tilt * (1 - h);
+    const fx = (lerp(m.L.length / 2, m.logo.mm, h) - m.L.length / 2) * U;
+    return { x: wx - Math.cos(ang) * fx, y: wy - Math.sin(ang) * fx, z: DIST - d, ang, roll: lerp(m.roll0, m.logo.roll, h) };
+  }
+  function poseMembers(dt) {
+    const hov = lineup ? lineup.dataset.hov || '' : '', side = hov ? (hov.startsWith('rafale') ? 'rafale' : 'shinogi') : '';
+    const k = reduce ? 1 : 1 - Math.exp(-dt * 5);
+    for (const m of members) {
+      m.h = lerp(m.h, m.slug === hov ? 1 : 0, k);
+      m.f = lerp(m.f, side === m.kind && m.slug !== hov ? 0.2 : 1, k);   // 同じ側のほかのシャフトは 20% まで薄く（Figma）
+      if (m.kv) continue;   // KV の 2 本は poseShaft で（KV からの移り変わりと合わせる）
+      const P = slotPose(m);
+      m.s.root.rotation.set(0, 0, P.ang);
+      m.s.root.scale.setScalar(1);
+      m.s.root.position.set(P.x, P.y, P.z);
+      m.s.spin.rotation.x = P.roll;
+      for (const mt of m.s.mats) { mt.opacity = m.f; mt.depthWrite = m.f > 0.98; }
+    }
   }
 
   // ---------- ホバー時に、ロゴ・コピー・ボタンをシャフトに重ねない ----------
@@ -294,49 +393,69 @@
   }
 
   // ---------- 1コマを描く ----------
-  let F = target, last = null, clock = 0, out = 0, outT = 0;   // スライドショーの端末は、最初から SHINOGI のホバー状態
+  let F = target, last = null, clock = 0, out = 0, outT = 0, hand = 0;   // スライドショーの端末は、最初から SHINOGI のホバー状態
   const v3 = new THREE.Vector3();
   // vanish：製品ページへ移るときに、選んだシャフトを消していく割合（0→1）
-  // out：FV から下へスクロールした進み具合（0→1。少し遅れてついていく）。2 本は左右対称にせず、別々の向き・速さで画面の外へ抜ける（薄くはしない）
-  //  鎬：先に動き出し、速く左上へ抜ける。回転はゆっくり（刀を払うように、時計回りに半周）
-  //  Rafale：少し遅れて動き出し、ゆっくり右下へ流れる。回転もゆっくり（風に流されるように、反時計回りに 3/10 周）
-  // dir：抜けていく向き（右・上がプラス）、start・span：動き出す out と、抜けきるまでの out の幅、pow：加速のつけ方、
-  // turn：画面の上での回転（周）、roll：軸まわりの回転（ラジアン）
-  const EXIT = {
-    shin: { dir: [-1, 1], start: 0.03, span: 0.6, pow: 1.5, turn: -0.5, roll: 2.4 },
-    raf: { dir: [1, -1], start: 0.1, span: 0.66, pow: 1.2, turn: 0.3, roll: -0.5 },
-  };
-  // 抜けていく途中、画面の端まで来たら透明にしていく（奥の面に落ちる影が、シャフトが出たあとも画面に残らないように）
-  // Rafale は KV がまだ 3 割ほど見えているうち（out 0.76）に消えきるようにする（遅すぎると、スクロールを止めたときに右に残る）
-  const edgeFade = e => 1 - ease(clamp((e - 0.72) / 0.22));
-  const exitOf = (x, out) => clamp((out - x.start) / x.span);
-  function poseShaft(s, side, mine, other, turn = 0, vanish = 0, out = 0, x = EXIT.shin) {
+  // hand：製品一覧へ移る進み具合（0→1。製品一覧の上端が画面の上端に来たら 1）。2 本は別々の回り方で、製品一覧の自分の位置へ収まる
+  //  鎬：時計回りに少し回って立ち、軸まわりに 1 回転。Rafale：反時計回りに大きく回り込んで立つ（風に流されるように）
+  function poseShaft(s, side, mine, other, turn = 0, vanish = 0, member = null, hand = 0) {
     const k = ease(clamp(mine)), o = ease(clamp(other));
-    const e = exitOf(x, out);
     // 2 本とも、手元を左・先端を右に向ける（シャフトの文字は手元から先端へ向かって刷られているので、こうすると正しい向きで読める）
     // 鎬は左上から右下へ、Rafale は左下から右上へ。2 本で X を作る
-    const ang = (side > 0 ? -A : A) + x.turn * Math.PI * 2 * ease(e);
-    s.root.rotation.set(0, 0, ang + turn);
+    let ang = (side > 0 ? -A : A) + turn;
     // 選ばれたほうは 150% に拡大して手前へ。もう一方は 70% に縮んで奥へ下がり、不透明度 20% まで薄くなる（ロゴ類と同じ）
-    s.root.scale.setScalar(1 + 0.5 * k - 0.3 * o);
-    // 斜めに出す量：その奥行きで見えている幅・高さの半分＋シャフトの長さの半分（回っているので、どちらの向きでも長さの半分）
-    const z = side * -0.15 + 2.2 * k - 1.2 * o - 1.2 * ease(e);
-    const hh = (DIST - z) * Math.tan(THREE.MathUtils.degToRad(15)), len = s.half * s.root.scale.x + 0.6;
-    const m = Math.pow(e, x.pow);
-    s.root.position.set(x.dir[0] * (hh * camera.aspect + len) * m, x.dir[1] * (hh + len) * m, z);
-    s.spin.rotation.x = 0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15 + x.roll * ease(e);
-    const op = (1 - 0.8 * o) * (1 - vanish) * edgeFade(e);
+    let sc = 1 + 0.5 * k - 0.3 * o, x = 0, y = 0, z = side * -0.15 + 2.2 * k - 1.2 * o;
+    let roll = 0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15;
+    let op = (1 - 0.8 * o) * (1 - vanish);
+    if (member && hand > 0) {
+      const P = slotPose(member), m = easeIO(clamp(hand));
+      ang = lerp(ang, P.ang + (side > 0 ? 0 : TURN), m);
+      sc = lerp(sc, 1, m); x = lerp(x, P.x, m); y = lerp(y, P.y, m); z = lerp(z, P.z, m);
+      roll = lerp(roll, P.roll + (side > 0 ? TURN : 0), m);
+      op = lerp(op, member.f, m);
+    }
+    s.root.rotation.set(0, 0, ang);
+    s.root.scale.setScalar(sc);
+    s.root.position.set(x, y, z);
+    s.spin.rotation.x = roll;
     for (const mt of s.mats) { mt.opacity = op; mt.depthWrite = op > 0.98; }
     s.root.visible = op > 0.01;
-    for (const me of s.meshes) me.castShadow = op > 0.4;
+    for (const me of s.meshes) me.castShadow = op > 0.4 && hand < 0.3;
+  }
+  // 描く：1 回目は KV の 2 本（と影）を、製品一覧の下端より上に。2 回目からは製品一覧のシャフトを、鎬・Rafale の半分ずつ、その範囲だけに
+  // （シャフトは製品一覧の高さより長いので、はみ出しを切る。スマホでは 2 つの半分が上下に並ぶので、隣へはみ出さないように。
+  //  KV の 2 本も、収まりきったら製品一覧の側で描く）
+  renderer.autoClear = false;
+  function draw(lr) {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    renderer.setScissorTest(false);
+    renderer.clear();
+    if (!lr) { renderer.render(scene, camera); return; }
+    const landed = hand > 0.999, vis = members.map(m => m.s.root.visible), cv = catcher.visible;
+    const cut = (t, b) => { t = clamp(t, 0, h); b = clamp(b, 0, h); if (b <= t) return false; renderer.setScissor(0, h - b, w, b - t); return true; };
+    renderer.setScissorTest(true);
+    for (const m of members) m.s.root.visible = m.kv && !landed && vis[members.indexOf(m)];
+    if (!landed && cut(0, lr.bottom)) renderer.render(scene, camera);
+    catcher.visible = false;
+    for (const kind of ['shinogi', 'rafale']) {
+      const ms = members.filter(m => m.kind === kind && (!m.kv || landed));
+      if (!ms.length) continue;
+      const hr = ms[0].half.getBoundingClientRect();
+      for (const m of members) m.s.root.visible = ms.includes(m) && (m.kv ? vis[members.indexOf(m)] : m.f > 0.01);
+      if (cut(hr.top, hr.bottom)) renderer.render(scene, camera);
+    }
+    members.forEach((m, i) => { m.s.root.visible = vis[i]; });
+    catcher.visible = cv;
+    renderer.setScissorTest(false);
   }
   function frame(now) {
     const dt = last === null ? 0 : Math.min((now - last) / 1000, 0.05);
     last = now;
     clock += dt;
     const sm = 1 - Math.exp(-dt * (reduce ? 20 : 4.5));
-    F = lerp(F, target, sm);
-    if (Math.abs(F - target) < 0.001) F = target;
+    const tg = hand > 0.15 && !leaving ? 0 : target;   // 製品一覧へ移り始めたら、KV のホバーは戻す
+    F = lerp(F, tg, sm);
+    if (Math.abs(F - tg) < 0.001) F = tg;
     const mp = 1 - Math.exp(-dt * 3);
     mouse.x = lerp(mouse.x, reduce ? 0 : mouse.tx, mp);
     mouse.y = lerp(mouse.y, reduce ? 0 : mouse.ty, mp);
@@ -358,17 +477,21 @@
     const sy = scrollY, op = reduce ? 1 : 1 - Math.exp(-dt * 2.6);
     outT = clamp(sy / (kv.clientHeight * 0.85));
     out = Math.abs(outT - out) < 0.0005 ? outT : lerp(out, outT, op);
-    // 描く面はページより遅く上がる（視差）。すぐに画面の外へ出ず、その場で消えていくように見せる
-    canvas.style.transform = `translate3d(0, ${(Math.min(sy, kv.clientHeight * 1.2) * 0.55).toFixed(1)}px, 0)`;
-    poseShaft(shin, 1, sh, rf, leaving && leaving.f > 0 ? turn : 0, vanish, out, EXIT.shin);
-    poseShaft(raf, -1, rf, sh, leaving && leaving.f < 0 ? turn : 0, vanish, out, EXIT.raf);
+    const lr = lineup ? lineup.getBoundingClientRect() : null;
+    const handT = lr ? clamp(sy / Math.max(1, lr.top + sy)) : 0;
+    hand = Math.abs(handT - hand) < 0.0005 ? handT : lerp(hand, handT, op);
+    poseMembers(dt);
+    const mOf = s => members.find(m => m.s === s) || null;
+    poseShaft(shin, 1, sh, rf, leaving && leaving.f > 0 ? turn : 0, vanish, mOf(shin), hand);
+    poseShaft(raf, -1, rf, sh, leaving && leaving.f < 0 ? turn : 0, vanish, mOf(raf), hand);
     // マウスの位置で、少しだけ角度が変わる（ゆっくり漂う動きも少し足す）。移るときは傾きを戻す
-    const drift = reduce ? 0 : Math.sin(clock * 0.5) * 0.03, still = 1 - q;
+    const drift = reduce ? 0 : Math.sin(clock * 0.5) * 0.03, still = (1 - q) * (1 - clamp(hand * 1.5));   // 製品一覧では傾けない
     world.rotation.set((mouse.y * 0.16 + drift) * still, mouse.x * 0.26 * still, 0);
     camera.position.set(mouse.x * 0.35 * still, -mouse.y * 0.2 * still, DIST);
     camera.lookAt(v3.set(0, 0, 0));
-    if (!leaving) avoid(dt);   // 移る途中はロゴ類が消えていくので、ずらさない
-    catcher.material.opacity = 0.16 * (1 - vanish) * Math.max(edgeFade(exitOf(EXIT.shin, out)), edgeFade(exitOf(EXIT.raf, out)));   // 奥の影も、後から抜ける Rafale といっしょに消す
+    if (!leaving && hand < 0.5) avoid(dt);   // 移る途中はロゴ類が消えていくので、ずらさない
+    catcher.material.opacity = 0.16 * (1 - vanish) * (1 - clamp(hand * 2));   // 奥の影は、製品一覧へ移るあいだに消す
+    catcher.visible = hand < 0.5;
 
     // 背景（.kv-bg）は KV の外にあるので、ページ全体（html）に値を渡す。移るときは、選んだほうの暗い背景（製品ページの最初の画面と同じ）を出す
     const vars = document.documentElement.style;
@@ -379,7 +502,7 @@
     vars.setProperty('--mx', (mouse.x * still).toFixed(3));
     vars.setProperty('--my', (mouse.y * still).toFixed(3));
     vars.setProperty('--kvout', out.toFixed(3));   // ロゴ類は、シャフトより先に上へ抜けて消える（site.css）
-    renderer.render(scene, camera);
+    draw(lr);
     // シャフトが消えきって、背景も切り替わったら製品ページへ
     if (leaving && !leaving.done && now - leaving.t0 >= TOTAL) {
       leaving.done = true;
@@ -389,18 +512,30 @@
 
   // 画面に見えているあいだだけ描く
   let visible = true, running = false;
+  const seen = new Set([kv]);
   function loop(now) {
-    if (!visible || document.hidden) { running = false; last = null; return; }
+    if (!visible || document.hidden) {
+      running = false; last = null;
+      renderer.setScissorTest(false); renderer.clear();   // 描く面は画面に固定しているので、描くのをやめるときは空にする
+      return;
+    }
     frame(now);
     requestAnimationFrame(loop);
   }
   const start = () => { if (!running) { running = true; requestAnimationFrame(loop); } };
-  new IntersectionObserver(es => { visible = es[0].isIntersecting; if (visible) start(); }).observe(kv);
+  const io = new IntersectionObserver(es => {
+    for (const e of es) e.isIntersecting ? seen.add(e.target) : seen.delete(e.target);
+    visible = seen.size > 0;
+    if (visible) start();
+  });
+  io.observe(kv);
+  if (lineup) io.observe(lineup);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) start(); });
 
   const timeout = new Promise(r => setTimeout(r, 8000));
   Promise.race([Promise.all(loads), timeout]).then(() => {
     kv.classList.add('ready');
     start();
+    loadLineup();
   });
 })();

@@ -130,10 +130,44 @@ main { padding-top: var(--hd); }
 /* ===== トップ：キービジュアル（3D） ===== */
 .kv3d { position: relative; height: 100vh; height: 100svh; margin-top: calc(var(--hd) * -1); }
 /* 3D を描く面は KV より 40% 下まで広げ（kv.js の EXT）、KV の下端から先をなだらかに消す。下の製品一覧のクリックは通す */
-.kv3d canvas { position: absolute; top: 0; left: 0; width: 100%; height: 140%; display: block; z-index: 1; opacity: 0; transition: opacity 1.2s; pointer-events: none; will-change: opacity;   /* Safari で、フェードの終わりに描画面が 1 コマ消えないように（.p3d-stage と同じ） */
-  -webkit-mask-image: linear-gradient(#000 0%, #000 71.4%, rgba(0,0,0,.6) 80%, transparent 100%); mask-image: linear-gradient(#000 0%, #000 71.4%, rgba(0,0,0,.6) 80%, transparent 100%); }
+.kv3d canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: block; z-index: 1; opacity: 0; transition: opacity 1.2s; pointer-events: none; will-change: opacity;   /* Safari で、フェードの終わりに描画面が 1 コマ消えないように（.p3d-stage と同じ） */
+  }
 .kv3d.ready canvas { opacity: 1; }
 .kv3d.on-shaft { cursor: pointer; }
+/* トップの製品一覧（Figma「product」）：鎬（白）と Rafale（黒）で半々。3D のシャフトは、KV と同じ画面に固定した描く面（kv.js）が、
+   この下地（.ln-bg）と文字（.ln-half）のあいだに描く。寸法は Figma（幅 1512px）を --u で画面の幅に合わせて縮める */
+.lineup { --u: min(1px, calc(100vw / 1512)); position: relative; height: 100vh; height: 100svh; min-height: calc(var(--u) * 760); }
+.ln-bg { position: absolute; inset: 0; z-index: 0; }
+.ln-bg i { position: absolute; top: 0; bottom: 0; width: 50%; transition: width .7s cubic-bezier(.22,.61,.36,1); }
+.ln-bg .b-s { left: 0; background: #fff; }
+.ln-bg .b-r { right: 0; background: #000; }
+/* 製品名に合わせると、その側の地が広がる（Figma「product_hover」：1165 / 1512） */
+.lineup.hs .ln-bg .b-s, .lineup.hr .ln-bg .b-r { width: 77.05%; }
+.lineup.hs .ln-bg .b-r, .lineup.hr .ln-bg .b-s { width: 22.95%; }
+.ln-half { position: absolute; top: 0; bottom: 0; width: 50%; z-index: 2; pointer-events: none; }
+.ln-half.s-shinogi { left: 0; }
+.ln-half.s-rafale { right: 0; }
+.ln-slots, .ln-slot { position: absolute; }
+.ln-slots { inset: 0; }
+.ln-slot { left: var(--x); top: var(--y); width: 0; height: 0; }
+.ln-body { position: absolute; display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 48); pointer-events: auto; transition: opacity .5s; }
+.s-shinogi .ln-body { left: 45.77%; top: 24.85%; width: calc(var(--u) * 371); }
+.s-rafale .ln-body { left: 12.83%; top: 23.6%; width: calc(var(--u) * 321); }
+.ln-logo { display: block; width: 100%; }
+.ln-mark { display: block; width: 100%; height: auto; }
+.ln-names { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 24); }
+.ln-names a { display: block; font: 700 max(15px, calc(var(--u) * 23))/max(17px, calc(var(--u) * 25)) var(--en); text-align: center; white-space: nowrap; transition: color .25s; }
+.s-shinogi .ln-names a { color: #000; }
+.s-rafale .ln-names a { color: #fff; }
+.ln-names a:hover, .ln-names a:focus-visible, .ln-names a.on { color: #ffae00; }
+/* もう一方のシリーズの文字は、広がった地に隠れるので消す */
+.lineup.hs .s-rafale .ln-body, .lineup.hr .s-shinogi .ln-body { opacity: 0; pointer-events: none; }
+/* 製品写真：鎬は名前の右、Rafale は名前の左（Figma の位置：717, 365 / 380×253） */
+.ln-photo { position: absolute; top: 37.17%; width: calc(var(--u) * 380); aspect-ratio: 380 / 253; }
+.s-shinogi .ln-photo { left: 94.84%; }
+.s-rafale .ln-photo { right: 94.84%; }
+.ln-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: translateY(8px); transition: opacity .35s, transform .5s cubic-bezier(.22,.61,.36,1); }
+.ln-photo img.on { opacity: 1; transform: none; }
 /* 背景：明るいグレー（ホバーしても変えない）
    画面に固定して、スクロールしても動かない（動くのはシャフトと文字だけ）。KV を抜けるころに、ぼけながら消えて
    ページの背景（--page）にブレンドで切り替わる */
@@ -555,6 +589,16 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .kv-cue { font-size: 12px; gap: 10px; }
   .kv-cue i { height: 48px; }
   .kv-bg .b-shinogi .photo { left: 50%; width: 115vw; }
+  /* 製品一覧は、鎬と Rafale を縦に積む（写真は出さない。名前を押すと製品ページへ） */
+  .lineup { height: auto; min-height: 0; }
+  /* 地の色は、下地（.ln-bg）を上下に分けて敷く。.ln-half に色を付けると、うしろに描くシャフトが隠れる */
+  .ln-bg i, .lineup.hs .ln-bg i, .lineup.hr .ln-bg i { left: 0; right: 0; width: auto; height: 50%; transition: none; }
+  .ln-bg .b-s { top: 0; bottom: auto; }
+  .ln-bg .b-r { top: auto; bottom: 0; }
+  .ln-half { position: relative; width: auto; height: 88svh; min-height: 560px; }
+  .s-shinogi .ln-body, .s-rafale .ln-body { left: 50%; top: 50%; translate: -50% -50%; width: min(56vw, 260px); gap: 32px; }
+  .ln-names { gap: 18px; }
+  .ln-photo { display: none; }
   .cards { grid-template-columns: 1fr 1fr; gap: 28px 14px; }
   .card b { font-size: 16px; }
   .series-h b { font-size: 26px; }
