@@ -147,8 +147,8 @@ html.kv-off .kv-bg { visibility: hidden; }
 .kv-bg > * { position: absolute; inset: -40px; }
 .kv-bg .b-base { background:
   radial-gradient(60% 55% at 50% 48%, rgba(255,255,255,.95), rgba(255,255,255,0) 70%),
-  radial-gradient(45% 60% at 18% 70%, rgba(29,111,209, calc(.13 + var(--sh) * .12)), transparent 70%),   /* ホバーした側の色を濃くする */
-  radial-gradient(45% 60% at 82% 70%, rgba(108,194,58, calc(.15 + var(--rf) * .14)), transparent 70%),
+  radial-gradient(45% 60% at 18% 70%, rgba(29,111,209, calc((.13 + var(--sh) * .12) * (1 - var(--rf)))), transparent 70%),   /* ホバーした側の色を濃くし、もう一方の色は消す */
+  radial-gradient(45% 60% at 82% 70%, rgba(108,194,58, calc((.15 + var(--rf) * .14) * (1 - var(--sh)))), transparent 70%),
   linear-gradient(180deg, #f2f2f2 0%, #e6e6e6 55%, #d3d3d3 100%);
   transform: translate(calc(var(--mx) * -10px), calc(var(--my) * -8px)); }
 /* 床：画面の下に向かって、うっすら影を落とす */
