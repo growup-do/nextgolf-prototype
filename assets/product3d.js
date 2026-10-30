@@ -166,6 +166,13 @@
     })();
   const lerp = (a, b, t) => a + (b - a) * t;
   const ease = t => t * t * (3 - 2 * t);
+  // カットのつなぎ方は、製品の名前に合わせて変える（各カットで止まったときの構図は同じ）
+  //  鎬（刀のしのぎ）：各カットでしっかり止まり、短くきびきび切り替える。切り替えの間に、刀身を光が走るようにハイライトが流れる
+  //  Rafale（突風）：止まる時間を短くして流れ続ける。切り替えのたびに風にあおられたように軸まわりに 1 回転し、傾きと向きも揺れる
+  // hold：区間の前後で構図のまま止める割合、curve：切り替えの速さの変化、idle：止まっているあいだの揺れ
+  const MOVE = KIND === 'rafale'
+    ? { hold: 0.06, curve: ease, idle: 0.14 }
+    : { hold: 0.22, curve: t => t * t * t * (t * (t * 6 - 15) + 10), idle: 0.03 };
   const clamp01 = x => Math.min(1, Math.max(0, x));
   const TAN = Math.tan(THREE.MathUtils.degToRad(15));   // 縦の画角 30°の半分
   const look = new THREE.Vector3();
@@ -222,7 +229,7 @@
     let k = 0;
     while (k < a.length - 2 && y >= a[k + 1]) k++;
     const f = (y - a[k]) / Math.max(1, a[k + 1] - a[k]);
-    return k + ease(clamp01((f - 0.15) / 0.7));
+    return k + MOVE.curve(clamp01((f - MOVE.hold) / (1 - MOVE.hold * 2)));
   }
 
   const clock = new THREE.Clock();
@@ -233,6 +240,11 @@
     const a = shots[i], b = shots[i + 1];
     // 距離は対数で補間する（全体の引きから大写しまで、同じ速さで寄っていくように見せる）
     const d = Math.exp(lerp(Math.log(dist(a.d)), Math.log(dist(b.d)), t));
+    // w：切り替えの途中だけ 1 に近づく（カットの上では 0。構図を崩さない）
+    const w = Math.sin(Math.PI * t);
+    const gust = KIND === 'rafale' ? { roll: TURN * t, rz: 0.22 * w, yaw: 0.28 * w } : { roll: 0, rz: 0, yaw: 0 };
+    // 鎬：光を画面の左から右へ横切らせる（止まっているカットでは元の位置）
+    key.position.set(KIND === 'rafale' ? 3 : lerp(3, 26 * t - 13, w), 6, 8);
     // 'left'：縦にしたシャフトの位置（resize で計算）
     const sxOf = v => v === 'left' ? leftX : v;
     const sx = lerp(sxOf(a.sx), sxOf(b.sx), t), sy = lerp(a.sy, b.sy, t);
@@ -252,7 +264,7 @@
     const calm = 1 - clamp01(s - (shots.length - 2));
     // 縦にしたシャフトは画面の左に寄せるので、カメラからは右斜めに見える。その角度だけ軸まわりに回して、シールをカメラの真正面に向ける
     const face = Math.atan2(lx, d) * (1 - calm);
-    root.rotation.set(lerp(a.tilt, b.tilt, t) + follow.y * 0.04, follow.x * 0.12 * calm + face, lerp(rzOf(a.rz), rzOf(b.rz), t));
+    root.rotation.set(lerp(a.tilt, b.tilt, t) + follow.y * 0.04, follow.x * 0.12 * calm + face + gust.yaw, lerp(rzOf(a.rz), rzOf(b.rz), t) + gust.rz);
     if (drag === null) {
       vel *= 0.93;
       user += vel;
@@ -261,8 +273,8 @@
         user += (home - user) * Math.min(1, dt * 2.5);
       }
     }
-    const idle = reduce ? 0 : Math.sin(clock.elapsedTime * 0.5) * 0.08;
-    spin.rotation.x = lerp(a.roll, b.roll, t) + user + (idle - follow.y * 0.5) * calm;
+    const idle = reduce ? 0 : Math.sin(clock.elapsedTime * 0.5) * MOVE.idle;
+    spin.rotation.x = lerp(a.roll, b.roll, t) + gust.roll + user + (idle - follow.y * 0.5) * calm;
     renderer.render(scene, camera);
   }
 
