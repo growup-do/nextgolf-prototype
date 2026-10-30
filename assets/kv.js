@@ -299,6 +299,7 @@
   // vanish：製品ページへ移るときに、選んだシャフトを消していく割合（0→1）
   // out：FV から下へスクロールした進み具合（0→1。少し遅れてついていく）。画面の上で回って縦に立ちながら、
   // 鎬は左へ、Rafale は右へ滑って画面の外へ出ていく（薄くはしない）。鎬は時計回り、Rafale は反時計回りで、左右対称に立つ
+  const edgeFade = out => 1 - ease(clamp((out - 0.72) / 0.2));
   function poseShaft(s, side, mine, other, turn = 0, vanish = 0, out = 0) {
     const k = ease(clamp(mine)), o = ease(clamp(other)), u = ease(clamp(out));
     // 2 本とも、手元を左・先端を右に向ける（シャフトの文字は手元から先端へ向かって刷られているので、こうすると正しい向きで読める）
@@ -314,7 +315,8 @@
     const reach = (DIST - z) * Math.tan(THREE.MathUtils.degToRad(15)) * camera.aspect + s.half * s.root.scale.x * Math.abs(Math.cos(ang)) + 0.6;
     s.root.position.set(-side * reach * exit, 0.6 * u, z);
     s.spin.rotation.x = 0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15 + side * 1.6 * u;
-    const op = (1 - 0.8 * o) * (1 - vanish);
+    // 左右の端まで来たら、抜けきる前に透明にしていく（奥の面に落ちる影が、シャフトが出たあとも画面に残らないように）
+    const op = (1 - 0.8 * o) * (1 - vanish) * edgeFade(out);
     for (const m of s.mats) { m.opacity = op; m.depthWrite = op > 0.98; }
     s.root.visible = op > 0.01;
     for (const me of s.meshes) me.castShadow = op > 0.4;
@@ -357,7 +359,7 @@
     camera.position.set(mouse.x * 0.35 * still, -mouse.y * 0.2 * still, DIST);
     camera.lookAt(v3.set(0, 0, 0));
     if (!leaving) avoid(dt);   // 移る途中はロゴ類が消えていくので、ずらさない
-    catcher.material.opacity = 0.16 * (1 - vanish);   // 奥の影も、シャフトといっしょに消す（スクロールのときは、影もシャフトと一緒に横へ出ていく）
+    catcher.material.opacity = 0.16 * (1 - vanish) * edgeFade(out);   // 奥の影も、シャフトといっしょに消す
 
     // 背景（.kv-bg）は KV の外にあるので、ページ全体（html）に値を渡す。移るときは、選んだほうの暗い背景（製品ページの最初の画面と同じ）を出す
     const vars = document.documentElement.style;
