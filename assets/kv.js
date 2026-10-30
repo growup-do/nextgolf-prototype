@@ -360,8 +360,8 @@
     for (let i = 0; i < PCOUNT; i++) {
       const mm = Math.random() * LEN, j = Math.random(), phi = Math.PI / 2 - 2 * Math.PI * (0.5 - j), r = s.radius(mm) * U * 1.03;
       pos.set([mm * U, r * Math.cos(phi), r * Math.sin(phi)], i * 3);
-      // 散らばった位置（ワールドの向きでのずれ）：横は外側へ（内側へは 0.4 まで）、縦と奥行きは大きく、ばらばらに
-      from.set([side * (Math.pow(Math.random(), 0.7) * 3.4 - 0.4), (Math.random() - 0.5) * 7, (Math.random() - 0.5) * 4.5], i * 3);
+      // 散らばった位置（ワールドの向きでのずれ）：横は外側が多め（内側へは 1.8 まで。中央の少し手前まで）、縦と奥行きは大きく、ばらばらに
+      from.set([side * (Math.pow(Math.random(), 0.8) * 5 - 1.8), (Math.random() - 0.5) * 7, (Math.random() - 0.5) * 4.5], i * 3);
       const sg = s.segs.find(g => mm >= g[0] && mm <= g[1]) || s.segs[s.segs.length - 1], o = sg[2];
       if (o.map) {
         const px = pixels(o.map), x = Math.min(px.w - 1, Math.floor((mm - sg[0]) / (sg[1] - sg[0]) * px.w)), y = Math.min(px.h - 1, Math.floor(j * px.h)), k = (y * px.w + x) * 4;
