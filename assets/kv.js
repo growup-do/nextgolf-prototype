@@ -117,9 +117,10 @@
       g.computeVertexNormals();
       return g;
     }
-    const shaft = new THREE.Group(), mats = [], meshes = [];
+    const shaft = new THREE.Group(), mats = [], meshes = [], segs = [];
     const add = (mesh, m) => { mesh.castShadow = true; mats.push(m); meshes.push(mesh); shaft.add(mesh); };
     for (const [a, b, nx, opts] of parts(X0, L)) {
+      segs.push([a, b, opts]);
       const m = paint(opts);
       add(new THREE.Mesh(tube(a, b, nx), m), m);
     }
@@ -136,7 +137,7 @@
     const root = new THREE.Group();   // 位置・傾き・大きさ
     root.add(spin);
     world.add(root);
-    return { root, spin, mats, meshes, half: LEN / 2 * U };
+    return { root, spin, shaft, mats, meshes, segs, radius, L, half: LEN / 2 * U };
   }
 
   const shin = makeShaft(D.layShinogi, (X0, L) => {
@@ -321,13 +322,92 @@
     };
     document.head.appendChild(sc);
   }
+  // ---------- パーティクル ----------
+  // シャフトの表面から点を拾い（色は展開図のテクスチャから）、散らばった位置（aFrom）から表面へ集まる（uA：0→1）。
+  // 次のセクションへ移るときは、表面から左右へ散る（uD：0→1。uDir：散る向きをシャフトの向きに直したもの）
+  const PCOUNT = 2600;
+  const P_VS = `attribute vec3 aFrom; attribute vec3 aColor; attribute float aSeed;
+    uniform float uA, uD, uSize, uScale; uniform vec3 uDir; varying vec3 vC;
+    void main() {
+      float t = clamp((uA - aSeed * 0.4) / 0.6, 0.0, 1.0); t = t * t * (3.0 - 2.0 * t);
+      vec3 p = mix(aFrom, position, t);
+      float d = clamp((uD - aSeed * 0.35) / 0.65, 0.0, 1.0); d = d * d * (3.0 - 2.0 * d);
+      p += uDir * d * (5.0 + aSeed * 9.0) + (aFrom - position) * 0.35 * d;
+      vec4 mv = modelViewMatrix * vec4(p, 1.0);
+      gl_Position = projectionMatrix * mv;
+      gl_PointSize = uSize * uScale / -mv.z;
+      vC = aColor;
+    }`;
+  const P_FS = `uniform float uOp; varying vec3 vC;
+    void main() {
+      float a = smoothstep(0.5, 0.15, length(gl_PointCoord - 0.5));
+      if (a < 0.01) discard;
+      gl_FragColor = vec4(vC, a * uOp);
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+    }`;
+  const pixels = tex => {
+    if (tex.userData.px) return tex.userData.px;
+    const im = tex.image, c = document.createElement('canvas');
+    c.width = im.naturalWidth || im.width; c.height = im.naturalHeight || im.height;
+    const g = c.getContext('2d'); g.drawImage(im, 0, 0);
+    return (tex.userData.px = { w: c.width, h: c.height, d: g.getImageData(0, 0, c.width, c.height).data });
+  };
+  const tmpC = new THREE.Color();
+  function buildParticles(s) {
+    for (const [, , o] of s.segs) if (o.map && !(o.map.image && (o.map.image.naturalWidth || o.map.image.width))) return false;   // テクスチャの読み込み待ち
+    const L = s.L, LEN = L.length, pos = new Float32Array(PCOUNT * 3), from = new Float32Array(PCOUNT * 3), col = new Float32Array(PCOUNT * 3), seed = new Float32Array(PCOUNT);
+    for (let i = 0; i < PCOUNT; i++) {
+      const mm = Math.random() * LEN, j = Math.random(), phi = Math.PI / 2 - 2 * Math.PI * (0.5 - j), r = s.radius(mm) * U * 1.03;
+      pos.set([mm * U, r * Math.cos(phi), r * Math.sin(phi)], i * 3);
+      // 散らばった位置：シャフトのまわりに大きく、ばらばらに
+      const u = Math.random() * 2 - 1, th = Math.random() * Math.PI * 2, R = 1.2 + Math.random() * 3.6, q = Math.sqrt(1 - u * u);
+      from.set([mm * U + (Math.random() - 0.5) * 3 + R * u, R * q * Math.cos(th), R * q * Math.sin(th)], i * 3);
+      const sg = s.segs.find(g => mm >= g[0] && mm <= g[1]) || s.segs[s.segs.length - 1], o = sg[2];
+      if (o.map) {
+        const px = pixels(o.map), x = Math.min(px.w - 1, Math.floor((mm - sg[0]) / (sg[1] - sg[0]) * px.w)), y = Math.min(px.h - 1, Math.floor(j * px.h)), k = (y * px.w + x) * 4;
+        tmpC.setRGB(px.d[k] / 255, px.d[k + 1] / 255, px.d[k + 2] / 255, THREE.SRGBColorSpace);
+      } else tmpC.copy(o.color || tmpC.set(0x1a1a1a));
+      col.set([tmpC.r, tmpC.g, tmpC.b], i * 3);
+      seed[i] = Math.random();
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('aFrom', new THREE.BufferAttribute(from, 3));
+    g.setAttribute('aColor', new THREE.BufferAttribute(col, 3));
+    g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
+    const mat = new THREE.ShaderMaterial({ vertexShader: P_VS, fragmentShader: P_FS, transparent: true, depthWrite: false,
+      uniforms: { uA: { value: 0 }, uD: { value: 0 }, uOp: { value: 0 }, uSize: { value: 0.045 }, uScale: { value: 500 }, uDir: { value: new THREE.Vector3() } } });
+    s.pts = new THREE.Points(g, mat);
+    s.pts.frustumCulled = false;
+    s.pts.visible = false;
+    s.shaft.add(s.pts);
+    return true;
+  }
+  const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+  const qInv = new THREE.Quaternion(), vDir = new THREE.Vector3(), dbs = new THREE.Vector2();
+  // A：集まり具合（KV の 2 本は 1）、D：散り具合。m.mv：シャフト本体の濃さ、パーティクルの濃さは uOp
+  function particles(m) {
+    const s = m.s;
+    if (!s.pts && !buildParticles(s)) { m.mv = m.kv ? 1 - sstep(0, 0.12, disp) : sstep(0.82, 1, m.A); return; }
+    m.mv = sstep(0.82, 1, m.A) * (1 - sstep(0, 0.12, disp));
+    const op = Math.max(1 - sstep(0.9, 1, m.A), sstep(0, 0.1, disp)) * (1 - sstep(0.75, 1, disp)) * (m.kv ? 1 : sstep(0, 0.2, hand)) * m.f;
+    const u = s.pts.material.uniforms;
+    u.uA.value = m.A; u.uD.value = disp; u.uOp.value = op;
+    renderer.getDrawingBufferSize(dbs);
+    u.uScale.value = dbs.y / (2 * TAN);
+    s.shaft.getWorldQuaternion(qInv).invert();
+    u.uDir.value.set(m.kind === 'rafale' ? 1 : -1, 0.12, 0).applyQuaternion(qInv);   // 鎬は左へ、Rafale は右へ
+    s.pts.visible = op > 0.005;
+  }
+
   // 回転木馬での姿勢。h：寄りの進み具合（0→1）。寄るときは（回して手前に持ってきてから）ロゴのあたりを円の中心の位置に置いて 2.73 倍に（Figma）
   const easeIO = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
   function ringPose(m) {
     const r = m.g.el.getBoundingClientRect(), vw = canvas.clientWidth, vh = canvas.clientHeight;
-    const cx = r.left + r.width / 2, cy = r.top, h = easeIO(m.h);
-    const L0 = 1.75 * m.half.clientHeight;   // 鎬も Rafale と同じ大きさに
+    const cx = r.left + r.width / 2, cy = r.top + pinOff, h = easeIO(m.h);   // PC は、製品一覧のあいだシャフトを画面に固定（文字だけがスクロール）
+    const L0 = 1.75 * (PIN ? stageH() : m.half.clientHeight);   // 鎬も Rafale と同じ大きさに
     const depth = Lpx => Math.max(1.5, m.L.length * U * vh / (2 * TAN * Lpx));
     const at = (d, fx) => ({ x: (cx / vw * 2 - 1) * TAN * d * camera.aspect, y: -(cy / vh * 2 - 1) * TAN * d - fx, z: DIST - d });
     // 円の上の位置（奥行き d0 の面で、半径 r.width / 2 px）
@@ -343,6 +423,12 @@
     return { ...P, ang: -Math.PI / 2, roll: m.logo.roll - th };
   }
   const RING_SPEED = TURN / 48;   // 48 秒で 1 周
+  // PC（--pin: 1）：製品一覧の最初の画面（舞台）の高さ。site.css の --stage と同じ
+  let PIN = false, pinOff = 0, disp = 0;
+  const stageH = () => Math.max(innerHeight, Math.min(1, innerWidth / 1512) * 760);
+  const readPin = () => { PIN = !!lineup && getComputedStyle(lineup).getPropertyValue('--pin').trim() === '1'; };
+  readPin();
+  addEventListener('resize', readPin);
   function poseMembers(dt) {
     const hov = lineup ? lineup.dataset.hov || '' : '', side = hov ? (hov.startsWith('rafale') ? 'rafale' : 'shinogi') : '';
     const k = reduce ? 1 : 1 - Math.exp(-dt * 5);
@@ -355,6 +441,7 @@
       } else if (!reduce) g.rot += g.dir * RING_SPEED * dt;
     }
     for (const m of members) {
+      m.A = m.kv ? 1 : clamp((hand - 0.06 - 0.03 * (m.i + (m.kind === 'rafale' ? 2.5 : 0))) / 0.55);   // 1 本ずつ少しずつ遅れて集まる
       m.h = lerp(m.h, m.slug === hov ? 1 : 0, k);
       m.f = lerp(m.f, side === m.kind && m.slug !== hov ? 0.2 : 1, k);   // 同じ側のほかのシャフトは 20% まで薄く（Figma）
       if (m.kv) continue;   // KV の 2 本は poseShaft で（KV からの移り変わりと合わせる）
@@ -363,9 +450,11 @@
       m.s.root.scale.setScalar(1);
       m.s.root.position.set(P.x, P.y, P.z);
       m.s.spin.rotation.x = P.roll;
-      const op = m.f * clamp(hand * 1.4);   // KV から移るあいだは、背景のブレンドといっしょに浮かび上がる
+      m.s.root.updateMatrixWorld(true);
+      particles(m);
+      const op = m.f * m.mv;   // 本体は、パーティクルが集まりきるころに現れ、散り始めたら消える
       for (const mt of m.s.mats) { mt.opacity = op; mt.depthWrite = op > 0.98; }
-      m.op = op;
+      m.op = Math.max(op, m.s.pts && m.s.pts.visible ? 1 : 0);
     }
   }
 
@@ -440,13 +529,17 @@
       sc = lerp(sc, 1, m); x = lerp(x, P.x, m); y = lerp(y, P.y, m); z = lerp(z, P.z, m);
       roll = lerp(roll, P.roll + (side > 0 ? TURN : 0), m);
       op = lerp(op, member.f, m);
+      s.root.position.set(x, y, z); s.root.rotation.set(0, 0, ang); s.spin.rotation.x = roll; s.root.scale.setScalar(sc);
+      s.root.updateMatrixWorld(true);
+      particles(member);
+      op *= member.mv;
     }
     s.root.rotation.set(0, 0, ang);
     s.root.scale.setScalar(sc);
     s.root.position.set(x, y, z);
     s.spin.rotation.x = roll;
     for (const mt of s.mats) { mt.opacity = op; mt.depthWrite = op > 0.98; }
-    s.root.visible = op > 0.01;
+    s.root.visible = op > 0.01 || !!(s.pts && s.pts.visible);
     for (const me of s.meshes) me.castShadow = op > 0.4 && hand < 0.3;
   }
   // 描く：1 回目は KV の 2 本（と影）を、製品一覧の下端より上に。2 回目からは製品一覧のシャフトを、鎬・Rafale の半分ずつ、その範囲だけに
@@ -470,7 +563,7 @@
       const hr = ms[0].half.getBoundingClientRect();
       for (const m of members) m.s.root.visible = ms.includes(m) && (m.kv ? vis[members.indexOf(m)] : m.op > 0.01);
       // 上端で切るのは、上にもう一方の半分があるとき（スマホの Rafale）だけ。それ以外は浮かび上がりながら KV に重なってよい
-      if (cut(hr.top > lr.top + 1 ? hr.top : 0, hr.bottom)) renderer.render(scene, camera);
+      if (PIN ? cut(0, h) : cut(hr.top > lr.top + 1 ? hr.top : 0, hr.bottom)) renderer.render(scene, camera);
     }
     members.forEach((m, i) => { m.s.root.visible = vis[i]; });
     catcher.visible = cv;
@@ -506,8 +599,14 @@
     outT = clamp(sy / (kv.clientHeight * 0.85));
     out = Math.abs(outT - out) < 0.0005 ? outT : lerp(out, outT, op);
     const lr = lineup ? lineup.getBoundingClientRect() : null;
-    const handT = lr ? clamp(sy / Math.max(1, lr.top + sy)) : 0;
+    // hand：製品一覧の上端が画面の上端の少し手前に来たら 1（ぴったりまで待つと、止めた位置によって KV の 2 本が傾いたまま残る）
+    const handT = lr ? clamp(sy / Math.max(1, (lr.top + sy) * 0.88)) : 0;
     hand = Math.abs(handT - hand) < 0.0005 ? handT : lerp(hand, handT, op);
+    pinOff = PIN && lr ? Math.max(0, -lr.top) : 0;
+    // disp：文字のスクロールが終わり、次のセクション（背景がグレーに変わる）へ移るあいだにシャフトが散る
+    const dT = lr ? clamp((innerHeight * 0.75 - lr.bottom) / (innerHeight * 0.5)) : 0;   // 次のセクションの背景の切り替え（site.js）と同じ進み方
+    disp = Math.abs(dT - disp) < 0.0005 ? dT : lerp(disp, dT, op);
+    document.documentElement.classList.toggle('ln-line', hand > 0.95 && disp < 0.4);   // 中央の罫線を引く（site.css）
     poseMembers(dt);
     const mOf = s => members.find(m => m.s === s) || null;
     poseShaft(shin, 1, sh, rf, leaving && leaving.f > 0 ? turn : 0, vanish, mOf(shin), hand);
