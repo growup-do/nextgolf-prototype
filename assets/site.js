@@ -59,7 +59,11 @@
   // ヘッダーの下に暗いフッターが来たら、ヘッダーも暗くする（KV の鎬の暗い背景は CSS が --sh から計算する）
   const ft = document.querySelector('.ft'), hd = document.querySelector('.hd');
   if (ft && hd) {
-    const dark = () => document.documentElement.classList.toggle('hd-dark', ft.getBoundingClientRect().top < hd.offsetHeight);
+    const ln = document.querySelector('.lineup');   // トップの製品一覧（黒い地）の上でも暗くする
+    const dark = () => {
+      const h = hd.offsetHeight, r = ln && ln.getBoundingClientRect();
+      document.documentElement.classList.toggle('hd-dark', ft.getBoundingClientRect().top < h || !!(r && r.top < h && r.bottom > h));
+    };
     addEventListener('scroll', dark, { passive: true });
     addEventListener('resize', dark);
     dark();

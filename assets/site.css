@@ -139,7 +139,8 @@ main { padding-top: var(--hd); }
 .lineup { --u: min(1px, calc(100vw / 1512)); position: relative; height: 100vh; height: 100svh; min-height: calc(var(--u) * 760); }
 .ln-bgl { opacity: 0; }
 .ln-bgl i { position: absolute; top: 0; bottom: 0; width: 50%; transition: width .7s cubic-bezier(.22,.61,.36,1); }
-.ln-bgl .b-s { left: 0; background: #fff; }
+/* 地は鎬・Rafale とも黒。あいだに薄い罫線（鎬の側の右端。ホバーで地が広がると、罫線もいっしょに動く） */
+.ln-bgl .b-s { left: 0; background: #000; box-shadow: inset -1px 0 rgba(255,255,255,.22); }
 .ln-bgl .b-r { right: 0; background: #000; }
 /* 製品名に合わせると、その側の地が広がる（Figma「product_hover」：1165 / 1512） */
 html.ln-hs .ln-bgl .b-s, html.ln-hr .ln-bgl .b-r { width: 77.05%; }
@@ -156,7 +157,8 @@ html.ln-hs .ln-bgl .b-r, html.ln-hr .ln-bgl .b-s { width: 22.95%; }
 .ln-mark { display: block; width: 100%; height: auto; }
 .ln-names { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 24); }
 .ln-names a { display: block; font: 700 max(15px, calc(var(--u) * 23))/max(17px, calc(var(--u) * 25)) var(--en); text-align: center; white-space: nowrap; transition: color .25s; }
-.s-shinogi .ln-names a { color: #000; }
+.s-shinogi .ln-names a { color: #fff; }
+.s-shinogi .ln-mark [fill="black"] { fill: #fff; }   /* Figma のロゴは黒。黒い地なので白に */
 .s-rafale .ln-names a { color: #fff; }
 .ln-names a:hover, .ln-names a:focus-visible, .ln-names a.on { color: #ffae00; }
 /* もう一方のシリーズの文字は、広がった地に隠れるので消す */
@@ -592,10 +594,10 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .lineup { height: auto; min-height: 0; }
   /* 地は画面いっぱいの白に、黒を Rafale の頭（--lnrt。site.js）から下に重ねる */
   .ln-bgl i, html.ln-hs .ln-bgl i, html.ln-hr .ln-bgl i { left: 0; right: 0; width: auto; transition: none; }
-  .ln-bgl .b-r { top: var(--lnrt, 100%); }
+  .ln-bgl .b-s { box-shadow: none; }
+  .ln-bgl .b-r { top: var(--lnrt, 100%); border-top: 1px solid rgba(255,255,255,.22); }   /* スマホでは上下のあいだに罫線 */
   .ln-ring { left: 50%; top: 46%; width: 76vw; }
-  .s-shinogi .ln-names a { text-shadow: 0 0 6px #fff, 0 0 3px #fff; }
-  .s-rafale .ln-names a { text-shadow: 0 0 6px #000, 0 0 3px #000; }
+  .ln-names a { text-shadow: 0 0 6px #000, 0 0 3px #000; }
   .ln-half { position: relative; width: auto; height: 88svh; min-height: 560px; }
   .s-shinogi .ln-body, .s-rafale .ln-body { left: 50%; top: 50%; translate: -50% -50%; width: min(56vw, 260px); gap: 32px; }
   .ln-names { gap: 18px; }

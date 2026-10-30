@@ -273,7 +273,7 @@
   // ---------- 製品一覧のシャフト ----------
   // 鎬BLUE・RS1.0 は KV の 2 本をそのまま使い、ほかは KV のあとで読み込む（assets/lineup-data.js。テクスチャは小さくしたもの）
   // シリーズごとに、名前の順に等間隔の円（回転木馬）に立てて並べ、ゆっくり回す（鎬は右回り、Rafale は左回り）。
-  // 円の中心と半径は HTML の目印（.ln-ring）から。半分の高さに対する長さ（鎬 1.53・Rafale 1.75 倍。Figma）になる奥行きに置く。
+  // 円の中心と半径は HTML の目印（.ln-ring）から。半分の高さの 1.75 倍の長さ（Figma の Rafale）になる奥行きに置く。
   // シャフトは円の外を向けて回す（いちばん手前に来たものは、ロゴが正面を向く）
   const members = [];
   const TAN = Math.tan(THREE.MathUtils.degToRad(15)), TURN = Math.PI * 2;
@@ -327,7 +327,7 @@
   function ringPose(m) {
     const r = m.g.el.getBoundingClientRect(), vw = canvas.clientWidth, vh = canvas.clientHeight;
     const cx = r.left + r.width / 2, cy = r.top, h = easeIO(m.h);
-    const L0 = (m.kind === 'rafale' ? 1.75 : 1.53) * m.half.clientHeight;
+    const L0 = 1.75 * m.half.clientHeight;   // 鎬も Rafale と同じ大きさに
     const depth = Lpx => Math.max(1.5, m.L.length * U * vh / (2 * TAN * Lpx));
     const at = (d, fx) => ({ x: (cx / vw * 2 - 1) * TAN * d * camera.aspect, y: -(cy / vh * 2 - 1) * TAN * d - fx, z: DIST - d });
     // 円の上の位置（奥行き d0 の面で、半径 r.width / 2 px）
