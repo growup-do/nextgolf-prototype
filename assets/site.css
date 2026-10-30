@@ -138,15 +138,15 @@ main { padding-top: var(--hd); }
    画面に固定した下地（.ln-bgl。ほかのセクションと同じく、スクロールでブレンドして切り替わる）と文字（.ln-half）のあいだに描く。寸法は Figma（幅 1512px）を --u で画面の幅に合わせて縮める */
 /* PC：最初の画面（--stage）のあと 80svh ぶん、シャフトは画面に固定したまま文字だけがスクロールする（--pin。kv.js が読む） */
 .lineup { --u: min(1px, calc(100vw / 1512)); --stage: max(100svh, calc(var(--u) * 760)); --pin: 1; position: relative; height: calc(var(--stage) + 80svh); }
-.ln-bgl { opacity: 0; }
+.ln-bgl { opacity: 0; background: #000; }   /* 地は 1 枚の黒（2 枚に分けると、ブレンドの途中で継ぎ目が線に見える）。.b-s・.b-r は罫線の位置だけ */
 .ln-bgl i { position: absolute; top: 0; bottom: 0; width: 50%; transition: width .7s cubic-bezier(.22,.61,.36,1); }
 /* 地は鎬・Rafale とも黒。あいだに薄い罫線（鎬の側の右端。ホバーで地が広がると、罫線もいっしょに動く） */
-.ln-bgl .b-s { left: 0; background: #000; }
+.ln-bgl .b-s { left: 0; }
 /* 中央の罫線：製品一覧に入りきったら、上から下へ引く（html.ln-line。kv.js） */
 .ln-bgl .b-s::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 1px; background: rgba(255,255,255,.22);
   transform: scaleY(0); transform-origin: top; transition: transform 1.4s cubic-bezier(.65,0,.35,1) .2s; }
 html.ln-line .ln-bgl .b-s::after { transform: none; }
-.ln-bgl .b-r { right: 0; background: #000; }
+.ln-bgl .b-r { right: 0; }
 /* 製品名に合わせると、その側の地が広がる（Figma「product_hover」：1165 / 1512） */
 html.ln-hs .ln-bgl .b-s, html.ln-hr .ln-bgl .b-r { width: 77.05%; }
 html.ln-hs .ln-bgl .b-r, html.ln-hr .ln-bgl .b-s { width: 22.95%; }

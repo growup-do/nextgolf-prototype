@@ -323,26 +323,26 @@
     document.head.appendChild(sc);
   }
   // ---------- パーティクル ----------
-  // シャフトの表面から点を拾い（色は展開図のテクスチャから）、散らばった位置（aFrom）から表面へ集まる（uA：0→1）。
-  // 次のセクションへ移るときは、表面から左右へ散る（uD：0→1。uDir：散る向きをシャフトの向きに直したもの）
-  const PCOUNT = 2600;
-  const P_VS = `attribute vec3 aFrom; attribute vec3 aColor; attribute float aSeed;
-    uniform float uA, uD, uSize, uScale; uniform vec3 uDir; varying vec3 vC;
+  // シャフトの表面から点を拾い（色は展開図のテクスチャから）、散らばった位置（表面＋aOff）から表面へ集まる（uA：0→1）。
+  // 次のセクションへ移るときは、表面から左右へ散る（uD：0→1）。点は 1px の細かいもの
+  // aOff は画面の向き（ワールド）での散らばり。鎬は左側・Rafale は右側にだけ散らし、中央（文字のあたり）には出さない。
+  // uW2L・uDir：ワールドの向きを、シャフトの向き（軸まわりの回転を含む）に直したもの
+  const PCOUNT = 9000;
+  const P_VS = `attribute vec3 aOff; attribute vec3 aColor; attribute float aSeed;
+    uniform float uA, uD, uPx; uniform vec3 uDir; uniform mat3 uW2L; varying vec3 vC;
     void main() {
       float t = clamp((uA - aSeed * 0.4) / 0.6, 0.0, 1.0); t = t * t * (3.0 - 2.0 * t);
-      vec3 p = mix(aFrom, position, t);
+      vec3 off = uW2L * aOff;
+      vec3 p = position + off * (1.0 - t);
       float d = clamp((uD - aSeed * 0.35) / 0.65, 0.0, 1.0); d = d * d * (3.0 - 2.0 * d);
-      p += uDir * d * (5.0 + aSeed * 9.0) + (aFrom - position) * 0.35 * d;
-      vec4 mv = modelViewMatrix * vec4(p, 1.0);
-      gl_Position = projectionMatrix * mv;
-      gl_PointSize = uSize * uScale / -mv.z;
+      p += uDir * d * (5.0 + aSeed * 9.0) + off * 0.3 * d;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+      gl_PointSize = uPx;
       vC = aColor;
     }`;
   const P_FS = `uniform float uOp; varying vec3 vC;
     void main() {
-      float a = smoothstep(0.5, 0.15, length(gl_PointCoord - 0.5));
-      if (a < 0.01) discard;
-      gl_FragColor = vec4(vC, a * uOp);
+      gl_FragColor = vec4(vC, uOp);
       #include <tonemapping_fragment>
       #include <colorspace_fragment>
     }`;
@@ -354,15 +354,14 @@
     return (tex.userData.px = { w: c.width, h: c.height, d: g.getImageData(0, 0, c.width, c.height).data });
   };
   const tmpC = new THREE.Color();
-  function buildParticles(s) {
+  function buildParticles(s, kind) {
     for (const [, , o] of s.segs) if (o.map && !(o.map.image && (o.map.image.naturalWidth || o.map.image.width))) return false;   // テクスチャの読み込み待ち
-    const L = s.L, LEN = L.length, pos = new Float32Array(PCOUNT * 3), from = new Float32Array(PCOUNT * 3), col = new Float32Array(PCOUNT * 3), seed = new Float32Array(PCOUNT);
+    const L = s.L, LEN = L.length, side = kind === 'rafale' ? 1 : -1, pos = new Float32Array(PCOUNT * 3), from = new Float32Array(PCOUNT * 3), col = new Float32Array(PCOUNT * 3), seed = new Float32Array(PCOUNT);
     for (let i = 0; i < PCOUNT; i++) {
       const mm = Math.random() * LEN, j = Math.random(), phi = Math.PI / 2 - 2 * Math.PI * (0.5 - j), r = s.radius(mm) * U * 1.03;
       pos.set([mm * U, r * Math.cos(phi), r * Math.sin(phi)], i * 3);
-      // 散らばった位置：シャフトのまわりに大きく、ばらばらに
-      const u = Math.random() * 2 - 1, th = Math.random() * Math.PI * 2, R = 1.2 + Math.random() * 3.6, q = Math.sqrt(1 - u * u);
-      from.set([mm * U + (Math.random() - 0.5) * 3 + R * u, R * q * Math.cos(th), R * q * Math.sin(th)], i * 3);
+      // 散らばった位置（ワールドの向きでのずれ）：横は外側へ（内側へは 0.4 まで）、縦と奥行きは大きく、ばらばらに
+      from.set([side * (Math.pow(Math.random(), 0.7) * 3.4 - 0.4), (Math.random() - 0.5) * 7, (Math.random() - 0.5) * 4.5], i * 3);
       const sg = s.segs.find(g => mm >= g[0] && mm <= g[1]) || s.segs[s.segs.length - 1], o = sg[2];
       if (o.map) {
         const px = pixels(o.map), x = Math.min(px.w - 1, Math.floor((mm - sg[0]) / (sg[1] - sg[0]) * px.w)), y = Math.min(px.h - 1, Math.floor(j * px.h)), k = (y * px.w + x) * 4;
@@ -373,11 +372,11 @@
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    g.setAttribute('aFrom', new THREE.BufferAttribute(from, 3));
+    g.setAttribute('aOff', new THREE.BufferAttribute(from, 3));
     g.setAttribute('aColor', new THREE.BufferAttribute(col, 3));
     g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
     const mat = new THREE.ShaderMaterial({ vertexShader: P_VS, fragmentShader: P_FS, transparent: true, depthWrite: false,
-      uniforms: { uA: { value: 0 }, uD: { value: 0 }, uOp: { value: 0 }, uSize: { value: 0.045 }, uScale: { value: 500 }, uDir: { value: new THREE.Vector3() } } });
+      uniforms: { uA: { value: 0 }, uD: { value: 0 }, uOp: { value: 0 }, uPx: { value: 1 }, uDir: { value: new THREE.Vector3() }, uW2L: { value: new THREE.Matrix3() } } });
     s.pts = new THREE.Points(g, mat);
     s.pts.frustumCulled = false;
     s.pts.visible = false;
@@ -385,18 +384,18 @@
     return true;
   }
   const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
-  const qInv = new THREE.Quaternion(), vDir = new THREE.Vector3(), dbs = new THREE.Vector2();
+  const qInv = new THREE.Quaternion(), m4 = new THREE.Matrix4();
   // A：集まり具合（KV の 2 本は 1）、D：散り具合。m.mv：シャフト本体の濃さ、パーティクルの濃さは uOp
   function particles(m) {
     const s = m.s;
-    if (!s.pts && !buildParticles(s)) { m.mv = m.kv ? 1 - sstep(0, 0.12, disp) : sstep(0.82, 1, m.A); return; }
+    if (!s.pts && !buildParticles(s, m.kind)) { m.mv = m.kv ? 1 - sstep(0, 0.12, disp) : sstep(0.82, 1, m.A); return; }
     m.mv = sstep(0.82, 1, m.A) * (1 - sstep(0, 0.12, disp));
     const op = Math.max(1 - sstep(0.9, 1, m.A), sstep(0, 0.1, disp)) * (1 - sstep(0.75, 1, disp)) * (m.kv ? 1 : sstep(0, 0.2, hand)) * m.f;
     const u = s.pts.material.uniforms;
     u.uA.value = m.A; u.uD.value = disp; u.uOp.value = op;
-    renderer.getDrawingBufferSize(dbs);
-    u.uScale.value = dbs.y / (2 * TAN);
+    u.uPx.value = renderer.getPixelRatio();   // 1 CSS px
     s.shaft.getWorldQuaternion(qInv).invert();
+    u.uW2L.value.setFromMatrix4(m4.makeRotationFromQuaternion(qInv));
     u.uDir.value.set(m.kind === 'rafale' ? 1 : -1, 0.12, 0).applyQuaternion(qInv);   // 鎬は左へ、Rafale は右へ
     s.pts.visible = op > 0.005;
   }
@@ -542,6 +541,30 @@
     s.root.visible = op > 0.01 || !!(s.pts && s.pts.visible);
     for (const me of s.meshes) me.castShadow = op > 0.4 && hand < 0.3;
   }
+  // ---------- 製品一覧で一度止まる（PC） ----------
+  // 下へスクロールして製品一覧の上端が画面の上端に来たら（ロゴと製品名が出たところ）、スクロールを止めて中央の罫線を引き、
+  // 引き終わったらまたスクロールできるようにする。上へ戻って製品一覧の頭が見えたら、もう一度止まるように戻す
+  let hold = 'armed', holdY = 0, holdUntil = 0;
+  const HOLD_MS = 1900;   // 罫線を引く時間（site.css：遅れ 0.2 秒＋1.4 秒）と少しの余韻
+  function holdStep(now, lr) {
+    if (!PIN || !lr || reduce || leaving) return;
+    if (hold === 'armed' && lr.top <= -innerHeight * 0.6) hold = 'done';   // 途中から開いたときなどは止めない
+    if (hold === 'armed' && lr.top <= 0) {
+      hold = 'held'; holdY = Math.round(scrollY + lr.top); holdUntil = now + HOLD_MS;
+      scrollTo({ top: holdY, behavior: 'instant' });
+    }
+    if (hold === 'held') {
+      if (Math.abs(scrollY - holdY) > 1) scrollTo({ top: holdY, behavior: 'instant' });   // 慣性のスクロールを打ち消す
+      if (now >= holdUntil) hold = 'done';
+    }
+    if (hold === 'done' && lr.top > innerHeight * 0.3) hold = 'armed';
+  }
+  const KEYS = new Set([' ', 'PageDown', 'PageUp', 'ArrowDown', 'ArrowUp', 'Home', 'End']);
+  const block = e => { if (hold === 'held') e.preventDefault(); };
+  addEventListener('wheel', block, { passive: false });
+  addEventListener('touchmove', block, { passive: false });
+  addEventListener('keydown', e => { if (KEYS.has(e.key)) block(e); });
+
   // 描く：1 回目は KV の 2 本（と影）を、製品一覧の下端より上に。2 回目からは製品一覧のシャフトを、鎬・Rafale の半分ずつ、その範囲だけに
   // （シャフトは製品一覧の高さより長いので、はみ出しを切る。スマホでは 2 つの半分が上下に並ぶので、隣へはみ出さないように。
   //  KV の 2 本も、収まりきったら製品一覧の側で描く）
@@ -606,7 +629,9 @@
     // disp：文字のスクロールが終わり、次のセクション（背景がグレーに変わる）へ移るあいだにシャフトが散る
     const dT = lr ? clamp((innerHeight * 0.75 - lr.bottom) / (innerHeight * 0.5)) : 0;   // 次のセクションの背景の切り替え（site.js）と同じ進み方
     disp = Math.abs(dT - disp) < 0.0005 ? dT : lerp(disp, dT, op);
-    document.documentElement.classList.toggle('ln-line', hand > 0.95 && disp < 0.4);   // 中央の罫線を引く（site.css）
+    holdStep(now, lr);
+    // 中央の罫線を引く（site.css）。PC は、止まったところで引く
+    document.documentElement.classList.toggle('ln-line', (PIN ? hold !== 'armed' : hand > 0.95) && disp < 0.4);
     poseMembers(dt);
     const mOf = s => members.find(m => m.s === s) || null;
     poseShaft(shin, 1, sh, rf, leaving && leaving.f > 0 ? turn : 0, vanish, mOf(shin), hand);
