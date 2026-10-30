@@ -153,10 +153,11 @@
   if (hint) addEventListener('scroll', () => { hint.style.opacity = scrollY > 40 ? 0 : 1; }, { passive: true });
 
   // お問い合わせフォーム
-  // 本番は Google フォームの formResponse に送る（FORM_URL と各項目の entry 番号はフォーム作成後に設定）
+  // Google フォーム（growup.do@gmail.com の「NEXT GOLF お問い合わせ」）の formResponse に送る。各項目の entry 番号は build_site.py の data-entry
+  // 送信後は、フォームの Apps Script が info@nextgolf.jp への通知と、問い合わせた人への自動返信を送る
   const form = document.getElementById('contact-form');
   if (!form) return;
-  const FORM_URL = '';   // 例：https://docs.google.com/forms/d/e/xxxxxxxx/formResponse
+  const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScciwizyzA4CFS7TXi_E9n6oTZivnCLn_KxQmh45u_AZ7Zd6Q/formResponse';
   // 日本語入力の変換を確定する Enter では送信しない
   form.addEventListener('keydown', e => {
     if (e.key === 'Enter' && (e.isComposing || e.keyCode === 229)) e.preventDefault();
