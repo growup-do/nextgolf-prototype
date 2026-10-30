@@ -304,10 +304,11 @@
   // turn：画面の上での回転（周）、roll：軸まわりの回転（ラジアン）
   const EXIT = {
     shin: { dir: [-1, 1], start: 0.03, span: 0.6, pow: 1.5, turn: -0.5, roll: 2.4 },
-    raf: { dir: [1, -1], start: 0.12, span: 0.88, pow: 1.2, turn: 0.3, roll: -0.5 },
+    raf: { dir: [1, -1], start: 0.1, span: 0.66, pow: 1.2, turn: 0.3, roll: -0.5 },
   };
   // 抜けていく途中、画面の端まで来たら透明にしていく（奥の面に落ちる影が、シャフトが出たあとも画面に残らないように）
-  const edgeFade = e => 1 - ease(clamp((e - 0.78) / 0.2));
+  // Rafale は KV がまだ 3 割ほど見えているうち（out 0.76）に消えきるようにする（遅すぎると、スクロールを止めたときに右に残る）
+  const edgeFade = e => 1 - ease(clamp((e - 0.72) / 0.22));
   const exitOf = (x, out) => clamp((out - x.start) / x.span);
   function poseShaft(s, side, mine, other, turn = 0, vanish = 0, out = 0, x = EXIT.shin) {
     const k = ease(clamp(mine)), o = ease(clamp(other));
