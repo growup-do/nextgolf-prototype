@@ -7,18 +7,13 @@
 // ・スクロールすると、2 本は下の製品一覧（.lineup）の自分の位置へ収まる。製品一覧のほかのシャフトも同じシーンで描く
 //   （描く面は画面に固定。KV と製品一覧で、描く範囲を分けて 2 回描く）
 
-// 製品一覧：製品名に合わせると、その側の地が広がり（.hs / .hr）、名前の横に製品写真が出る。3D のシャフトの寄りは下の本体で
+// 製品一覧：製品名に合わせると、そのシャフトが拡大される（レイアウトは変えない。3D のシャフトの寄りは下の本体で）
 (() => {
   const ln = document.querySelector('.lineup');
   if (!ln) return;
   const hover = (slug, side) => {
     ln.dataset.hov = slug || '';
-    ln.classList.toggle('hs', side === 'shinogi');
-    ln.classList.toggle('hr', side === 'rafale');
-    document.documentElement.classList.toggle('ln-hs', side === 'shinogi');   // 地（.ln-bgl）は画面に固定した別の層なので、html にも付ける
-    document.documentElement.classList.toggle('ln-hr', side === 'rafale');
     ln.querySelectorAll('.ln-names a').forEach(a => a.classList.toggle('on', a.dataset.slug === slug));
-    ln.querySelectorAll('.ln-photo img').forEach(im => im.classList.toggle('on', im.dataset.slug === slug));
   };
   ln.querySelectorAll('.ln-half').forEach(h => h.querySelectorAll('.ln-names a').forEach(a => {
     const on = () => hover(a.dataset.slug, h.dataset.side), off = () => hover(null, null);
@@ -425,6 +420,8 @@
   // PC（--pin: 1）：製品一覧の最初の画面（舞台）の高さ。site.css の --stage と同じ
   let PIN = false, pinOff = 0, disp = 0;
   const stageH = () => Math.max(innerHeight, Math.min(1, innerWidth / 1512) * 760);
+  const LINE_VH = 0.35;   // 罫線を引くスクロールの長さ（画面の高さに対する割合。site.css の .lineup の高さと同じ）
+  const vars0 = document.documentElement.style;
   const readPin = () => { PIN = !!lineup && getComputedStyle(lineup).getPropertyValue('--pin').trim() === '1'; };
   readPin();
   addEventListener('resize', readPin);
@@ -442,7 +439,7 @@
     for (const m of members) {
       m.A = m.kv ? 1 : clamp((hand - 0.06 - 0.03 * (m.i + (m.kind === 'rafale' ? 2.5 : 0))) / 0.55);   // 1 本ずつ少しずつ遅れて集まる
       m.h = lerp(m.h, m.slug === hov ? 1 : 0, k);
-      m.f = lerp(m.f, side === m.kind && m.slug !== hov ? 0.2 : 1, k);   // 同じ側のほかのシャフトは 20% まで薄く（Figma）
+      m.f = 1;   // ホバーしても、ほかのシャフトはそのまま（寄るのは選んだ 1 本だけ）
       if (m.kv) continue;   // KV の 2 本は poseShaft で（KV からの移り変わりと合わせる）
       const P = ringPose(m);
       m.s.root.rotation.set(0, 0, P.ang);
@@ -541,30 +538,6 @@
     s.root.visible = op > 0.01 || !!(s.pts && s.pts.visible);
     for (const me of s.meshes) me.castShadow = op > 0.4 && hand < 0.3;
   }
-  // ---------- 製品一覧で一度止まる（PC） ----------
-  // 下へスクロールして製品一覧の上端が画面の上端に来たら（ロゴと製品名が出たところ）、スクロールを止めて中央の罫線を引き、
-  // 引き終わったらまたスクロールできるようにする。上へ戻って製品一覧の頭が見えたら、もう一度止まるように戻す
-  let hold = 'armed', holdY = 0, holdUntil = 0;
-  const HOLD_MS = 1900;   // 罫線を引く時間（site.css：遅れ 0.2 秒＋1.4 秒）と少しの余韻
-  function holdStep(now, lr) {
-    if (!PIN || !lr || reduce || leaving) return;
-    if (hold === 'armed' && lr.top <= -innerHeight * 0.6) hold = 'done';   // 途中から開いたときなどは止めない
-    if (hold === 'armed' && lr.top <= 0) {
-      hold = 'held'; holdY = Math.round(scrollY + lr.top); holdUntil = now + HOLD_MS;
-      scrollTo({ top: holdY, behavior: 'instant' });
-    }
-    if (hold === 'held') {
-      if (Math.abs(scrollY - holdY) > 1) scrollTo({ top: holdY, behavior: 'instant' });   // 慣性のスクロールを打ち消す
-      if (now >= holdUntil) hold = 'done';
-    }
-    if (hold === 'done' && lr.top > innerHeight * 0.3) hold = 'armed';
-  }
-  const KEYS = new Set([' ', 'PageDown', 'PageUp', 'ArrowDown', 'ArrowUp', 'Home', 'End']);
-  const block = e => { if (hold === 'held') e.preventDefault(); };
-  addEventListener('wheel', block, { passive: false });
-  addEventListener('touchmove', block, { passive: false });
-  addEventListener('keydown', e => { if (KEYS.has(e.key)) block(e); });
-
   // 描く：1 回目は KV の 2 本（と影）を、製品一覧の下端より上に。2 回目からは製品一覧のシャフトを、鎬・Rafale の半分ずつ、その範囲だけに
   // （シャフトは製品一覧の高さより長いので、はみ出しを切る。スマホでは 2 つの半分が上下に並ぶので、隣へはみ出さないように。
   //  KV の 2 本も、収まりきったら製品一覧の側で描く）
@@ -629,9 +602,16 @@
     // disp：文字のスクロールが終わり、次のセクション（背景がグレーに変わる）へ移るあいだにシャフトが散る
     const dT = lr ? clamp((innerHeight * 0.75 - lr.bottom) / (innerHeight * 0.5)) : 0;   // 次のセクションの背景の切り替え（site.js）と同じ進み方
     disp = Math.abs(dT - disp) < 0.0005 ? dT : lerp(disp, dT, op);
-    holdStep(now, lr);
-    // 中央の罫線を引く（site.css）。PC は、止まったところで引く
-    document.documentElement.classList.toggle('ln-line', (PIN ? hold !== 'armed' : hand > 0.95) && disp < 0.4);
+    // 中央の罫線は、スクロールに合わせて引く（--lnl：0→1。site.css）。PC は、製品一覧が画面の上端に来てから LINE_VH 分のスクロールで
+    // 上から下へ引き、そのあいだ文字はその場に留める（--lnhold）。スマホは、Rafale の頭が上がってくるのに合わせて左から右へ
+    let lnl = 0;
+    if (lr && PIN) {
+      const span = innerHeight * LINE_VH;
+      lnl = clamp(pinOff / span);
+      vars0.setProperty('--lnhold', Math.min(pinOff, span).toFixed(1) + 'px');
+    } else if (lr && RINGS.rafale) lnl = clamp((innerHeight * 0.95 - RINGS.rafale.half.getBoundingClientRect().top) / (innerHeight * 0.45));
+    vars0.setProperty('--lnl', lnl.toFixed(4));
+    vars0.setProperty('--lnd', disp.toFixed(4));   // シャフトが散るのに合わせて、罫線は上へ流れて消える
     poseMembers(dt);
     const mOf = s => members.find(m => m.s === s) || null;
     poseShaft(shin, 1, sh, rf, leaving && leaving.f > 0 ? turn : 0, vanish, mOf(shin), hand);
