@@ -297,27 +297,35 @@
   let F = target, last = null, clock = 0, out = 0, outT = 0;   // スライドショーの端末は、最初から SHINOGI のホバー状態
   const v3 = new THREE.Vector3();
   // vanish：製品ページへ移るときに、選んだシャフトを消していく割合（0→1）
-  // out：FV から下へスクロールした進み具合（0→1。少し遅れてついていく）。画面の上で回って縦に立ちながら、
-  // 鎬は左へ、Rafale は右へ滑って画面の外へ出ていく（薄くはしない）。鎬は時計回り、Rafale は反時計回りで、左右対称に立つ
-  const edgeFade = out => 1 - ease(clamp((out - 0.72) / 0.2));
-  function poseShaft(s, side, mine, other, turn = 0, vanish = 0, out = 0) {
-    const k = ease(clamp(mine)), o = ease(clamp(other)), u = ease(clamp(out));
+  // out：FV から下へスクロールした進み具合（0→1。少し遅れてついていく）。2 本は左右対称にせず、別々の向き・速さで画面の外へ抜ける（薄くはしない）
+  //  鎬：先に動き出し、速く左上へ抜ける。回転はゆっくり（刀を払うように、時計回りに半周）
+  //  Rafale：少し遅れて動き出し、ゆっくり右下へ流れる。回転は速い（突風にあおられるように、反時計回りに 1 周と 1/4）
+  // dir：抜けていく向き（右・上がプラス）、start・span：動き出す out と、抜けきるまでの out の幅、pow：加速のつけ方、
+  // turn：画面の上での回転（周）、roll：軸まわりの回転（ラジアン）
+  const EXIT = {
+    shin: { dir: [-1, 1], start: 0.03, span: 0.6, pow: 1.5, turn: -0.5, roll: 2.4 },
+    raf: { dir: [1, -1], start: 0.12, span: 0.88, pow: 1.2, turn: 1.25, roll: -1.2 },
+  };
+  // 抜けていく途中、画面の端まで来たら透明にしていく（奥の面に落ちる影が、シャフトが出たあとも画面に残らないように）
+  const edgeFade = e => 1 - ease(clamp((e - 0.78) / 0.2));
+  const exitOf = (x, out) => clamp((out - x.start) / x.span);
+  function poseShaft(s, side, mine, other, turn = 0, vanish = 0, out = 0, x = EXIT.shin) {
+    const k = ease(clamp(mine)), o = ease(clamp(other));
+    const e = exitOf(x, out);
     // 2 本とも、手元を左・先端を右に向ける（シャフトの文字は手元から先端へ向かって刷られているので、こうすると正しい向きで読める）
     // 鎬は左上から右下へ、Rafale は左下から右上へ。2 本で X を作る
-    const up = ease(clamp(out / 0.75));   // 縦に立つ進み具合（横へ出きる前に立ちきる）
-    const ang = lerp(side > 0 ? -A : A, side > 0 ? -Math.PI / 2 : Math.PI / 2, up);
+    const ang = (side > 0 ? -A : A) + x.turn * Math.PI * 2 * ease(e);
     s.root.rotation.set(0, 0, ang + turn);
     // 選ばれたほうは 150% に拡大して手前へ。もう一方は 70% に縮んで奥へ下がり、不透明度 20% まで薄くなる（ロゴ類と同じ）
     s.root.scale.setScalar(1 + 0.5 * k - 0.3 * o);
-    // 横へ出す量：その奥行きで見えている幅の半分＋シャフトの長さの半分。少し遅れて動き始め、最後に加速して抜ける
-    const z = side * -0.15 + 2.2 * k - 1.2 * o - 1.5 * u;
-    const exit = Math.pow(clamp((out - 0.08) / 0.92), 1.6);
-    const reach = (DIST - z) * Math.tan(THREE.MathUtils.degToRad(15)) * camera.aspect + s.half * s.root.scale.x * Math.abs(Math.cos(ang)) + 0.6;
-    s.root.position.set(-side * reach * exit, 0.6 * u, z);
-    s.spin.rotation.x = 0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15 + side * 1.6 * u;
-    // 左右の端まで来たら、抜けきる前に透明にしていく（奥の面に落ちる影が、シャフトが出たあとも画面に残らないように）
-    const op = (1 - 0.8 * o) * (1 - vanish) * edgeFade(out);
-    for (const m of s.mats) { m.opacity = op; m.depthWrite = op > 0.98; }
+    // 斜めに出す量：その奥行きで見えている幅・高さの半分＋シャフトの長さの半分（回っているので、どちらの向きでも長さの半分）
+    const z = side * -0.15 + 2.2 * k - 1.2 * o - 1.2 * ease(e);
+    const hh = (DIST - z) * Math.tan(THREE.MathUtils.degToRad(15)), len = s.half * s.root.scale.x + 0.6;
+    const m = Math.pow(e, x.pow);
+    s.root.position.set(x.dir[0] * (hh * camera.aspect + len) * m, x.dir[1] * (hh + len) * m, z);
+    s.spin.rotation.x = 0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15 + x.roll * ease(e);
+    const op = (1 - 0.8 * o) * (1 - vanish) * edgeFade(e);
+    for (const mt of s.mats) { mt.opacity = op; mt.depthWrite = op > 0.98; }
     s.root.visible = op > 0.01;
     for (const me of s.meshes) me.castShadow = op > 0.4;
   }
@@ -351,15 +359,15 @@
     out = Math.abs(outT - out) < 0.0005 ? outT : lerp(out, outT, op);
     // 描く面はページより遅く上がる（視差）。すぐに画面の外へ出ず、その場で消えていくように見せる
     canvas.style.transform = `translate3d(0, ${(Math.min(sy, kv.clientHeight * 1.2) * 0.55).toFixed(1)}px, 0)`;
-    poseShaft(shin, 1, sh, rf, leaving && leaving.f > 0 ? turn : 0, vanish, out);
-    poseShaft(raf, -1, rf, sh, leaving && leaving.f < 0 ? turn : 0, vanish, out);
+    poseShaft(shin, 1, sh, rf, leaving && leaving.f > 0 ? turn : 0, vanish, out, EXIT.shin);
+    poseShaft(raf, -1, rf, sh, leaving && leaving.f < 0 ? turn : 0, vanish, out, EXIT.raf);
     // マウスの位置で、少しだけ角度が変わる（ゆっくり漂う動きも少し足す）。移るときは傾きを戻す
     const drift = reduce ? 0 : Math.sin(clock * 0.5) * 0.03, still = 1 - q;
     world.rotation.set((mouse.y * 0.16 + drift) * still, mouse.x * 0.26 * still, 0);
     camera.position.set(mouse.x * 0.35 * still, -mouse.y * 0.2 * still, DIST);
     camera.lookAt(v3.set(0, 0, 0));
     if (!leaving) avoid(dt);   // 移る途中はロゴ類が消えていくので、ずらさない
-    catcher.material.opacity = 0.16 * (1 - vanish) * edgeFade(out);   // 奥の影も、シャフトといっしょに消す
+    catcher.material.opacity = 0.16 * (1 - vanish) * Math.max(edgeFade(exitOf(EXIT.shin, out)), edgeFade(exitOf(EXIT.raf, out)));   // 奥の影も、後から抜ける Rafale といっしょに消す
 
     // 背景（.kv-bg）は KV の外にあるので、ページ全体（html）に値を渡す。移るときは、選んだほうの暗い背景（製品ページの最初の画面と同じ）を出す
     const vars = document.documentElement.style;
