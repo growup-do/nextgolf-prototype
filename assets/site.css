@@ -116,6 +116,7 @@ main { padding-top: var(--hd); }
 .note { font-size: 14px; line-height: 1.5; color: var(--sub); }
 .tag { display: inline-block; font: 700 12px/1 var(--en); padding: 6px 10px; background: var(--accent, var(--k90)); color: var(--on-accent, #fff); }
 .tag.gray { background: var(--k10); color: var(--k70); }
+.tag.cancel { background: #000; color: #fff; }   /* 試打会の中止：黒ベタに白文字（終了のグレーと見分ける） */
 
 /* ページの見出し */
 .ptitle { padding: 96px 0 56px; border-bottom: 1px solid var(--line); }
