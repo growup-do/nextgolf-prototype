@@ -419,8 +419,11 @@
   const RING_SPEED = TURN / 48;   // 48 秒で 1 周
   // PC（--pin: 1）：製品一覧の最初の画面（舞台）の高さ。site.css の --stage と同じ
   let PIN = false, pinOff = 0, disp = 0;
+  // kvA：KV の 2 本が、ページを開いたときにパーティクルから集まる進み具合（0→1。INTRO_MS で）
+  let kvA = 0, introT0 = null;
+  const INTRO_MS = 2200;
   const stageH = () => Math.max(innerHeight, Math.min(1, innerWidth / 1512) * 760);
-  const LINE_VH = 0.35;   // 罫線を引くスクロールの長さ（画面の高さに対する割合。site.css の .lineup の高さと同じ）
+  const LINE_VH = 0.15;   // 罫線を引くスクロールの長さ（画面の高さに対する割合。site.css の .lineup の高さと同じ）
   const vars0 = document.documentElement.style;
   const readPin = () => { PIN = !!lineup && getComputedStyle(lineup).getPropertyValue('--pin').trim() === '1'; };
   readPin();
@@ -437,7 +440,7 @@
       } else if (!reduce) g.rot += g.dir * RING_SPEED * dt;
     }
     for (const m of members) {
-      m.A = m.kv ? 1 : clamp((hand - 0.06 - 0.03 * (m.i + (m.kind === 'rafale' ? 2.5 : 0))) / 0.55);   // 1 本ずつ少しずつ遅れて集まる
+      m.A = m.kv ? kvA : clamp((hand - 0.06 - 0.03 * (m.i + (m.kind === 'rafale' ? 2.5 : 0))) / 0.55);   // 1 本ずつ少しずつ遅れて集まる
       m.h = lerp(m.h, m.slug === hov ? 1 : 0, k);
       m.f = 1;   // ホバーしても、ほかのシャフトはそのまま（寄るのは選んだ 1 本だけ）
       if (m.kv) continue;   // KV の 2 本は poseShaft で（KV からの移り変わりと合わせる）
@@ -525,6 +528,8 @@
       sc = lerp(sc, 1, m); x = lerp(x, P.x, m); y = lerp(y, P.y, m); z = lerp(z, P.z, m);
       roll = lerp(roll, P.roll + (side > 0 ? TURN : 0), m);
       op = lerp(op, member.f, m);
+    }
+    if (member) {   // パーティクル：最初に集まって現れ（kvA）、製品一覧から次へ移るときに散る
       s.root.position.set(x, y, z); s.root.rotation.set(0, 0, ang); s.spin.rotation.x = roll; s.root.scale.setScalar(sc);
       s.root.updateMatrixWorld(true);
       particles(member);
@@ -598,12 +603,13 @@
     // hand：製品一覧の上端が画面の上端の少し手前に来たら 1（ぴったりまで待つと、止めた位置によって KV の 2 本が傾いたまま残る）
     const handT = lr ? clamp(sy / Math.max(1, (lr.top + sy) * 0.88)) : 0;
     hand = Math.abs(handT - hand) < 0.0005 ? handT : lerp(hand, handT, op);
+    kvA = reduce || introT0 === null ? 1 : clamp((now - introT0) / INTRO_MS);
     pinOff = PIN && lr ? Math.max(0, -lr.top) : 0;
     // disp：文字のスクロールが終わり、次のセクション（背景がグレーに変わる）へ移るあいだにシャフトが散る
     const dT = lr ? clamp((innerHeight * 0.75 - lr.bottom) / (innerHeight * 0.5)) : 0;   // 次のセクションの背景の切り替え（site.js）と同じ進み方
     disp = Math.abs(dT - disp) < 0.0005 ? dT : lerp(disp, dT, op);
     // 中央の罫線は、スクロールに合わせて引く（--lnl：0→1。site.css）。PC は、製品一覧が画面の上端に来てから LINE_VH 分のスクロールで
-    // 上から下へ引き、そのあいだ文字はその場に留める（--lnhold）。スマホは、Rafale の頭が上がってくるのに合わせて左から右へ
+    // 左上から右下へ引き、そのあいだ文字はその場に留める（--lnhold）。スマホは、Rafale の頭が上がってくるのに合わせて左から右へ
     let lnl = 0;
     if (lr && PIN) {
       const span = innerHeight * LINE_VH;
@@ -622,7 +628,7 @@
     camera.position.set(mouse.x * 0.35 * still, -mouse.y * 0.2 * still, DIST);
     camera.lookAt(v3.set(0, 0, 0));
     if (!leaving && hand < 0.5) avoid(dt);   // 移る途中はロゴ類が消えていくので、ずらさない
-    catcher.material.opacity = 0.16 * (1 - vanish) * (1 - clamp(hand * 2));   // 奥の影は、製品一覧へ移るあいだに消す
+    catcher.material.opacity = 0.16 * (1 - vanish) * (1 - clamp(hand * 2)) * sstep(0.7, 1, kvA);   // 奥の影は、シャフトが現れてから出し、製品一覧へ移るあいだに消す
     catcher.visible = hand < 0.5;
 
     // 背景（.kv-bg）は KV の外にあるので、ページ全体（html）に値を渡す。移るときは、選んだほうの暗い背景（製品ページの最初の画面と同じ）を出す
@@ -667,6 +673,7 @@
   const timeout = new Promise(r => setTimeout(r, 8000));
   Promise.race([Promise.all(loads), timeout]).then(() => {
     kv.classList.add('ready');
+    introT0 = performance.now();
     start();
     loadLineup();
   });

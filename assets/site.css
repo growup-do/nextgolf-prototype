@@ -130,24 +130,28 @@ main { padding-top: var(--hd); }
 /* ===== トップ：キービジュアル（3D） ===== */
 .kv3d { position: relative; height: 100vh; height: 100svh; margin-top: calc(var(--hd) * -1); }
 /* 3D を描く面は KV より 40% 下まで広げ（kv.js の EXT）、KV の下端から先をなだらかに消す。下の製品一覧のクリックは通す */
-.kv3d canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: block; z-index: 1; opacity: 0; transition: opacity 1.2s; pointer-events: none; will-change: opacity;   /* Safari で、フェードの終わりに描画面が 1 コマ消えないように（.p3d-stage と同じ） */
+.kv3d canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: block; z-index: 1; opacity: 0; transition: opacity .4s; pointer-events: none; will-change: opacity;   /* シャフトはパーティクルから現れるので、面は早めに出す。Safari で、フェードの終わりに描画面が 1 コマ消えないように（.p3d-stage と同じ） */
   }
 .kv3d.ready canvas { opacity: 1; }
 .kv3d.on-shaft { cursor: pointer; }
 /* トップの製品一覧（Figma「product」）：鎬（白）と Rafale（黒）で半々。3D のシャフトは、KV と同じ画面に固定した描く面（kv.js）が、
    画面に固定した下地（.ln-bgl。ほかのセクションと同じく、スクロールでブレンドして切り替わる）と文字（.ln-half）のあいだに描く。寸法は Figma（幅 1512px）を --u で画面の幅に合わせて縮める */
-/* PC：最初の画面（--stage）のあと 80svh ぶん、シャフトは画面に固定したまま文字だけがスクロールする（--pin。kv.js が読む） */
-.lineup { --u: min(1px, calc(100vw / 1512)); --stage: max(100svh, calc(var(--u) * 760)); --pin: 1; position: relative; height: calc(var(--stage) + 35svh + 80svh); }
-/* 罫線を引くあいだ（35svh 分のスクロール）、文字と写真はその場に留める（--lnhold。kv.js） */
+/* PC：最初の画面（--stage）のあと、罫線を引く 15svh と文字が流れる 40svh のあいだ、シャフトは画面に固定したまま文字だけがスクロールする（--pin。kv.js が読む）。
+   文字が上へ抜けるころに次のセクションが上がってきて、シャフトが散る */
+.lineup { --u: min(1px, calc(100vw / 1512)); --stage: max(100svh, calc(var(--u) * 760)); --pin: 1; position: relative; height: calc(var(--stage) + 15svh + 40svh); }
+/* 罫線を引くあいだ（15svh 分のスクロール）、文字と写真はその場に留める（--lnhold。kv.js） */
 .ln-body { translate: 0 var(--lnhold, 0px); }   /* transform は表示のフェード（.reveal）が使うので、translate で */
 .ln-bgl { opacity: 0; background: #000; }   /* 地は 1 枚の黒（2 枚に分けると、ブレンドの途中で継ぎ目が線に見える）。.b-s・.b-r は罫線の位置だけ */
 .ln-bgl i { position: absolute; top: 0; bottom: 0; width: 50%; }
 /* 地は鎬・Rafale とも黒。あいだに薄い罫線（鎬の側の右端。ホバーで地が広がると、罫線もいっしょに動く） */
 .ln-bgl .b-s { left: 0; }
-/* 中央の罫線：製品一覧が画面の上端に来たら、スクロールに合わせて上から下へ引く（--lnl。kv.js）。
+/* 中央の罫線：左上から右下への斜めの線（画面の幅の 46% → 60%。ロゴにかからない傾き）。箱の対角線を 1px の線で描く。
+   製品一覧が画面の上端に来たら、スクロールに合わせて左上から右下へ引く（--lnl。kv.js）。
    次のセクションへ移るときは、シャフトが散るのに合わせて上へ流れて消える（--lnd） */
-.ln-bgl .b-s::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 1px; background: rgba(255,255,255,.22);
-  transform: translateY(calc(var(--lnd, 0) * -100%)) scaleY(var(--lnl, 0)); transform-origin: top; }
+.ln-bgl::after { content: ""; position: absolute; top: 0; bottom: 0; left: 46%; width: 14%;
+  background: linear-gradient(to top right, transparent calc(50% - 1px), rgba(255,255,255,.22) 50%, transparent calc(50% + 1px));
+  clip-path: inset(0 calc((1 - var(--lnl, 0)) * 100%) calc((1 - var(--lnl, 0)) * 100%) 0);
+  transform: translateY(calc(var(--lnd, 0) * -100%)); }
 .ln-bgl .b-r { right: 0; }
 .ln-half { position: absolute; top: 0; bottom: 0; width: 50%; z-index: 2; pointer-events: none; }
 .ln-half.s-shinogi { left: 0; }
@@ -338,7 +342,11 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .areas a span::after { content: " SHOPS"; font-size: 12px; }
 .areas a:hover, .areas a.hl { background: var(--point); border-color: var(--point); color: var(--on-point); }
 .areas a:hover span, .areas a.hl span { color: #fff; }
+.jmap { position: relative; }
 .jmap svg { display: block; width: 100%; height: auto; overflow: visible; }
+/* 表示のときは、パーティクルが集まってから地図が現れる（site.js。--jmo：0→1）。点を描く面は、地図の外へ幅・高さの 25% ずつ広げる */
+.js .jmap.pt svg { opacity: var(--jmo, 0); }
+.jmap-pt { position: absolute; left: -25%; top: -25%; width: 150%; height: 150%; pointer-events: none; }
 .jmap .pf { stroke: #d2d2d2; stroke-width: .9; stroke-linejoin: round; transition: fill .25s; }
 .jmap .pf.none { fill: #fff; fill-opacity: .15; }   /* 取扱店のない県：白を 15% だけ */
 .jmap a.pf path { fill: #fff; cursor: pointer; }   /* 取扱店のある県は白 */
@@ -590,7 +598,7 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .lineup { height: auto; min-height: 0; --pin: 0; }
   /* 地は画面いっぱいの白に、黒を Rafale の頭（--lnrt。site.js）から下に重ねる */
   .ln-bgl i { left: 0; right: 0; width: auto; transition: none; }
-  .ln-bgl .b-s::after { display: none; }
+  .ln-bgl::after { display: none; }
   .ln-bgl .b-r { top: var(--lnrt, 100%); }
   /* スマホでは上下のあいだに罫線（左から右へ引く） */
   .ln-bgl .b-r::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: rgba(255,255,255,.22);
