@@ -1,11 +1,14 @@
 // 3D のある製品ページ：スクロールに合わせて、シャフトの全体 → ロゴ → ラベル → … とカメラが寄っていく
 // シャフトの形とテクスチャは KV と同じ（印刷データから作った assets/kv-data.js）。どちらのシャフトかは .p3d の data-shaft
+// 鎬BLUE・Rafale RS1.0 以外の製品は、製品ごとのデータ（assets/shaft-<slug>.js の SHAFT_DATA。build_tex_products.py）を読み、
+// カットの構成と動き方も製品ごとに変える（data-slug）
 // three.js と素材は、file:// で開いても読めるよう通常の <script> で読み込む
 (() => {
   const box = document.querySelector('.p3d');
-  const THREE = window.THREE, D = window.KV_DATA;
-  if (!box || !THREE || !D) return;
+  const THREE = window.THREE, D = window.KV_DATA, S = window.SHAFT_DATA;
+  if (!box || !THREE || !(D || S)) return;
   const KIND = box.dataset.shaft;               // 'shinogi' か 'rafale'
+  const SLUG = box.dataset.slug;
   const canvas = box.querySelector('.p3d-stage');
   const track = box.querySelector('.p3d-track');
   const info = box.querySelector('.p3d-info');
@@ -56,8 +59,8 @@
   const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 100);
 
   // ---------- シャフト（KV と同じ作り。1 unit = 100mm） ----------
-  const L = KIND === 'rafale' ? D.layRafale : D.layShinogi;
-  const T = KIND === 'rafale' ? D.texRafale : D.texShinogi;
+  const L = S ? S.lay : KIND === 'rafale' ? D.layRafale : D.layShinogi;
+  const T = S ? S.tex : KIND === 'rafale' ? D.texRafale : D.texShinogi;
   const U = 0.01, LEN = L.length, X0 = L.x0;
   const knots = [[0, L.d_butt], [X0, L.d_wrap_l], [X0 + L.wrap_mm, L.d_wrap_r], [LEN, L.d_tip]];
   const radius = mm => {
@@ -137,7 +140,41 @@
   const wx = mm => (mm - LEN / 2) * U;   // シャフト上の位置（mm）→ シャフトの中心からの距離
   const MID = LEN / 2, TURN = Math.PI * 2;
   const KV_ROLL = 0.45;   // KV でホバーしたときの、軸まわりの向き（kv.js の 0.3 + 0.15）
-  const shots = KIND === 'rafale'
+  const mark = k => (L.marks || [])[k] || { mm: X0 + 140, roll: 0 };
+  const TIP = LEN - 140;   // 先端シールの中心（build_tex.py）
+  const SHOTS = {
+    // Athlete FW：ロゴ → 展開図の中のラベル（裏側へ回す）→ 低い位置からの中景 → 先端シール → 炎の先 → 縦
+    'shinogi-athlete-fw': () => [
+      { focus: MID, d: 'kv', rz: 'kv', sx: 0, sy: 0, tilt: 0, roll: KV_ROLL },
+      { focus: mark(0).mm, d: 1.5, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+      { focus: mark(1).mm, d: 1.25, rz: 0, sx: 0, sy: 0, tilt: 0, roll: mark(1).roll },
+      { focus: mark(0).mm + 160, d: 3.1, rz: 0.09, sx: -0.02, sy: -0.18, tilt: 0.1, roll: 0.3 },
+      { focus: TIP, d: 0.6, rz: -0.26, sx: -0.06, sy: 0.05, tilt: 0, roll: 0 },
+      { focus: X0 + L.b_mm - 40, d: 0.95, rz: 0, sx: 0, sy: 0.06, tilt: 0, roll: -0.6 },
+      { focus: MID, d: 'tall', rz: -Math.PI / 2, sx: 'left', sy: 0, tilt: 0, roll: TURN },
+    ],
+    // Athlete T-60：ラベルから入り、ロゴ → 先端シール → 手元の大写し → 傾けた全体 → 縦（FW とは逆の順で見せる）
+    'shinogi-athlete-t-60': () => [
+      { focus: MID, d: 'kv', rz: 'kv', sx: 0, sy: 0, tilt: 0, roll: KV_ROLL },
+      { focus: mark(1).mm, d: 1.2, rz: 0, sx: 0, sy: 0, tilt: 0, roll: mark(1).roll },
+      { focus: mark(0).mm, d: 1.45, rz: 0.18, sx: 0, sy: 0, tilt: 0, roll: 0 },
+      { focus: TIP, d: 0.62, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+      { focus: X0 + 30, d: 0.8, rz: -0.32, sx: 0.06, sy: -0.04, tilt: 0, roll: Math.PI / 2 },
+      { focus: MID + 60, d: 3.6, rz: 0.12, sx: 0, sy: 0.18, tilt: -0.06, roll: 0 },
+      { focus: MID, d: 'tall', rz: -Math.PI / 2, sx: 'left', sy: 0, tilt: 0, roll: TURN },
+    ],
+    // White-50：金の「鎬」→ 手元の筆の SHINOGI（側面）→ 白から黒へ変わる筆の模様 → 引きの全体 → 黒い先端 → 縦
+    'shinogi-white-50': () => [
+      { focus: MID, d: 'kv', rz: 'kv', sx: 0, sy: 0, tilt: 0, roll: KV_ROLL },
+      { focus: mark(0).mm, d: 1.0, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+      { focus: X0 + 35, d: 1.2, rz: 0, sx: 0, sy: 0, tilt: 0, roll: -1.63 },
+      { focus: X0 + 175, d: 1.5, rz: 0.16, sx: 0.02, sy: -0.04, tilt: 0, roll: 0.4 },
+      { focus: MID - 40, d: 3.4, rz: -0.08, sx: 0, sy: 0.2, tilt: -0.05, roll: 0 },
+      { focus: TIP + 60, d: 0.7, rz: -0.3, sx: -0.05, sy: -0.04, tilt: 0, roll: 0 },
+      { focus: MID, d: 'tall', rz: -Math.PI / 2, sx: 'left', sy: 0, tilt: 0, roll: TURN },
+    ],
+  };
+  const shots = SHOTS[SLUG] ? SHOTS[SLUG]() : KIND === 'rafale'
     ? (() => {
       // 裏面の筆記体とシールは、羽のマークとロゴの真裏（半周）。build_tex_kv.py でシールを半周の位置にそろえている
       const LOGO = L.pos.logo, LABEL = L.pos.label, SCRIPT = X0 + 120, SEAL = X0 + 29, BACK = -Math.PI;
@@ -170,9 +207,25 @@
   //  鎬（刀のしのぎ）：各カットでしっかり止まり、短くきびきび切り替える。切り替えの間に、刀身を光が走るようにハイライトが流れる
   //  Rafale（突風）：止まる時間を短くして流れ続ける。切り替えのたびに風にあおられたように軸まわりに 1 回転し、傾きと向きも揺れる
   // hold：区間の前後で構図のまま止める割合、curve：切り替えの速さの変化、idle：止まっているあいだの揺れ
-  const MOVE = KIND === 'rafale'
+  //  Athlete FW（フェアウェイから払い打つ）：低く払うように、切り替えの途中で手前へ傾きながら横へ流れ、4 分の 1 周ひねって戻る
+  //  Athlete T-60（ツアー向けの精密さ）：止まっているときは揺らさない。切り替えはわずかに行き過ぎてから、カチッと止まる。光が軸のまわりを 1 周する
+  //  White-50（白）：ゆっくり浮かぶ。切り替えの途中で少し遠ざかってから寄り直し（息をするように）、止まっているあいだは上下にただよう
+  // gust(t, w, i)：切り替えの途中だけ足す動き（t：0→1、w：途中で 1。i：カットの番号）。dz：カメラの距離の倍率、sx：横のずれ、bob：上下のただよい
+  const backOut = t => 1 + 2.2 * Math.pow(t - 1, 3) + 1.2 * Math.pow(t - 1, 2);
+  const STYLE = {
+    'shinogi-athlete-fw': { hold: 0.12, curve: ease, idle: 0.05,
+      gust: (t, w, i) => ({ roll: Math.PI * Math.sin(Math.PI * t) * 0.5, rz: -0.12 * w, yaw: 0, tilt: 0.35 * w, sx: (i % 2 ? 0.16 : -0.16) * w, dz: 1 }),
+      light: (t, w) => [lerp(3, -6, w), 2.5, 8] },
+    'shinogi-athlete-t-60': { hold: 0.26, curve: backOut, idle: 0,
+      gust: () => ({ roll: 0, rz: 0, yaw: 0, tilt: 0, sx: 0, dz: 1 }),
+      light: (t, w) => [9 * Math.cos(TURN * t + 0.36), 6, 9 * Math.sin(TURN * t + 0.36) + 4 * (1 - w)] },
+    'shinogi-white-50': { hold: 0.1, curve: t => (1 - Math.cos(Math.PI * t)) / 2, idle: 0.06, bob: 0.06,
+      gust: (t, w) => ({ roll: 0, rz: 0.05 * w, yaw: -0.18 * w, tilt: 0, sx: 0, dz: 1 + 0.45 * w }),
+      light: (t, w) => [lerp(2, 0, w), 9, 6] },
+  }[SLUG];
+  const MOVE = STYLE || (KIND === 'rafale'
     ? { hold: 0.06, curve: ease, idle: 0.14 }
-    : { hold: 0.22, curve: t => t * t * t * (t * (t * 6 - 15) + 10), idle: 0.03 };
+    : { hold: 0.22, curve: t => t * t * t * (t * (t * 6 - 15) + 10), idle: 0.03 });
   const clamp01 = x => Math.min(1, Math.max(0, x));
   const TAN = Math.tan(THREE.MathUtils.degToRad(15));   // 縦の画角 30°の半分
   const look = new THREE.Vector3();
@@ -239,15 +292,16 @@
     const i = Math.min(Math.floor(s), shots.length - 2), t = s - i;
     const a = shots[i], b = shots[i + 1];
     // 距離は対数で補間する（全体の引きから大写しまで、同じ速さで寄っていくように見せる）
-    const d = Math.exp(lerp(Math.log(dist(a.d)), Math.log(dist(b.d)), t));
-    // w：切り替えの途中だけ 1 に近づく（カットの上では 0。構図を崩さない）
-    const w = Math.sin(Math.PI * t);
-    const gust = KIND === 'rafale' ? { roll: TURN * t, rz: 0.22 * w, yaw: 0.28 * w } : { roll: 0, rz: 0, yaw: 0 };
+    // w：切り替えの途中だけ 1 に近づく（カットの上では 0。構図を崩さない）。t は行き過ぎ（T-60）で 1 を少し超えることがある
+    const w = Math.sin(Math.PI * clamp01(t));
+    const gust = STYLE ? STYLE.gust(t, w, i) : KIND === 'rafale' ? { roll: TURN * t, rz: 0.22 * w, yaw: 0.28 * w } : { roll: 0, rz: 0, yaw: 0 };
+    const d = Math.exp(lerp(Math.log(dist(a.d)), Math.log(dist(b.d)), t)) * (gust.dz || 1);
     // 鎬：光を画面の左から右へ横切らせる（止まっているカットでは元の位置）
-    key.position.set(KIND === 'rafale' ? 3 : lerp(3, 26 * t - 13, w), 6, 8);
+    if (STYLE) key.position.set(...STYLE.light(t, w));
+    else key.position.set(KIND === 'rafale' ? 3 : lerp(3, 26 * t - 13, w), 6, 8);
     // 'left'：縦にしたシャフトの位置（resize で計算）
     const sxOf = v => v === 'left' ? leftX : v;
-    const sx = lerp(sxOf(a.sx), sxOf(b.sx), t), sy = lerp(a.sy, b.sy, t);
+    const sx = lerp(sxOf(a.sx), sxOf(b.sx), t) + (gust.sx || 0), sy = lerp(a.sy, b.sy, t);
     // focus をシャフトの回転の中心に置き、その点が画面の (sx, sy) に来るようにカメラをずらす
     spin.position.x = -wx(lerp(a.focus, b.focus, t));
     const lx = -sx * 2 * d * TAN * aspect, ly = -sy * 2 * d * TAN;
@@ -257,14 +311,16 @@
     const k = Math.min(1, dt * 4);
     follow.x += ((reduce ? 0 : mouse.x) - follow.x) * k;
     follow.y += ((reduce ? 0 : mouse.y) - follow.y) * k;
-    root.position.set(0, 0, 0);
+    // White-50：止まっているあいだ、上下にただよう（縦のカットでは止める）
+    const calm0 = 1 - clamp01(s - (shots.length - 2));
+    root.position.set(0, reduce || !MOVE.bob ? 0 : Math.sin(clock.elapsedTime * 0.7) * MOVE.bob * d * TAN * calm0, 0);
     // 'kv'：鎬は左上から右下へ、Rafale は左下から右上へ（KV の X と同じ向き）
     const rzOf = v => v === 'kv' ? (KIND === 'rafale' ? kvA : -kvA) : v;
     // 最後の縦のカットでは、マウスと漂う動きで軸まわりに回さない（裏面のシールを正面に向けたままにする）
     const calm = 1 - clamp01(s - (shots.length - 2));
     // 縦にしたシャフトは画面の左に寄せるので、カメラからは右斜めに見える。その角度だけ軸まわりに回して、シールをカメラの真正面に向ける
     const face = Math.atan2(lx, d) * (1 - calm);
-    root.rotation.set(lerp(a.tilt, b.tilt, t) + follow.y * 0.04, follow.x * 0.12 * calm + face + gust.yaw, lerp(rzOf(a.rz), rzOf(b.rz), t) + gust.rz);
+    root.rotation.set(lerp(a.tilt, b.tilt, t) + (gust.tilt || 0) + follow.y * 0.04, follow.x * 0.12 * calm + face + gust.yaw, lerp(rzOf(a.rz), rzOf(b.rz), t) + gust.rz);
     if (drag === null) {
       vel *= 0.93;
       user += vel;
