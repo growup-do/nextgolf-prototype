@@ -414,6 +414,8 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .p3d-mark .lg { display: block; width: clamp(220px, 27vw, 500px); aspect-ratio: var(--ar); background: var(--accent);
   -webkit-mask: var(--m) center / contain no-repeat; mask: var(--m) center / contain no-repeat; }
 .p3d-hero.s-rafale .p3d-mark .lg { filter: drop-shadow(0 2px 14px rgba(0,0,0,.5)); }
+.p3d-mark .nm { display: inline-block; vertical-align: top; height: 26px; aspect-ratio: var(--ar); background: var(--accent);   /* 鎬の製品名（ラベルの文字。make_logos.py） */
+  -webkit-mask: var(--m) center / contain no-repeat; mask: var(--m) center / contain no-repeat; }
 .p3d-mark .col-logo { display: inline-block; vertical-align: top; height: 22px;   /* 高さと縦横比から幅を決める（block だと幅が 0 になる） */ aspect-ratio: var(--ar); background: var(--accent);
   -webkit-mask: url("img/logo-blue.png") center / contain no-repeat; mask: url("img/logo-blue.png") center / contain no-repeat; }
 .p3d-lead .copy { font: 700 23px/1.5 var(--ja); font-feature-settings: "palt"; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.45); word-break: keep-all; overflow-wrap: anywhere; }

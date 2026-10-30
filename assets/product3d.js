@@ -183,6 +183,20 @@
       { focus: X0 + 120, d: 0.85, rz: 0.3, sx: 0.06, sy: -0.06, tilt: 0, roll: -Math.PI },
       { focus: L.pos.ring, d: 0.9, rz: 0.22, sx: 0, sy: -0.16, tilt: 0, roll: -Math.PI },   // 帯のすぐ隣に表のラベルがあるので、帯は裏から。文章（左上）を避けて下へ
       LEFT(X0 + 60, 1.5, -Math.PI), TALL(Math.PI)],
+    // Rafale KT FW：ロゴ → オレンジの帯 → 裏のラベル → 筆記体（裏）→ 立てた全体（文章が左上のカットは下へ、右下のカットは上へ置く）
+    'rafale-kt-fw': () => [KV0,
+      { focus: L.pos.logo, d: 2.4, rz: 0.08, sx: 0, sy: 0, tilt: 0, roll: 0 },
+      { focus: L.pos.ring, d: 0.9, rz: 0.2, sx: 0, sy: -0.14, tilt: 0, roll: 0 },
+      { focus: L.pos.label, d: 1.6, rz: -0.08, sx: 0, sy: 0.12, tilt: 0, roll: L.pos.label_roll },
+      { focus: X0 + 120, d: 0.9, rz: 0.25, sx: 0.04, sy: -0.12, tilt: 0, roll: -Math.PI },
+      LEFT(X0 + 100, 1.5, -Math.PI), TALL(Math.PI)],
+    // Athlete GX：赤い SHINOGI → ラベル → 手元の裏（六角のマーク）→ 先端シール → 引きの全体 → 縦
+    'shinogi-athlete-gx': () => [KV0,
+      { focus: mark(0).mm, d: 1.6, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+      { focus: LAB, d: 1.1, rz: 0.12, sx: 0, sy: -0.1, tilt: 0, roll: 0 },
+      { focus: X0 + 60, d: 1.2, rz: -0.12, sx: 0, sy: 0.12, tilt: 0, roll: Math.PI },
+      { focus: TIP, d: 0.6, rz: 0.2, sx: 0.04, sy: -0.12, tilt: 0, roll: 0 },
+      LEFT(MID - 40, 2.4), TALL()],
     // Athlete FW：ロゴ → 展開図の中のラベル（裏側へ回す）→ 低い位置からの中景 → 先端シール → 炎の先 → 縦
     'shinogi-athlete-fw': () => [
       { focus: MID, d: 'kv', rz: 'kv', sx: 0, sy: 0, tilt: 0, roll: KV_ROLL },
@@ -280,6 +294,12 @@
     'rafale-kt1': { hold: 0.08, curve: t => 1 - Math.pow(1 - t, 3), idle: 0.1,
       gust: (t, w) => ({ roll: -TURN * t, rz: -0.15 * w, yaw: 0, tilt: 0, sx: 0.25 * w, dz: 1 }),
       light: (t, w) => [lerp(3, 14, w), 6, 8] },
+    'rafale-kt-fw': { hold: 0.1, curve: t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, idle: 0.12,   // 風に流されるように奥へ引いて、戻る
+      gust: (t, w) => ({ roll: TURN * t, rz: -0.3 * w, yaw: 0.15 * w, tilt: 0, sx: -0.2 * w, dz: 1 + 0.5 * w }),
+      light: t => [lerp(14, -6, t), 6, 8] },
+    'shinogi-athlete-gx': { hold: 0.12, curve: t => t * t * (3 - 2 * t), idle: 0.05,   // ゆっくりひねりながら 1 周、光が左から右へ
+      gust: (t, w) => ({ roll: TURN * t, rz: 0.1 * w, yaw: 0.3 * w, tilt: -0.15 * w, sx: 0, dz: 1 + 0.12 * w }),
+      light: t => [lerp(-12, 12, t), 8, 6] },
     'rafale-ma1': { hold: 0.14, curve: t => (1 - Math.cos(Math.PI * t)) / 2, idle: 0.08, bob: 0.05,
       gust: (t, w) => ({ roll: 0, rz: 0, yaw: -0.2 * w, tilt: 0.4 * w, sx: 0, dz: 1 + 0.25 * w }),
       light: t => [3, 6 * Math.cos(TURN * t), 8] },
