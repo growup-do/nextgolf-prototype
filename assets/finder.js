@@ -276,20 +276,21 @@
   }
   function target(s) {
     const n = all.length, u = (s.i + (s.p.series === 'rafale' ? SERIES_GAP : 0)) / (n - 1 + SERIES_GAP), arc = 2 * u - 1;
-    let px = areaL + u * (areaR - areaL), z = -1.6 * arc * arc, op = 1, tilt = 0;
+    let px = areaL + u * (areaR - areaL), z = -1.6 * arc * arc, op = 1, tilt = 0, hide = false;
     const mid = (areaL + areaR) / 2, spread = narrow ? W * 0.24 : Math.min(220, (areaR - areaL) / 4.5);
     if (state && state.top.length) {
       const r = state.top.findIndex(x => x.p.slug === s.p.slug);
       if (r >= 0) { px = mid + [0, -1, 1][r] * spread; z = 2.5; }
-      else { z = -7; op = state.pool.has(s.p.slug) ? 0.3 : 0.1; }
-    } else if (state && !state.pool.has(s.p.slug)) { z = -7; op = 0.1; }
+      else hide = true;   // 要望で選んでいるあいだ、ほかのシャフトはその場でパーティクルになって消える
+    } else if (state && !state.pool.has(s.p.slug)) hide = true;
+    if (hide) op = 0;
     if (picked) {
       const panelW = narrow ? 0 : Math.min(W * 0.46, 460);
       if (s.p.slug === picked) { px = narrow ? W / 2 : (areaL + W - panelW) / 2; z = 4.5; op = 1; tilt = 0.18; }
       else { z = -10; op = Math.min(op, 0.08); }
-    } else if (hover === s) { z += narrow ? 5 : 8; op = 1; }   // 手前に出して、柄が分かる大きさに
+    } else if (hover === s && !hide) { z += narrow ? 5 : 8; op = 1; }   // 手前に出して、柄が分かる大きさに
     else if (hover) op *= 0.35;
-    return { x: wx(px, z), y: 0, z, op, tilt };
+    return { x: wx(px, z), y: 0, z, op, tilt, hide };
   }
 
   // ---------- 押す・なぞる ----------
@@ -318,6 +319,67 @@
   canvas.addEventListener('pointerleave', () => { hover = null; canvas.style.cursor = ''; });
   canvas.addEventListener('click', e => { const s = nearest(e); hover = null; pick(s ? (picked === s.p.slug ? null : s.p.slug) : null); });
 
+  // ---------- パーティクル ----------
+  // 消えるときはシャフトがその場で粒になって散り、戻るときは粒が集まってシャフトになる。粒の色はシャフトのテクスチャから拾う
+  const PN = 700;
+  const dot = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 32;
+    const g = c.getContext('2d'), gr = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+    gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.4, 'rgba(255,255,255,.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 32, 32);
+    return new THREE.CanvasTexture(c);
+  })();
+  const WHITE = new THREE.Color(1, 1, 1);
+  function palette(s) {
+    if (s.pal) return s.pal;
+    const out = [];
+    for (const m of s.mats) {
+      const img = m.map && m.map.image;
+      if (!img || !img.width) { if (m.color) out.push(m.color.clone()); continue; }
+      const cv = document.createElement('canvas'); cv.width = cv.height = 16;
+      const g = cv.getContext('2d'); g.drawImage(img, 0, 0, 16, 16);
+      const d = g.getImageData(0, 0, 16, 16).data;
+      for (let i = 0; i < d.length; i += 28) out.push(new THREE.Color().setRGB(d[i] / 255, d[i + 1] / 255, d[i + 2] / 255, THREE.SRGBColorSpace));
+    }
+    return s.pal = out.length ? out : [WHITE];
+  }
+  const bursts = [];
+  function burst(s, at, out) {
+    const pal = palette(s), pos = new Float32Array(PN * 3), col = new Float32Array(PN * 3), a = new Float32Array(PN * 3), b = new Float32Array(PN * 3), d = new Float32Array(PN);
+    for (let i = 0; i < PN; i++) {
+      const y = (Math.random() * 2 - 1) * s.half, ang = Math.random() * Math.PI * 2, rr = 0.05 * Math.random();
+      const L = [at.x + Math.cos(ang) * rr, at.y + y, at.z + Math.sin(ang) * rr];
+      const S2 = [L[0] + Math.cos(ang) * (0.4 + Math.random() * 1.2) + (Math.random() - 0.5) * 0.8, L[1] + (Math.random() - 0.3) * 1.4, L[2] + Math.sin(ang) * (0.4 + Math.random() * 1.2)];
+      const [f, t] = out ? [L, S2] : [S2, L];
+      a.set(f, i * 3); b.set(t, i * 3); pos.set(f, i * 3);
+      const c = pal[(Math.random() * pal.length) | 0].clone().lerp(WHITE, 0.3);
+      col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+      d[i] = Math.random() * 0.35;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    const mat = new THREE.PointsMaterial({ size: 0.05, map: dot, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0 });
+    const pts = new THREE.Points(geo, mat);
+    scene.add(pts);
+    bursts.push({ pts, a, b, d, t: 0, dur: out ? 1.4 : 0.9, out });
+  }
+  const easeOut = x => 1 - Math.pow(1 - x, 3), easeInOut = x => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  function stepBursts(dt) {
+    for (let j = bursts.length - 1; j >= 0; j--) {
+      const B = bursts[j]; B.t += dt;
+      if (B.t >= B.dur) { scene.remove(B.pts); B.pts.geometry.dispose(); B.pts.material.dispose(); bursts.splice(j, 1); continue; }
+      const pos = B.pts.geometry.attributes.position, span = B.dur - 0.35;
+      for (let i = 0; i < PN; i++) {
+        const x = Math.min(1, Math.max(0, (B.t - B.d[i]) / span)), e = B.out ? easeOut(x) : easeInOut(x);
+        for (let k = 0; k < 3; k++) pos.array[i * 3 + k] = B.a[i * 3 + k] + (B.b[i * 3 + k] - B.a[i * 3 + k]) * e;
+      }
+      pos.needsUpdate = true;
+      const r = B.t / B.dur;
+      B.pts.material.opacity = B.out ? Math.min(1, r * 12) * (1 - r) * (1 - r) : Math.sin(Math.PI * r);
+    }
+  }
+
   // ---------- 描く ----------
   const clock = new THREE.Clock();
   let t0 = null, visible = false, raf = 0;
@@ -330,7 +392,14 @@
     for (const s of all) {
       const t = target(s), c = s.cur;
       const kk = el - 0.25 - s.i * 0.06 > 0 ? k : 0;   // 1 本ずつ、少し遅れて立ち上がる
-      c.x = ease(c.x, t.x, kk); c.y = ease(c.y, t.y, kk); c.z = ease(c.z, t.z, kk); c.op = ease(c.op, t.op, kk); c.tilt = ease(c.tilt, t.tilt, kk);
+      if (kk && t.hide !== !!s.hidden) {   // 消える・戻るのが決まったら、粒を出す
+        s.hidden = t.hide;
+        burst(s, t.hide ? c : t, t.hide);
+        if (!t.hide) s.showAt = el + 0.55;   // 粒が集まってから、シャフトを戻す
+      }
+      if (s.hidden || el < (s.showAt || 0)) t.op = 0;
+      c.x = ease(c.x, t.x, kk); c.y = ease(c.y, t.y, kk); c.z = ease(c.z, t.z, kk); c.tilt = ease(c.tilt, t.tilt, kk);
+      c.op = ease(c.op, t.op, s.hidden ? 1 - Math.pow(1e-5, dt) : kk);   // 消えるときは粒と入れ替わるように素早く
       s.g.position.set(c.x, c.y, c.z);
       s.g.rotation.set(c.tilt * 0.4, 0, -Math.PI / 2 + c.tilt * 0.25);
       s.spin.rotation.x = s.phase + el * (picked === s.p.slug ? 0.9 : 0.25);
@@ -338,6 +407,7 @@
       s.g.visible = c.op > 0.02;
       s.lb.tabIndex = c.op > 0.2 ? 0 : -1;
     }
+    stepBursts(dt);
     renderer.render(scene, camera);
     raf = requestAnimationFrame(frame);
   }
