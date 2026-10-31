@@ -165,29 +165,40 @@
   // ---------- 3D ----------
   const THREE = window.THREE, D = window.KV_DATA, LD = window.LINEUP_DATA;
   const stage = root.querySelector('.fd-stage'), canvas = root.querySelector('.fd-canvas'), labels = root.querySelector('.fd-labels');
+  const cardCvs = [...document.querySelectorAll('.lu-3d')];
   if (!THREE || !D || !LD) { root.classList.add('no3d'); return; }
+  const setup = cv => {
+    const r = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, powerPreference: 'high-performance' });
+    r.setClearColor(0x000000, 0);
+    r.outputColorSpace = THREE.SRGBColorSpace;
+    r.toneMapping = THREE.ACESFilmicToneMapping;
+    r.toneMappingExposure = 1.1;
+    return r;
+  };
+  // 光はトップの製品一覧（黒い地）と同じ考え方：正面の光に、うしろからの光で輪郭を立たせ、黒いシャフトも地から浮かせる
+  const lit = r => {
+    const sc = new THREE.Scene();
+    sc.environment = new THREE.PMREMGenerator(r).fromScene(new window.RoomEnvironment(), 0.04).texture;
+    const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(3, 6, 10); sc.add(key);
+    const rim = new THREE.DirectionalLight(0xffffff, 2.4); rim.position.set(-4, 5, -6); sc.add(rim);
+    const rim2 = new THREE.DirectionalLight(0xffffff, 1.4); rim2.position.set(5, -2, -5); sc.add(rim2);
+    sc.add(new THREE.HemisphereLight(0xffffff, 0x9a9a9a, 0.7));
+    return sc;
+  };
   let renderer;
-  try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' }); }
-  catch (e) { root.classList.add('no3d'); return; }
+  try { renderer = setup(canvas); } catch (e) { root.classList.add('no3d'); return; }
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
-  renderer.setClearColor(0x000000, 0);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
-  const scene = new THREE.Scene();
-  scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new window.RoomEnvironment(), 0.04).texture;
+  const scene = lit(renderer);
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 200);
   const TAN = Math.tan(THREE.MathUtils.degToRad(15));
-  const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(3, 6, 10); scene.add(key);
-  const rim = new THREE.DirectionalLight(0xffffff, 1.2); rim.position.set(-4, 5, -6); scene.add(rim);   // 輪郭を少し立たせる、うしろからの光
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x404040, 0.6));
-  const loader = new THREE.TextureLoader();
-  const texture = src => { const t = loader.load(src); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
+  // テクスチャは、舞台とカードのシャフトで同じものを使う（読み込みが 1 回で済む）。全部読み込めたら、カードを描く
+  const manager = new THREE.LoadingManager(), loader = new THREE.TextureLoader(manager), texCache = {};
+  const texture = src => texCache[src] || (texCache[src] = (t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; })(loader.load(src)));
   const srgb = ([r, g, b]) => new THREE.Color().setRGB(r / 255, g / 255, b / 255, THREE.SRGBColorSpace);
   const paint = opts => new THREE.MeshPhysicalMaterial({ roughness: 0.42, metalness: 0.12, clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 1, transparent: true, ...opts });
   const U = 0.01;
   // シャフト（kv.js の makeShaft と同じ作り）
-  function makeShaft(L, parts, nr = 48) {
+  function makeShaft(L, parts, sc, nr = 48) {
     const LEN = L.length, X0 = L.x0;
     const knots = [[0, L.d_butt], [X0, L.d_wrap_l], [X0 + L.wrap_mm, L.d_wrap_r], [LEN, L.d_tip]];
     const radius = mm => { for (let i = 1; i < knots.length; i++) { const [xa, da] = knots[i - 1], [xb, db] = knots[i]; if (mm <= xb) return (da + (db - da) * (mm - xa) / (xb - xa)) / 2; } return L.d_tip / 2; };
@@ -205,9 +216,9 @@
     for (const [mm, dir] of [[0, -1], [LEN, 1]]) { const m = paint({ color: 0x1a1a1a }); mats.push(m); const c = new THREE.Mesh(new THREE.CircleGeometry(radius(mm) * U, 24), m); c.position.x = mm * U; c.rotation.y = dir * Math.PI / 2; shaft.add(c); }
     shaft.position.x = -LEN / 2 * U;
     const spin = new THREE.Group(); spin.add(shaft);
-    const g = new THREE.Group(); g.add(spin); scene.add(g);
+    const g = new THREE.Group(); g.add(spin); sc.add(g);
     g.rotation.z = -Math.PI / 2;   // 手元を上にして立てる
-    return { g, spin, mats, half: LEN / 2 * U, r: radius(LEN * 0.3) * U };
+    return { g, spin, mats, half: LEN / 2 * U, len: LEN };
   }
   const shinParts = (t, nx) => (X0, L) => {
     const B = L.b_mm, half = X0 + B / 2, M = L.metal ? { metalness: 0.62, roughness: 0.26 } : {};
@@ -217,17 +228,23 @@
     const third = L.b_mm / 3, q = { roughness: 0.32, metalness: 0.2 };
     return [[0, X0, 20, { color: srgb(L.body), ...q }], [X0, X0 + third, nx, { map: texture(t.R1), ...q }], [X0 + third, X0 + third * 2, nx, { map: texture(t.R2), ...q }], [X0 + third * 2, X0 + L.b_mm, nx, { map: texture(t.R3), ...q }], [X0 + L.b_mm, L.length, nx * 0.6, { color: srgb(L.body), ...q }]];
   };
+  const build = (slug, sc) => slug === 'shinogi-blue' ? makeShaft(D.layShinogi, shinParts(D.texShinogi, 120), sc)
+    : slug === 'rafale-rs1' ? makeShaft(D.layRafale, rafParts(D.texRafale, 120), sc)
+    : LD[slug] ? makeShaft(LD[slug].lay, LD[slug].kind === 'rafale' ? rafParts(LD[slug].tex, 80) : shinParts(LD[slug].tex, 80), sc) : null;
+
   const S = {};
+  let hover = null;
   P.forEach((p, i) => {
-    const s = p.slug === 'shinogi-blue' ? makeShaft(D.layShinogi, shinParts(D.texShinogi, 120))
-      : p.slug === 'rafale-rs1' ? makeShaft(D.layRafale, rafParts(D.texRafale, 120))
-      : LD[p.slug] ? makeShaft(LD[p.slug].lay, LD[p.slug].kind === 'rafale' ? rafParts(LD[p.slug].tex, 80) : shinParts(LD[p.slug].tex, 80)) : null;
+    const s = build(p.slug, scene);
     if (!s) return;
     s.p = p; s.i = i; s.phase = i * 0.9;
     s.cur = { x: 0, y: -14, z: 0, op: 0, tilt: 0 };   // 下から立ち上がって現れる
+    // 名前は画面に出さない（シャフトを押すと概要が出る）。キーボードで選べるように、見えないボタンだけ置く
     const lb = document.createElement('button');
-    lb.type = 'button'; lb.className = `fd-lb s-${p.series}`; lb.innerHTML = `<i></i><b>${esc(p.short)}</b>`;
+    lb.type = 'button'; lb.className = 'fd-lb'; lb.textContent = p.name;
     lb.addEventListener('click', () => pick(picked === p.slug ? null : p.slug));
+    lb.addEventListener('focus', () => { hover = s; });
+    lb.addEventListener('blur', () => { if (hover === s) hover = null; });
     labels.append(lb);
     s.lb = lb;
     S[p.slug] = s;
@@ -235,61 +252,69 @@
   const all = Object.values(S);
 
   // ---------- 並べ方 ----------
-  // ふだん：鎬 9 本・Rafale 4 本を、シリーズの間を少しあけて横一列に。提案があると、上位 3 本が前に出て中央に並び、ほかは奥へ下がって薄くなる。
-  // シャフトを押すと、そのシャフトが前に出て軸まわりに回り、ほかはさらに下がる（詳しい内容は右の欄）
-  let aspect = 1, dist = 25, narrow = false;
-  const SP = 1.05, GAP = 0.9;
-  const baseX = s => { const n = all.length, k = s.i + (s.p.series === 'rafale' ? 1 : 0); return (k - (n) / 2) * SP + (s.p.series === 'rafale' ? GAP - SP : 0); };
+  // トップの製品一覧と同じく、シャフトを画面の高さより大きく立て、柄のある中ほどを見せる（手元と先端は画面の外）。
+  // 左の要望の欄の右から画面の右端までに、鎬 9 本・Rafale 4 本をシリーズの間を少しあけて並べ、両端ほど少し奥へ下げて弧にする。
+  // マウスを乗せたシャフトは手前に出て大きくなる。提案があると上位 3 本が手前の中央に出て、ほかは奥へ下がって薄くなる。
+  // シャフトを押すと、そのシャフトが手前に出て軸まわりに回り、ほかはさらに下がる（概要は右の欄）
+  let W = 1, H = 1, aspect = 1, dist = 14, narrow = false, areaL = 0, areaR = 1;
+  const SERIES_GAP = 0.9;   // 鎬と Rafale のあいだ（シャフト何本ぶんか）
+  const CY = -0.5;          // 画面の中心に来る高さ。シャフトの中心より少し先端寄り（柄の中ほど）
+  const wx = (px, z) => (px / W - 0.5) * 2 * TAN * aspect * (dist - z);   // 画面の横の位置（px）→ 奥行き z での x
   function resize() {
-    const w = stage.clientWidth, h = stage.clientHeight;
-    renderer.setSize(w, h, false);
-    aspect = w / h; narrow = w < 760;
+    W = stage.clientWidth; H = stage.clientHeight;
+    renderer.setSize(W, H, false);
+    aspect = W / H; narrow = matchMedia("(max-width: 1100px)").matches;   // site.css で要望の欄と舞台を縦に積む幅
     camera.aspect = aspect; camera.updateProjectionMatrix();
-    const width = all.length * SP + GAP + 1;
-    dist = Math.max(15.6 / (2 * TAN), width / (2 * TAN * aspect));   // 上下に余白を残し、前に出したときにも切れないように
-    camera.position.set(0, 0.3, dist); camera.lookAt(0, 0.3, 0);
+    dist = (narrow ? 6.6 : 7.4) / (2 * TAN);   // 画面の高さに入るのは 7.4（シャフトは 11.2）
+    camera.position.set(0, CY, dist); camera.lookAt(0, CY, 0);
+    const sr = stage.getBoundingClientRect(), q = root.querySelector('.fd-q').getBoundingClientRect();
+    const side = Math.max(24, (W - 1200) / 2);
+    areaL = narrow ? 28 : q.right - sr.left + 64;
+    areaR = W - (narrow ? 28 : side);
   }
   function target(s) {
-    const t = { x: baseX(s), y: 0, z: 0, op: 1, tilt: 0 };
-    const front = Math.max(0, Math.min(3.5, dist - 25));   // 前に出しても、上下が切れない近さまで
+    const n = all.length, u = (s.i + (s.p.series === 'rafale' ? SERIES_GAP : 0)) / (n - 1 + SERIES_GAP), arc = 2 * u - 1;
+    let px = areaL + u * (areaR - areaL), z = -1.6 * arc * arc, op = 1, tilt = 0;
+    const mid = (areaL + areaR) / 2, spread = narrow ? W * 0.24 : Math.min(220, (areaR - areaL) / 4.5);
     if (state && state.top.length) {
       const r = state.top.findIndex(x => x.p.slug === s.p.slug);
-      if (r >= 0) { t.x = narrow ? [0, -1.6, 1.6][r] : [0, -2.6, 2.6][r]; t.z = front; }
-      else { t.z = -9; t.op = state.pool.has(s.p.slug) ? 0.32 : 0.12; t.x *= 1.25; }
-    } else if (state) { if (!state.pool.has(s.p.slug)) { t.z = -9; t.op = 0.12; t.x *= 1.25; } }
+      if (r >= 0) { px = mid + [0, -1, 1][r] * spread; z = 2.5; }
+      else { z = -7; op = state.pool.has(s.p.slug) ? 0.3 : 0.1; }
+    } else if (state && !state.pool.has(s.p.slug)) { z = -7; op = 0.1; }
     if (picked) {
-      if (s.p.slug === picked) { t.x = narrow ? 0 : -dist * TAN * aspect * 0.42; t.z = front; t.op = 1; t.tilt = 0.18; }
-      else { t.z = -12; t.op = Math.min(t.op, 0.1); }
-    }
-    return t;
+      const panelW = narrow ? 0 : Math.min(W * 0.46, 460);
+      if (s.p.slug === picked) { px = narrow ? W / 2 : (areaL + W - panelW) / 2; z = 4.5; op = 1; tilt = 0.18; }
+      else { z = -10; op = Math.min(op, 0.08); }
+    } else if (hover === s) { z += narrow ? 3 : 5; op = 1; }   // 手前に出して、柄が分かる大きさに
+    else if (hover) op *= 0.55;
+    return { x: wx(px, z), y: 0, z, op, tilt };
   }
 
   // ---------- 押す・なぞる ----------
   const pv = new THREE.Vector3();
-  const ends = s => {   // 画面の上での、シャフトの上端と下端（px）と太さ
-    const w = stage.clientWidth, h = stage.clientHeight, out = [];
+  const ends = s => {   // 画面の上での、シャフトの上端と下端（px）
+    const out = [];
     for (const sy of [s.half, -s.half]) {
       pv.set(s.cur.x, s.cur.y + sy, s.cur.z).project(camera);
-      out.push([(pv.x + 1) / 2 * w, (1 - pv.y) / 2 * h]);
+      out.push([(pv.x + 1) / 2 * W, (1 - pv.y) / 2 * H]);
     }
     return out;
   };
-  let hover = null;
   function nearest(e) {
     const r = canvas.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
-    let best = null, bd = 18;
+    let best = null, bd = 22;
     for (const s of all) {
       if (s.cur.op < 0.2) continue;
       const [[x0, y0], [x1, y1]] = ends(s);
       if (my < y0 - 10 || my > y1 + 10) continue;
-      const x = x0 + (x1 - x0) * ((my - y0) / Math.max(1, y1 - y0)), d = Math.abs(mx - x) - s.cur.z * 0.8;   // 手前のものを優先
+      const x = x0 + (x1 - x0) * ((my - y0) / Math.max(1, y1 - y0)), d = Math.abs(mx - x) - s.cur.z * 2;   // 手前のものを優先
       if (d < bd) { bd = d; best = s; }
     }
     return best;
   }
-  canvas.addEventListener('pointermove', e => { hover = nearest(e); canvas.style.cursor = hover ? 'pointer' : ''; });
+  canvas.addEventListener('pointermove', e => { if (e.pointerType === 'touch') return; hover = nearest(e); canvas.style.cursor = hover ? 'pointer' : ''; });
   canvas.addEventListener('pointerleave', () => { hover = null; canvas.style.cursor = ''; });
-  canvas.addEventListener('click', e => { const s = nearest(e); pick(s ? (picked === s.p.slug ? null : s.p.slug) : null); });
+  canvas.addEventListener('click', e => { const s = nearest(e); hover = null; pick(s ? (picked === s.p.slug ? null : s.p.slug) : null); });
 
   // ---------- 描く ----------
   const clock = new THREE.Clock();
@@ -299,34 +324,79 @@
     raf = 0;
     if (!visible) return;
     if (t0 === null) t0 = now;
-    const dt = Math.min(clock.getDelta(), 0.05), el = (now - t0) / 1000, k = 1 - Math.pow(0.0015, dt);
-    const w = stage.clientWidth, h = stage.clientHeight;
+    const dt = Math.min(clock.getDelta(), 0.05), el = (now - t0) / 1000, k = 1 - Math.pow(0.002, dt);
     for (const s of all) {
       const t = target(s), c = s.cur;
-      const start = Math.max(0, el - 0.25 - s.i * 0.06);   // 1 本ずつ、少し遅れて立ち上がる
-      const kk = start > 0 ? k : 0;
-      const lift = hover === s && !picked ? 0.35 : 0;
-      c.x = ease(c.x, t.x, kk); c.y = ease(c.y, t.y + lift, kk); c.z = ease(c.z, t.z, kk); c.op = ease(c.op, t.op, kk); c.tilt = ease(c.tilt, t.tilt, kk);
+      const kk = el - 0.25 - s.i * 0.06 > 0 ? k : 0;   // 1 本ずつ、少し遅れて立ち上がる
+      c.x = ease(c.x, t.x, kk); c.y = ease(c.y, t.y, kk); c.z = ease(c.z, t.z, kk); c.op = ease(c.op, t.op, kk); c.tilt = ease(c.tilt, t.tilt, kk);
       s.g.position.set(c.x, c.y, c.z);
       s.g.rotation.set(c.tilt * 0.4, 0, -Math.PI / 2 + c.tilt * 0.25);
       s.spin.rotation.x = s.phase + el * (picked === s.p.slug ? 0.9 : 0.25);
       for (const m of s.mats) { m.opacity = c.op; m.depthWrite = c.op > 0.95; }
       s.g.visible = c.op > 0.02;
-      // 名前：シャフトの下端の少し下
-      const [, [bx, by]] = ends(s), on = state ? state.top.findIndex(x => x.p.slug === s.p.slug) : -1;
-      const stagger = on < 0 && !picked && c.z < 1 && s.i % 2 ? 16 : 0;   // 横一列のときは、隣どうしの名前が重ならないよう 1 本おきに下げる
-      s.lb.style.transform = `translate(${bx.toFixed(1)}px, ${(by + 10 + stagger).toFixed(1)}px)`;
-      s.lb.style.opacity = Math.min(1, c.op * 1.2).toFixed(2);
-      s.lb.classList.toggle('top', on >= 0);
-      s.lb.querySelector('i').textContent = on < 0 ? '' : on === 0 ? 'BEST' : `No.${on + 1}`;
-      s.lb.classList.toggle('on', hover === s || picked === s.p.slug);
       s.lb.tabIndex = c.op > 0.2 ? 0 : -1;
     }
     renderer.render(scene, camera);
     raf = requestAnimationFrame(frame);
   }
   new IntersectionObserver(es => { visible = es[0].isIntersecting; if (visible && !raf) { clock.getDelta(); raf = requestAnimationFrame(frame); } }).observe(stage);
-  addEventListener('resize', resize);
+  let rt = 0;
+  addEventListener('resize', () => { resize(); clearTimeout(rt); rt = setTimeout(drawCards, 200); });
   resize();
   root.classList.add('ready');
+
+  // ---------- すべての製品のカード：シャフトを横に寝かせて、柄のある部分を見せる。カードにマウスを乗せると、軸まわりに回る ----------
+  // カードは 13 枚あるので、WebGL は 1 つだけ（見えないキャンバス）で 1 本ずつ描き、それぞれのカードのキャンバスへ写す
+  let drawCards = () => {};
+  if (cardCvs.length) {
+    let r2;
+    try { r2 = setup(document.createElement('canvas')); } catch (e) { r2 = null; }
+    if (r2) {
+      const sc2 = lit(r2), cam2 = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
+      const CARD_W = 3.6, CARD_MM = 590;   // カードの幅に入る長さと、その中心（手元からの mm。柄の中ほど）
+      const cards = cardCvs.map(cv => {
+        const s = build(cv.dataset.slug, sc2);
+        if (!s) return null;
+        cv.classList.add('show');
+        s.g.rotation.z = 0;   // 寝かせる（手元が左）
+        s.g.position.x = s.half - CARD_MM * U;
+        s.g.visible = false;
+        return { cv, s, a: -0.3 };
+      }).filter(Boolean);
+      const size = () => {
+        const r = cards[0].cv.getBoundingClientRect();
+        if (!r.width) return false;
+        r2.setPixelRatio(Math.min(devicePixelRatio, 2));
+        r2.setSize(r.width, r.height, false);
+        cam2.aspect = r.width / r.height; cam2.updateProjectionMatrix();
+        cam2.position.set(0, 0, CARD_W / (2 * TAN * cam2.aspect)); cam2.lookAt(0, 0, 0);
+        for (const c of cards) { c.cv.width = r2.domElement.width; c.cv.height = r2.domElement.height; }
+        return true;
+      };
+      const draw = c => {
+        for (const o of cards) o.s.g.visible = o === c;
+        c.s.spin.rotation.x = c.a;
+        r2.render(sc2, cam2);
+        const x = c.cv.getContext('2d');
+        x.clearRect(0, 0, c.cv.width, c.cv.height);
+        x.drawImage(r2.domElement, 0, 0);
+      };
+      let loaded = false;
+      drawCards = () => { if (loaded && size()) cards.forEach(c => { draw(c); c.cv.classList.add('on'); }); };
+      manager.onLoad = () => { loaded = true; drawCards(); };
+      let spinning = null, raf2 = 0, last = 0;
+      const loop = now => {
+        raf2 = 0;
+        if (!spinning) return;
+        spinning.a += Math.min(0.05, (now - last) / 1000) * 1.8; last = now;
+        draw(spinning);
+        raf2 = requestAnimationFrame(loop);
+      };
+      cards.forEach(c => {
+        const a = c.cv.closest('.lu');
+        a.addEventListener('pointerenter', () => { if (!loaded) return; spinning = c; last = performance.now(); if (!raf2) raf2 = requestAnimationFrame(loop); });
+        a.addEventListener('pointerleave', () => { if (spinning === c) spinning = null; });
+      });
+    }
+  }
 })();

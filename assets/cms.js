@@ -43,11 +43,19 @@
       if (m) place = m[1].replace(/\s*\d{1,2}:\d{2}.*$/, '').trim();
     }
     const state = cancel ? 'cancel' : day.key < TODAY ? 'done' : 'soon';
-    return { ...e, day, title, place, state };
+    // 開かれる都道府県：住所 → 会場 → 本文の順に探し、最初に出てくる県名（「東京都」の中の「京都」を拾わないよう、いちばん前に出てくるもの）
+    let pref = null;
+    for (const t of [e.address, place, text(e.body)]) {
+      if (!t) continue;
+      let at = Infinity;
+      for (const p of C.prefs) { const i = t.indexOf(p.name === '北海道' ? p.name : p.name.replace(/[都府県]$/, '')); if (i >= 0 && i < at) { at = i; pref = p.id; } }
+      if (pref) break;
+    }
+    return { ...e, day, title, place, state, pref };
   };
   const STATE = { cancel: '<span class="tag cancel">中止</span>', done: '<span class="tag gray">終了</span>', soon: '<span class="tag soon">開催予定</span>' };
   const evItem = (e, showState) =>
-    `<a class="ev" href="event.html?id=${esc(e.id)}"><div class="d"><b>${e.day.m}.${String(e.day.d).padStart(2, '0')}</b><span>${WD[e.day.w]}</span></div>` +
+    `<a class="ev" href="event.html?id=${esc(e.id)}"${e.pref ? ` data-pref="${e.pref}"` : ''}><div class="d"><b>${e.day.m}.${String(e.day.d).padStart(2, '0')}</b><span>${WD[e.day.w]}</span></div>` +
     `<div>${showState ? STATE[e.state] + '<br>' : ''}<div class="tt">${esc(e.title)}</div>${e.place ? `<div class="pl">${esc(e.place)}</div>` : ''}</div></a>`;
   const NO_EVENT = '<div class="empty">現在、開催予定の試打会はありません。決まり次第お知らせします。</div>';
   const events = async () => {

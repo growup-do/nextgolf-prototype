@@ -155,6 +155,15 @@
     });
   });
 
+  // 試打会の一覧：試打会にカーソルを合わせると、右の日本地図でその都道府県をオレンジにする（一覧は cms.js があとから描くので、まとめて受ける）
+  document.querySelectorAll('.ev-wrap').forEach(box => {
+    const light = (a, on) => { const pf = a && a.dataset.pref && box.querySelector(`.ev-map [data-pid="${a.dataset.pref}"]`); if (pf) pf.classList.toggle('on', on); };
+    box.addEventListener('pointerover', e => light(e.target.closest('.ev[data-pref]'), true));
+    box.addEventListener('pointerout', e => { const a = e.target.closest('.ev[data-pref]'); if (a && !a.contains(e.relatedTarget)) light(a, false); });
+    box.addEventListener('focusin', e => light(e.target.closest('.ev[data-pref]'), true));
+    box.addEventListener('focusout', e => light(e.target.closest('.ev[data-pref]'), false));
+  });
+
   // 日本地図の表示：散らばった 1px のパーティクルが集まって地図になり、集まりきるころに地図（SVG）が現れる
   // 点は地図の塗り（白）と県境の線（グレー）から拾う。画面の下へ完全に出たら元に戻す（もう一度スクロールすると、また集まる）
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.querySelectorAll('.jmap').forEach(box => {
