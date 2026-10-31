@@ -116,8 +116,10 @@
     })();
   const shaft = new THREE.Group();
   for (const [a, b, nx, opts] of parts) shaft.add(new THREE.Mesh(tube(a, b, nx), paint(opts)));
+  const mats = shaft.children.map(m => m.material);   // 出し始めに、パーティクルと入れ替えるため（キャップは下で足す）
   for (const [mm, dir] of [[0, -1], [LEN, 1]]) {
     const cap = new THREE.Mesh(new THREE.CircleGeometry(radius(mm) * U, 48), paint({ color: 0x1a1a1a }));
+    mats.push(cap.material);
     cap.position.x = mm * U;
     cap.rotation.y = dir * Math.PI / 2;
     shaft.add(cap);
@@ -131,6 +133,79 @@
   key.position.set(3, 6, 8);
   scene.add(key);
   scene.add(new THREE.HemisphereLight(0xffffff, 0x9a9a9a, 0.7));
+
+  // ---------- 出し始めのパーティクル（トップの KV と同じ作り。kv.js） ----------
+  // ページを開いて最初に描くときだけ、シャフトの表面から拾った点（色は展開図のテクスチャから）が、
+  // まわりに散らばった位置から表面へ集まり（A：0→1。INTRO_MS で）、集まりきる手前で本体と入れ替わる
+  const PCOUNT = 14000, INTRO_MS = 2200;
+  const P_VS = `attribute vec3 aOff; attribute vec3 aColor; attribute float aSeed;
+    uniform float uA, uPx; uniform mat3 uW2L; varying vec3 vC;
+    void main() {
+      float t = clamp((uA - aSeed * 0.4) / 0.6, 0.0, 1.0); t = t * t * (3.0 - 2.0 * t);
+      vec3 p = position + uW2L * aOff * (1.0 - t);
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+      gl_PointSize = uPx;
+      vC = aColor;
+    }`;
+  const P_FS = `uniform float uOp; varying vec3 vC;
+    void main() {
+      gl_FragColor = vec4(vC, uOp);
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+    }`;
+  let pts = null, introT0 = null, introDone = reduce;
+  function buildParticles() {
+    const pos = new Float32Array(PCOUNT * 3), from = new Float32Array(PCOUNT * 3), col = new Float32Array(PCOUNT * 3), seed = new Float32Array(PCOUNT);
+    const c = new THREE.Color(), px = new Map();
+    const pixels = tex => {
+      if (px.has(tex)) return px.get(tex);
+      const im = tex.image, w = im && (im.naturalWidth || im.width), h = im && (im.naturalHeight || im.height);
+      let v = null;
+      if (w) { const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const g = cv.getContext('2d'); g.drawImage(im, 0, 0); v = { w, h, d: g.getImageData(0, 0, w, h).data }; }
+      px.set(tex, v); return v;
+    };
+    const S = LEN * U;   // 散らばる範囲は、シャフトの長さに合わせる
+    for (let i = 0; i < PCOUNT; i++) {
+      const mm = Math.random() * LEN, j = Math.random(), phi = Math.PI / 2 - 2 * Math.PI * (0.5 - j), r = radius(mm) * U * 1.03;
+      pos.set([mm * U, r * Math.cos(phi), r * Math.sin(phi)], i * 3);
+      // 散らばった位置（ワールドの向きでのずれ）：横に広く、縦と奥行きもばらばらに
+      from.set([(Math.random() - 0.5) * S * 0.9, (Math.random() - 0.5) * S * 0.55, (Math.random() - 0.5) * S * 0.4], i * 3);
+      const sg = parts.find(g => mm >= g[0] && mm <= g[1]) || parts[parts.length - 1], o = sg[3];
+      const p = o.map && pixels(o.map);
+      if (p) {
+        const x = Math.min(p.w - 1, Math.floor((mm - sg[0]) / (sg[1] - sg[0]) * p.w)), y = Math.min(p.h - 1, Math.floor(j * p.h)), k = (y * p.w + x) * 4;
+        c.setRGB(p.d[k] / 255, p.d[k + 1] / 255, p.d[k + 2] / 255, THREE.SRGBColorSpace);
+      } else c.copy(o.color || c.set(0x1a1a1a));
+      col.set([c.r, c.g, c.b], i * 3);
+      seed[i] = Math.random();
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('aOff', new THREE.BufferAttribute(from, 3));
+    g.setAttribute('aColor', new THREE.BufferAttribute(col, 3));
+    g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
+    pts = new THREE.Points(g, new THREE.ShaderMaterial({ vertexShader: P_VS, fragmentShader: P_FS, transparent: true, depthWrite: false,
+      uniforms: { uA: { value: 0 }, uOp: { value: 1 }, uPx: { value: 1 }, uW2L: { value: new THREE.Matrix3() } } }));
+    pts.frustumCulled = false;
+    shaft.add(pts);
+    for (const m of mats) { m.transparent = true; m.opacity = 0; }
+  }
+  const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  const qInv = new THREE.Quaternion(), m4 = new THREE.Matrix4();
+  function intro() {
+    if (introDone || !pts) return;
+    const A = introT0 === null ? 0 : Math.min(1, (performance.now() - introT0) / INTRO_MS);
+    const mv = sstep(0.82, 1, A), u = pts.material.uniforms;
+    u.uA.value = A; u.uOp.value = 1 - sstep(0.9, 1, A); u.uPx.value = renderer.getPixelRatio();   // 1 CSS px
+    root.updateMatrixWorld(true);
+    shaft.getWorldQuaternion(qInv).invert();
+    u.uW2L.value.setFromMatrix4(m4.makeRotationFromQuaternion(qInv));
+    for (const m of mats) { m.opacity = mv; m.depthWrite = mv > 0.98; }
+    if (A >= 1) {   // 集まりきったら、パーティクルを外して本体を元の不透明に戻す
+      introDone = true; shaft.remove(pts); pts.geometry.dispose(); pts.material.dispose(); pts = null;
+      for (const m of mats) { m.transparent = false; m.opacity = 1; m.depthWrite = true; m.needsUpdate = true; }
+    }
+  }
 
   // ---------- スクロールで切り替わるカット（Figma のコンテ図「NEW PRODUCT」） ----------
   // 1 トップの KV でホバーしたときと同じ構図（斜めに大きく。'kv'）→ 2 ロゴ → 3 ラベル → 4 少し傾けた中景 → 5 斜めの大写し
@@ -427,6 +502,7 @@
     }
     const idle = reduce ? 0 : Math.sin(clock.elapsedTime * 0.5) * MOVE.idle;
     spin.rotation.x = lerp(a.roll, b.roll, t) + gust.roll + user + (idle - follow.y * 0.5) * calm;
+    intro();
     renderer.render(scene, camera);
   }
 
@@ -445,10 +521,11 @@
   // ページ移動のクロスフェードが終わってからフェードインする（重ねると、切り替わりの瞬間にシャフトがちらつく）
   const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
   Promise.race([Promise.all(loads), new Promise(r => setTimeout(r, 8000))])
-    .then(() => { frame(); return Promise.race([window.p3dReveal, new Promise(r => setTimeout(r, 1500))]); })
+    .then(() => { if (!introDone) buildParticles(); frame(); return Promise.race([window.p3dReveal, new Promise(r => setTimeout(r, 1500))]); })
     .then(nextFrame).then(nextFrame)
     .then(() => {
       box.classList.add('ready');
+      introT0 = performance.now();   // 面が出始めるのと同時に、点が集まり始める
       start();
     });
 })();

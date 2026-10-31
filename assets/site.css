@@ -86,7 +86,7 @@ html.kv-leaving .hd { transition: none; }   /* KV から製品ページへ移る
 main { padding-top: var(--hd); }
 
 /* ===== フッター（ページの締めは K90 の濃いグレー） ===== */
-.ft { --line: rgba(255,255,255,.14); padding: 72px 0 40px; background: var(--k90); color: #f2f2f2; position: relative; z-index: 2; }
+.ft { --line: rgba(255,255,255,.14); padding: 72px 0 40px; background: var(--k90); color: #f2f2f2; position: relative; z-index: 2; overflow-x: clip; }   /* 右端から消えるボールで横にスクロールしないように */
 .ft .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 40px; }
 .ft .logo svg { height: 56px; width: auto; color: #fff; }
 .ft nav { display: grid; grid-template-columns: repeat(4, auto); gap: 18px 48px; font: 600 14px/1 var(--en); }
@@ -424,7 +424,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 /* Safari：WebGL の描画面は、透明度や拡大のアニメーションが終わって合成用のレイヤーが外れる瞬間に 1 コマ消える。
    will-change で常にレイヤーに載せておき、終わりも transform: none ではなく scale(1) にする */
 .p3d-stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; opacity: 0; transform: scale(1.03); will-change: opacity, transform;
-  transition: opacity 1.4s cubic-bezier(.25,.6,.3,1), transform 1.8s cubic-bezier(.2,.7,.2,1); cursor: grab; touch-action: pan-y; }
+  transition: opacity .4s, transform 1.8s cubic-bezier(.2,.7,.2,1); cursor: grab; touch-action: pan-y; }   /* シャフトはパーティクルから現れるので、面は早めに出す */
 .p3d-stage:active { cursor: grabbing; }
 .p3d.ready .p3d-stage { opacity: 1; transform: scale(1); }
 @media (prefers-reduced-motion: reduce) { .p3d-stage, .p3d.ready .p3d-stage { transform: scale(1); transition: opacity .3s; } }

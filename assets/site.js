@@ -226,8 +226,9 @@
     check();
   });
 
-  // フッター：上端をフェアウェイに見立て、左からティーショットのボールが飛んできて弾み、転がって止まる。
-  // 動きは最初に物理で計算しておき（放物線→弾む→転がる）、止まる位置が幅の 86% になるよう横方向だけ伸び縮みさせて再生する
+  // フッター：上端をフェアウェイに見立て、左からティーショットのボールが飛んできて弾み、転がって画面の右端から消える。
+  // 消えて 3 秒したら、また飛んでくる（フッターが見えているあいだ繰り返す）。
+  // 動きは最初に物理で計算しておき（放物線→弾む→転がる）、まだ転がっている途中（転がる距離の 80%）で右端を越えるよう横方向だけ伸び縮みさせて再生する
   if (ft) {
     const ball = document.createElement('div'), shadow = document.createElement('div');
     ball.className = 'ft-ball'; ball.innerHTML = '<i></i>'; shadow.className = 'ft-shadow';
@@ -242,31 +243,31 @@
         t += DT;
       }
     }
-    const END = path[path.length - 1], R = 7, START = -40;
-    let raf = 0, t0 = null, played = false;
+    const END = path[path.length - 1], R = 7, START = -40, OUT = 20, GAP = 3000;
+    let raf = 0, t0 = null, played = false, timer = 0;
     const place = (x, y, rot, op) => {
       ball.style.transform = `translate(${x}px, ${-y}px) rotate(${rot}deg)`; ball.style.opacity = op;
       shadow.style.transform = `translateX(${x}px) scale(${1 + y / 60})`; shadow.style.opacity = op * Math.max(0, 1 - y / 120);
     };
     const at = k => {   // k：経過秒 → 画面の座標
       const i = Math.min(path.length - 1, Math.round(k * 240)), [, px, py] = path[i];
-      const sx = (ft.clientWidth * 0.86 - START) / END[1];
+      const sx = (ft.clientWidth + OUT - START) / (END[1] * 0.8);
       return [START + px * sx, py, px * sx / R * 57.3];
     };
+    const shoot = () => { timer = 0; t0 = null; cancelAnimationFrame(raf); raf = requestAnimationFrame(frame); };
     const frame = now => {
       if (t0 === null) t0 = now;
       const k = (now - t0) / 1000, [x, y, r] = at(k);
       place(x, y, r, 1);
-      if (k < END[0]) raf = requestAnimationFrame(frame); else raf = 0;
+      if (x < ft.clientWidth + OUT && k < END[0]) raf = requestAnimationFrame(frame);
+      else { raf = 0; place(START, 0, 0, 0); timer = setTimeout(shoot, GAP); }   // 右端から消えたら、3 秒おいて次の 1 球
     };
-    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const stop = () => { cancelAnimationFrame(raf); raf = 0; clearTimeout(timer); timer = 0; place(START, 0, 0, 0); };
     const check = () => {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;   // 動きを減らす設定では出さない
       const r = ft.getBoundingClientRect();
-      if (!played && r.top < innerHeight * 0.85) {
-        played = true;
-        if (reduce) { const [x, , rr] = at(END[0]); place(x, 0, rr, 1); }
-        else { t0 = null; raf = requestAnimationFrame(frame); }
-      } else if (played && r.top > innerHeight) { played = false; cancelAnimationFrame(raf); raf = 0; place(START, 0, 0, 0); }
+      if (!played && r.top < innerHeight * 0.85) { played = true; shoot(); }
+      else if (played && r.top > innerHeight) { played = false; stop(); }
     };
     addEventListener('scroll', check, { passive: true });
     addEventListener('resize', check);
