@@ -132,7 +132,7 @@ main > .sec:last-child, .sec:has(+ .ft), main > .pbody:last-child > .sec:last-ch
 .tag.soon { padding: 5px 9px; background: none; border: 1px solid #000; color: #000; }   /* 試打会の開催予定：黒の罫線、塗りなし、黒文字（罫線のぶん余白を 1px 減らし、大きさをそろえる） */
 
 /* ページの見出し */
-.ptitle { padding: 96px 0 56px; border-bottom: 1px solid var(--line); }
+.ptitle { padding: 96px 0 56px; }   /* ページ名の下に区切りの線は引かない */
 .crumb { font: 500 14px/1.5 var(--ja); color: var(--sub); margin-bottom: 28px; }
 .crumb a:hover { color: var(--point); text-decoration: underline; text-decoration-color: var(--point); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 .crumb i { font-style: normal; margin: 0 10px; opacity: .6; }
@@ -625,8 +625,6 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 /* 試打会の一覧：左に一覧、右に日本地図（画面に固定してついてくる） */
 .ev-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 620px); gap: 56px; align-items: start; }
 .ev-wrap .list-wrap { max-width: none; }
-.ptitle:has(+ .sec .ev-wrap) { border-bottom: 0; }   /* 見出しと一覧は区切らない */
-.ptitle + .sec:has(.ev-wrap) { padding-top: 24px; }
 .ev-map { position: sticky; top: calc(var(--hd) + 24px); }
 .ev-map svg { display: block; width: 100%; height: auto; max-height: calc(100svh - var(--hd) - 48px); }   /* 画面の高さに収まる範囲で大きく */
 .ev-map .pf, .ev-map .pf.none { fill: #fff; fill-opacity: 1; stroke: #cfcfcf; transition: fill .25s; }
@@ -691,7 +689,8 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
 .info dt, .info dd { padding: 26px 0; border-bottom: 1px solid var(--line); }
 .info dt { color: var(--sub); font-size: 15px; font-weight: 700; }
 .info dd a { text-decoration: underline; text-underline-offset: 3px; }
-.form { max-width: 760px; }
+.form-lead { max-width: 760px; margin: 0 auto 48px; color: var(--k80); text-align: center; }
+.form { max-width: 760px; margin: 0 auto; }   /* お問い合わせは横幅の中央に */
 .form .row { display: grid; grid-template-columns: 220px 1fr; gap: 24px; padding: 24px 0; border-bottom: 1px solid var(--line); align-items: start; }
 .form .row:first-of-type { border-top: 1px solid var(--line); }
 .form label.l { font-size: 15px; font-weight: 700; padding-top: 12px; }
