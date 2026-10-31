@@ -93,6 +93,12 @@ main { padding-top: var(--hd); }
 .ft nav a { opacity: .8; transition: color .2s, opacity .2s; } .ft nav a:hover { opacity: 1; color: var(--point); }
 .ft .bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line); font: 400 15px/1 var(--en); color: var(--k30); }
 .ft .sns .f { fill: var(--k90); }
+/* フッターの上端をフェアウェイに見立て、左からティーショットのボールが飛んできて弾み、転がって止まる（site.js が動かす） */
+.ft-ball { position: absolute; left: 0; top: 0; width: 14px; height: 14px; margin: -14px 0 0 -7px; border-radius: 50%; pointer-events: none; z-index: 3; opacity: 0;
+  background: radial-gradient(circle at 35% 30%, #fff 0 30%, #e9e9e9 62%, #b9b9b9 100%); box-shadow: 0 1px 2px rgba(0,0,0,.25); will-change: transform; }
+.ft-ball i { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 70% 50%, rgba(0,0,0,.18) 0 1px, transparent 1.5px) 0 0 / 5px 5px; }   /* くぼみ：回転が見えるように */
+.ft-shadow { position: absolute; left: 0; top: 0; width: 16px; height: 4px; margin: -2px 0 0 -8px; border-radius: 50%; background: rgba(0,0,0,.35); filter: blur(1.5px); pointer-events: none; z-index: 3; opacity: 0; }
+@media (max-width: 760px) { .ft-ball { width: 11px; height: 11px; margin: -11px 0 0 -5.5px; } }
 
 /* ===== 共通部品 ===== */
 .sec { padding: 120px 0; position: relative; }
@@ -150,11 +156,11 @@ main { padding-top: var(--hd); }
 .ln-bgl .b-s { left: 0; }
 /* 中央の罫線：左上から右下への斜めの線（画面の幅の 46% → 60%。ロゴにかからない傾き）。箱の対角線を 1px の線で描く。
    製品一覧が画面の上端に来たら、スクロールに合わせて左上から右下へ引く（--lnl。kv.js）。
-   次のセクションへ移るときは、シャフトが散るのに合わせて上へ流れて消える（--lnd） */
+   次のセクションへ移るときは、シャフトが散り始めたら下（右下の端）から上へシュッと消す（--lnd） */
 .ln-bgl::after { content: ""; position: absolute; top: 0; bottom: 0; left: 46%; width: 14%;
   background: linear-gradient(to top right, transparent calc(50% - 1px), rgba(255,255,255,.22) 50%, transparent calc(50% + 1px));
-  clip-path: inset(0 calc((1 - var(--lnl, 0)) * 100%) calc((1 - var(--lnl, 0)) * 100%) 0);
-  transform: translateY(calc(var(--lnd, 0) * -100%)); }
+  --lnx: max(1 - var(--lnl, 0), min(1, var(--lnd, 0) * 3));   /* 消すときは、散り始めの 1/3 で右下の端から左上へ一気に削る */
+  clip-path: inset(0 calc(var(--lnx) * 100%) calc(var(--lnx) * 100%) 0); }
 .ln-bgl .b-r { right: 0; }
 .ln-half { position: absolute; top: 0; bottom: 0; width: 50%; z-index: 2; pointer-events: none; }
 .ln-half.s-shinogi { left: 0; }
@@ -284,15 +290,6 @@ html.no3d .kv-bg .b-base { background: var(--page); }
 .bgl[data-bg="ev"] { opacity: 0; background: radial-gradient(80% 70% at 15% 10%, #fdfdfd 0%, rgba(253,253,253,0) 60%), linear-gradient(160deg, #f1f1f1 0%, #e4e4e4 55%, #d6d6d6 100%); }
 /* 取扱店：地図のあたりに光が当たり、まわりは少し沈む */
 .bgl[data-bg="shop"] { opacity: 0; background: radial-gradient(55% 60% at 30% 58%, #f7f7f7 0%, rgba(247,247,247,0) 70%), linear-gradient(180deg, #d9d9d9 0%, #c9c9c9 100%); }
-/* 右下からグリーンの芝がのぞく：単色の緑を、楕円のマスクで上と左へぼかして消す。
-   日本地図が点から組み上がったあと（site.js が .green を付ける）に、右下から広がるようにかかる */
-.bgl[data-bg="shop"]::after { content: ""; position: absolute; inset: 0; pointer-events: none;
-  opacity: 0; transform: scale(.8); transform-origin: 82% 100%; transition: opacity 1.4s ease, transform 1.8s cubic-bezier(.2,.7,.2,1);
-  background: var(--kv-green);   /* Rafale の緑と同じ */
-  -webkit-mask-image: radial-gradient(110% 95% at 78% 112%, #000 25%, rgba(0,0,0,.5) 55%, transparent 85%);
-  mask-image: radial-gradient(110% 95% at 78% 112%, #000 25%, rgba(0,0,0,.5) 55%, transparent 85%); }
-.bgl[data-bg="shop"].green::after { opacity: 1; transform: none; }
-@media (prefers-reduced-motion: reduce) { .bgl[data-bg="shop"]::after { opacity: 1; transform: none; transition: none; } }
 
 /* トップの各セクション：背景が切り替わったあとにフェードインで現れ、中身が少しずつ遅れて浮かび上がる（site.js が .in と --i を付ける） */
 .js .reveal { opacity: 0; transform: translateY(56px); transition: opacity 1.1s ease, transform 1.1s cubic-bezier(.2,.7,.2,1); }

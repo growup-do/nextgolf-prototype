@@ -164,7 +164,6 @@
     cv.className = 'jmap-pt';
     cv.setAttribute('aria-hidden', 'true');
     box.appendChild(cv);
-    const green = document.querySelector('.bgl[data-bg="shop"]');   // 地図ができあがってから、背景に芝の緑をかける
     const MS = 2200, PAD = 0.25;   // PAD：散らばる範囲（地図の外へ、幅の 25% まで）。site.css の .jmap-pt と同じ
     const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
     let P = null, t0 = null, raf = 0, played = false;
@@ -213,10 +212,10 @@
       }
       box.style.setProperty('--jmo', sstep(0.62, 0.95, p).toFixed(3));
       if (p < 1) raf = requestAnimationFrame(frame);
-      else { cv.width = cv.height = 0; raf = 0; if (green) green.classList.add('green'); }
+      else { cv.width = cv.height = 0; raf = 0; }
     }
     const play = () => { played = true; P = build(); t0 = null; cancelAnimationFrame(raf); raf = requestAnimationFrame(frame); };
-    const reset = () => { played = false; cancelAnimationFrame(raf); raf = 0; cv.width = cv.height = 0; box.style.setProperty('--jmo', '0'); if (green) green.classList.remove('green'); };
+    const reset = () => { played = false; cancelAnimationFrame(raf); raf = 0; cv.width = cv.height = 0; box.style.setProperty('--jmo', '0'); };
     const check = () => {
       const r = box.getBoundingClientRect();
       if (!played && r.height && r.top < innerHeight * 0.8 && r.bottom > 0) play();
@@ -226,6 +225,54 @@
     addEventListener('resize', check);
     check();
   });
+
+  // フッター：上端をフェアウェイに見立て、左からティーショットのボールが飛んできて弾み、転がって止まる。
+  // 動きは最初に物理で計算しておき（放物線→弾む→転がる）、止まる位置が幅の 68% になるよう横方向だけ伸び縮みさせて再生する
+  const ft = document.querySelector('.ft');
+  if (ft) {
+    const ball = document.createElement('div'), shadow = document.createElement('div');
+    ball.className = 'ft-ball'; ball.innerHTML = '<i></i>'; shadow.className = 'ft-shadow';
+    ft.append(shadow, ball);
+    const path = [];   // [t, x, y]（y は上端からの高さ。上が正）
+    { let x = 0, y = 230, vx = 760, vy = 60, t = 0; const G = 980, DT = 1 / 240;
+      while (t < 6) {
+        path.push([t, x, y]);
+        vy -= G * DT; x += vx * DT; y += vy * DT; vx *= 1 - 0.12 * DT;   // 空気の抵抗を少し
+        if (y <= 0) { y = 0; if (vy < -60) { vy = -vy * 0.32; vx *= 0.78; } else { vy = 0; vx = Math.max(0, vx - 260 * DT); } }   // 弾む／転がる
+        if (y === 0 && vy === 0 && vx < 1) { path.push([t + DT, x, 0]); break; }
+        t += DT;
+      }
+    }
+    const END = path[path.length - 1], R = 7, START = -40;
+    let raf = 0, t0 = null, played = false;
+    const place = (x, y, rot, op) => {
+      ball.style.transform = `translate(${x}px, ${-y}px) rotate(${rot}deg)`; ball.style.opacity = op;
+      shadow.style.transform = `translateX(${x}px) scale(${1 + y / 60})`; shadow.style.opacity = op * Math.max(0, 1 - y / 120);
+    };
+    const at = k => {   // k：経過秒 → 画面の座標
+      const i = Math.min(path.length - 1, Math.round(k * 240)), [, px, py] = path[i];
+      const sx = (ft.clientWidth * 0.68 - START) / END[1];
+      return [START + px * sx, py, px * sx / R * 57.3];
+    };
+    const frame = now => {
+      if (t0 === null) t0 = now;
+      const k = (now - t0) / 1000, [x, y, r] = at(k);
+      place(x, y, r, 1);
+      if (k < END[0]) raf = requestAnimationFrame(frame); else raf = 0;
+    };
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const check = () => {
+      const r = ft.getBoundingClientRect();
+      if (!played && r.top < innerHeight * 0.85) {
+        played = true;
+        if (reduce) { const [x, , rr] = at(END[0]); place(x, 0, rr, 1); }
+        else { t0 = null; raf = requestAnimationFrame(frame); }
+      } else if (played && r.top > innerHeight) { played = false; cancelAnimationFrame(raf); raf = 0; place(START, 0, 0, 0); }
+    };
+    addEventListener('scroll', check, { passive: true });
+    addEventListener('resize', check);
+    check();
+  }
 
   // 取扱店：上の地域ボタンがヘッダーの下に隠れたら、地域の帯をヘッダーの下に出す
   const anav = document.querySelector('.area-nav'), afind = document.querySelector('.shopfind');
