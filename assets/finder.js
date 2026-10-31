@@ -285,8 +285,8 @@
       const panelW = narrow ? 0 : Math.min(W * 0.46, 460);
       if (s.p.slug === picked) { px = narrow ? W / 2 : (areaL + W - panelW) / 2; z = 4.5; op = 1; tilt = 0.18; }
       else { z = -10; op = Math.min(op, 0.08); }
-    } else if (hover === s) { z += narrow ? 3 : 5; op = 1; }   // 手前に出して、柄が分かる大きさに
-    else if (hover) op *= 0.55;
+    } else if (hover === s) { z += narrow ? 5 : 8; op = 1; }   // 手前に出して、柄が分かる大きさに
+    else if (hover) op *= 0.35;
     return { x: wx(px, z), y: 0, z, op, tilt };
   }
 
@@ -353,12 +353,12 @@
     try { r2 = setup(document.createElement('canvas')); } catch (e) { r2 = null; }
     if (r2) {
       const sc2 = lit(r2), cam2 = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
-      const CARD_W = 3.6, CARD_MM = 590;   // カードの幅に入る長さと、その中心（手元からの mm。柄の中ほど）
+      const CARD_W = 2.5, CARD_MM = 600;   // カードの幅に入る長さと、その中心（手元からの mm。柄の中ほど）
       const cards = cardCvs.map(cv => {
         const s = build(cv.dataset.slug, sc2);
         if (!s) return null;
         cv.classList.add('show');
-        s.g.rotation.z = 0;   // 寝かせる（手元が左）
+        s.g.rotation.z = -0.12;   // 寝かせて、少し右下がりに（手元が左。サイトの斜めの線と同じ向き）
         s.g.position.x = s.half - CARD_MM * U;
         s.g.visible = false;
         return { cv, s, a: -0.3 };
