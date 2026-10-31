@@ -173,13 +173,13 @@
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.1;
+  renderer.toneMappingExposure = 1.05;
   const scene = new THREE.Scene();
   scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new window.RoomEnvironment(), 0.04).texture;
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 200);
   const TAN = Math.tan(THREE.MathUtils.degToRad(15));
   const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(3, 6, 10); scene.add(key);
-  const rim = new THREE.DirectionalLight(0xbfd4ff, 2.4); rim.position.set(-4, 5, -6); scene.add(rim);   // 暗い地で輪郭が沈まないよう、うしろから
+  const rim = new THREE.DirectionalLight(0xffffff, 1.2); rim.position.set(-4, 5, -6); scene.add(rim);   // 輪郭を少し立たせる、うしろからの光
   scene.add(new THREE.HemisphereLight(0xffffff, 0x404040, 0.6));
   const loader = new THREE.TextureLoader();
   const texture = src => { const t = loader.load(src); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
