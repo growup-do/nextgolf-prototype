@@ -246,12 +246,12 @@
     aspect = w / h; narrow = w < 760;
     camera.aspect = aspect; camera.updateProjectionMatrix();
     const width = all.length * SP + GAP + 1;
-    dist = Math.max(13.8 / (2 * TAN), width / (2 * TAN * aspect));
+    dist = Math.max(15.6 / (2 * TAN), width / (2 * TAN * aspect));   // 上下に余白を残し、前に出したときにも切れないように
     camera.position.set(0, 0.3, dist); camera.lookAt(0, 0.3, 0);
   }
   function target(s) {
     const t = { x: baseX(s), y: 0, z: 0, op: 1, tilt: 0 };
-    const front = Math.min(3, dist - 24);   // 前に出しても、上下が切れない近さまで
+    const front = Math.max(0, Math.min(3.5, dist - 25));   // 前に出しても、上下が切れない近さまで
     if (state && state.top.length) {
       const r = state.top.findIndex(x => x.p.slug === s.p.slug);
       if (r >= 0) { t.x = narrow ? [0, -1.6, 1.6][r] : [0, -2.6, 2.6][r]; t.z = front; }
