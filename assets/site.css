@@ -106,8 +106,8 @@ main { padding-top: var(--hd); }
 
 /* ===== 共通部品 ===== */
 .sec { padding: 120px 0; position: relative; }
-/* フッターの上端でボールとカートが動くので、フッターの直前のセクションは下の余白を 2 倍に */
-main > .sec:last-child, .sec:has(+ .ft) { padding-bottom: 240px; }
+/* フッターの上端でボールとカートが動くので、フッターの直前のセクション（製品詳細は .pbody の最後）は下の余白を 2 倍に */
+main > .sec:last-child, .sec:has(+ .ft), main > .pbody:last-child > .sec:last-child { padding-bottom: 240px; }
 .sec.alt { background: linear-gradient(180deg, rgba(255,255,255,.6), rgba(255,255,255,0)); border-top: 1px solid rgba(255,255,255,.8); }
 .sh { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 48px; }
 /* TITLE：Familjen Grotesk Bold 49px */
@@ -602,7 +602,7 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   body { font-size: 15px; }
   .hd .logo svg { height: 34px; }
   .sec { padding: 72px 0; }
-  main > .sec:last-child, .sec:has(+ .ft) { padding-bottom: 144px; }
+  main > .sec:last-child, .sec:has(+ .ft), main > .pbody:last-child > .sec:last-child { padding-bottom: 144px; }
   .sh { margin-bottom: 32px; }
   .sh .e { font-size: 34px; line-height: 1; }
   .ptitle { padding: 56px 0 40px; }
