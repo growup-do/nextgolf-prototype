@@ -629,6 +629,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .ev-map svg { display: block; width: 100%; height: auto; max-height: calc(100svh - var(--hd) - 48px); }   /* 画面の高さに収まる範囲で大きく */
 .ev-map .pf, .ev-map .pf.none { fill: #fff; fill-opacity: 1; stroke: #cfcfcf; transition: fill .25s; }
 .ev-map .pf.on { fill: var(--point); }
+.ev-map svg { pointer-events: none; }   /* 地図そのものは反応させない。色が変わるのは試打会の見出しにマウスを乗せたときだけ */
 @media (max-width: 900px) { .ev-wrap { grid-template-columns: 1fr; } .ev-map { display: none; } }
 .ev-group + .ev-group { margin-top: 72px; }
 .ev-group h2 { font: 600 15px/1 var(--en); color: var(--sub); margin-bottom: 8px; }
