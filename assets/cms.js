@@ -141,10 +141,13 @@
       const inArea = list.filter(s => s.p.area === aid);
       const prefs = [...new Set(inArea.map(s => s.p.id))].map(pid => {
         const p = C.prefs.find(x => x.id === pid);
-        const items = inArea.filter(s => s.p.id === pid).map(s =>
-          `<div class="shop"><b>${esc(s.name)}</b>${s.trial ? '<span class="tag">試打できます</span>' : ''}` +
-          `<p>${s.zip ? `〒${esc(s.zip)}　` : ''}${esc(s.address)}${s.tel ? `<br>TEL ${esc(s.tel)}` : ''}</p>` +
-          (/^https?:\/\//.test(s.url || '') ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">WEBSITE</a>` : '') + '</div>').join('');
+        // ショップサイトがある店は、枠全体をそのサイトへのリンクにする
+        const items = inArea.filter(s => s.p.id === pid).map(s => {
+          const url = /^https?:\/\//.test(s.url || '') ? s.url : '';
+          const body = `<b>${esc(s.name)}</b>${s.trial ? '<span class="tag">試打できます</span>' : ''}` +
+            `<p>${s.zip ? `〒${esc(s.zip)}　` : ''}${esc(s.address)}${s.tel ? `<br>TEL ${esc(s.tel)}` : ''}</p>`;
+          return url ? `<a class="shop" href="${esc(url)}" target="_blank" rel="noopener">${body}<span class="more">WEBSITE</span></a>` : `<div class="shop">${body}</div>`;
+        }).join('');
         return `<div class="pref" id="pref-${pid}"><h3>${esc(p.name)}</h3><div class="shops">${items}</div></div>`;
       }).join('');
       return `<section class="area" id="area-${aid}"><h2>${esc(aname)}<span>${inArea.length} SHOPS</span></h2>${prefs || '<div class=empty style=margin-top:24px>現在、この地域の取扱店はありません。</div>'}</section>`;
