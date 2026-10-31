@@ -271,7 +271,7 @@
     if (pt) root.style.setProperty('--pth', pt.offsetHeight + 'px');
     const sr = stage.getBoundingClientRect(), q = root.querySelector('.fd-q').getBoundingClientRect();
     const side = Math.max(24, (W - 1200) / 2);
-    areaL = narrow ? 28 : q.right - sr.left + 180;   // 要望の欄から離して右へ寄せる
+    areaL = narrow ? 28 : q.right - sr.left + 140;   // 要望の欄から離して右へ寄せる
     areaR = W - (narrow ? 28 : Math.max(24, side * 0.4));
   }
   function target(s) {
