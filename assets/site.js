@@ -253,12 +253,12 @@
         t += DT;
       }
     }
-    const END = path[path.length - 1], R = 2, START = -40, OUT = 20, GAP = 3000;
+    const END = path[path.length - 1], R = 4, START = -40, OUT = 20, GAP = 3000;
     const CART_V = 300, CART_DELAY = 1;   // カート：px/秒、ボールが消えてからの出遅れ（秒）
     let raf = 0, t0 = null, played = false, timer = 0, gone = null;   // gone：ボールが右端から消えた時刻
     const place = (x, y, rot, op) => {
       ball.style.transform = `translate(${x}px, ${-y}px) rotate(${rot}deg)`; ball.style.opacity = op;
-      shadow.style.transform = `translateX(${x}px) scale(${1 + y / 60})`; shadow.style.opacity = op * Math.max(0, 1 - y / 40);
+      shadow.style.transform = `translateX(${x}px) scale(${1 + y / 60})`; shadow.style.opacity = op * Math.max(0, 1 - y / 80);
     };
     const placeCart = (x, k, op) => {
       const bump = Math.sin(k * 23) * 0.6 + Math.sin(k * 37) * 0.4;   // 芝の上の小さな揺れ
