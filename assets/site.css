@@ -283,11 +283,15 @@ html.no3d .kv-bg .b-base { background: var(--page); }
 .bgl[data-bg="ev"] { opacity: 0; background: radial-gradient(80% 70% at 15% 10%, #fdfdfd 0%, rgba(253,253,253,0) 60%), linear-gradient(160deg, #f1f1f1 0%, #e4e4e4 55%, #d6d6d6 100%); }
 /* 取扱店：地図のあたりに光が当たり、まわりは少し沈む */
 .bgl[data-bg="shop"] { opacity: 0; background: radial-gradient(55% 60% at 30% 58%, #f7f7f7 0%, rgba(247,247,247,0) 70%), linear-gradient(180deg, #d9d9d9 0%, #c9c9c9 100%); }
-/* 右下からグリーンの芝がのぞく：単色の緑を、楕円のマスクで上と左へぼかして消す */
+/* 右下からグリーンの芝がのぞく：単色の緑を、楕円のマスクで上と左へぼかして消す。
+   日本地図が点から組み上がったあと（site.js が .green を付ける）に、右下から広がるようにかかる */
 .bgl[data-bg="shop"]::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  opacity: 0; transform: scale(.8); transform-origin: 82% 100%; transition: opacity 1.4s ease, transform 1.8s cubic-bezier(.2,.7,.2,1);
   background: #7fa86a;
   -webkit-mask-image: radial-gradient(85% 62% at 82% 112%, #000 30%, rgba(0,0,0,.55) 55%, transparent 80%);
   mask-image: radial-gradient(85% 62% at 82% 112%, #000 30%, rgba(0,0,0,.55) 55%, transparent 80%); }
+.bgl[data-bg="shop"].green::after { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .bgl[data-bg="shop"]::after { opacity: 1; transform: none; transition: none; } }
 
 /* トップの各セクション：背景が切り替わったあとにフェードインで現れ、中身が少しずつ遅れて浮かび上がる（site.js が .in と --i を付ける） */
 .js .reveal { opacity: 0; transform: translateY(56px); transition: opacity 1.1s ease, transform 1.1s cubic-bezier(.2,.7,.2,1); }

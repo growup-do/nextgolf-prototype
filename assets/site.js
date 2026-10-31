@@ -164,6 +164,7 @@
     cv.className = 'jmap-pt';
     cv.setAttribute('aria-hidden', 'true');
     box.appendChild(cv);
+    const green = document.querySelector('.bgl[data-bg="shop"]');   // 地図ができあがってから、背景に芝の緑をかける
     const MS = 2200, PAD = 0.25;   // PAD：散らばる範囲（地図の外へ、幅の 25% まで）。site.css の .jmap-pt と同じ
     const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
     let P = null, t0 = null, raf = 0, played = false;
@@ -212,10 +213,10 @@
       }
       box.style.setProperty('--jmo', sstep(0.62, 0.95, p).toFixed(3));
       if (p < 1) raf = requestAnimationFrame(frame);
-      else { cv.width = cv.height = 0; raf = 0; }
+      else { cv.width = cv.height = 0; raf = 0; if (green) green.classList.add('green'); }
     }
     const play = () => { played = true; P = build(); t0 = null; cancelAnimationFrame(raf); raf = requestAnimationFrame(frame); };
-    const reset = () => { played = false; cancelAnimationFrame(raf); raf = 0; cv.width = cv.height = 0; box.style.setProperty('--jmo', '0'); };
+    const reset = () => { played = false; cancelAnimationFrame(raf); raf = 0; cv.width = cv.height = 0; box.style.setProperty('--jmo', '0'); if (green) green.classList.remove('green'); };
     const check = () => {
       const r = box.getBoundingClientRect();
       if (!played && r.height && r.top < innerHeight * 0.8 && r.bottom > 0) play();
