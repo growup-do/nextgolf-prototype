@@ -333,7 +333,6 @@ html.no3d .kv-bg .b-base { background: var(--page); }
 .fd-q { grid-column: 1; grid-row: 1; position: relative; z-index: 2; align-self: center; padding: 56px 0; }
 .fd-q .e, .fd-result .e { font: 600 15px/1 var(--en); color: var(--sub); }
 .fd-h { font: 700 27px/1.5 var(--ja); margin: 12px 0 10px; }
-.fd-lead { font-size: 14px; line-height: 1.8; color: var(--sub); }
 .fd-grp { margin-top: 28px; }
 .fd-l { font: 700 14px/1 var(--ja); margin-bottom: 12px; display: flex; align-items: baseline; gap: 8px; }
 .fd-l small { font: 400 12px/1 var(--ja); color: var(--sub); }
