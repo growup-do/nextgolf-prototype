@@ -138,7 +138,9 @@ main { padding-top: var(--hd); }
    画面に固定した下地（.ln-bgl。ほかのセクションと同じく、スクロールでブレンドして切り替わる）と文字（.ln-half）のあいだに描く。寸法は Figma（幅 1512px）を --u で画面の幅に合わせて縮める */
 /* PC：最初の画面（--stage）のあと、罫線を引く 15svh と文字が流れる 40svh のあいだ、シャフトは画面に固定したまま文字だけがスクロールする（--pin。kv.js が読む）。
    文字が上へ抜けるころに次のセクションが上がってきて、シャフトが散る */
-.lineup { --u: min(1px, calc(100vw / 1512)); --stage: max(100svh, calc(var(--u) * 760)); --pin: 1; position: relative; height: calc(var(--stage) + 15svh + 40svh); }
+.lineup { --u: min(1px, calc(100vw / 1512)); --stage: max(100svh, calc(var(--u) * 760)); --pin: 1; position: relative; height: calc(var(--stage) + 15svh + 40svh);
+  /* ロゴと製品名は、ヘッダーを除いた高さの中央に。鎬（9 行で背が高い）の塊を基準にし、Rafale はロゴの中心をそろえる（13.5 = (57 − 30) ÷ 2） */
+  --lnt: calc(var(--hd) + (var(--stage) - var(--hd) - var(--u) * 270 - 9 * max(17px, var(--u) * 25)) / 2); }
 /* 罫線を引くあいだ（15svh 分のスクロール）、文字と写真はその場に留める（--lnhold。kv.js） */
 .ln-body { translate: 0 var(--lnhold, 0px); }   /* transform は表示のフェード（.reveal）が使うので、translate で */
 .ln-bgl { opacity: 0; background: #000; }   /* 地は 1 枚の黒（2 枚に分けると、ブレンドの途中で継ぎ目が線に見える）。.b-s・.b-r は罫線の位置だけ */
@@ -159,8 +161,8 @@ main { padding-top: var(--hd); }
 /* 回転木馬の円（kv.js が位置と半径を読む） */
 .ln-ring { position: absolute; left: var(--x); top: calc(var(--stage) * var(--y) / 100); width: calc(var(--u) * var(--r) * 2); height: 0; translate: -50% 0; }
 .ln-body { position: absolute; display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 48); pointer-events: auto; transition: opacity .5s; }
-.s-shinogi .ln-body { left: 45.77%; top: calc(var(--stage) * .2485 + var(--hd) / 2); width: calc(var(--u) * 371); }
-.s-rafale .ln-body { left: 12.83%; top: calc(var(--stage) * .236 + var(--hd) / 2); width: calc(var(--u) * 321); }
+.s-shinogi .ln-body { left: 45.77%; top: var(--lnt); width: calc(var(--u) * 371); }
+.s-rafale .ln-body { left: 12.83%; top: calc(var(--lnt) - var(--u) * 13.5); width: calc(var(--u) * 321); }
 .ln-logo { display: block; width: 100%; }
 .ln-mark { display: block; width: 100%; height: auto; }
 .ln-names { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 24); }
@@ -281,6 +283,11 @@ html.no3d .kv-bg .b-base { background: var(--page); }
 .bgl[data-bg="ev"] { opacity: 0; background: radial-gradient(80% 70% at 15% 10%, #fdfdfd 0%, rgba(253,253,253,0) 60%), linear-gradient(160deg, #f1f1f1 0%, #e4e4e4 55%, #d6d6d6 100%); }
 /* 取扱店：地図のあたりに光が当たり、まわりは少し沈む */
 .bgl[data-bg="shop"] { opacity: 0; background: radial-gradient(55% 60% at 30% 58%, #f7f7f7 0%, rgba(247,247,247,0) 70%), linear-gradient(180deg, #d9d9d9 0%, #c9c9c9 100%); }
+/* 右下からグリーンの芝がのぞく：刈り込みの縞（明暗の帯）を入れた緑を、楕円のマスクで上と左へぼかして消す */
+.bgl[data-bg="shop"]::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(104deg, rgba(255,255,255,.08) 0 120px, rgba(0,40,0,.05) 120px 240px), linear-gradient(170deg, #9cc184 0%, #6f9a5a 100%);
+  -webkit-mask-image: radial-gradient(85% 62% at 82% 112%, #000 30%, rgba(0,0,0,.55) 55%, transparent 80%);
+  mask-image: radial-gradient(85% 62% at 82% 112%, #000 30%, rgba(0,0,0,.55) 55%, transparent 80%); }
 
 /* トップの各セクション：背景が切り替わったあとにフェードインで現れ、中身が少しずつ遅れて浮かび上がる（site.js が .in と --i を付ける） */
 .js .reveal { opacity: 0; transform: translateY(56px); transition: opacity 1.1s ease, transform 1.1s cubic-bezier(.2,.7,.2,1); }
