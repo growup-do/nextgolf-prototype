@@ -347,6 +347,7 @@
       try { await fetch(FORM_URL, { method: 'POST', mode: 'no-cors', body }); } catch (err) { /* 送信結果は受け取れないため、そのまま完了表示 */ }
     }
     form.style.display = 'none';
+    const lead = document.querySelector('.form-lead'); if (lead) lead.style.display = 'none';   // 「フォームからお送りください」は送信後には出さない
     const t = document.getElementById('thanks');
     t.style.display = 'block';
     t.scrollIntoView({ block: 'center' });
