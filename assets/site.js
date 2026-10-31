@@ -231,7 +231,7 @@
   // ボールの動きは最初に物理で計算しておき（放物線→弾む→転がる）、まだ転がっている途中（転がる距離の 80%）で右端を越えるよう横方向だけ伸び縮みさせて再生する
   if (ft) {
     const ball = document.createElement('div'), shadow = document.createElement('div'), cart = document.createElement('div');
-    ball.className = 'ft-ball'; ball.innerHTML = '<i></i>'; shadow.className = 'ft-shadow'; cart.className = 'ft-cart';
+    ball.className = 'ft-ball'; shadow.className = 'ft-shadow'; cart.className = 'ft-cart';
     cart.innerHTML = '<svg viewBox="0 0 80 54" aria-hidden="true"><g fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">' +
       '<rect x="9" y="5" width="58" height="3.5" rx="1.5" stroke="none"/><path d="M14 8.5V36M61 8.5L66 34" stroke-width="2" fill="none"/>' +
       '<path d="M4.5 13.5l1.2 1.5M7 10.5l.5 2.5M10 11l-.6 2.4" stroke-width="1.4" fill="none"/><path d="M5 15h8l-.5 22H6z" stroke="none"/>' +
@@ -253,12 +253,12 @@
         t += DT;
       }
     }
-    const END = path[path.length - 1], R = 7, START = -40, OUT = 20, GAP = 3000;
+    const END = path[path.length - 1], R = 2, START = -40, OUT = 20, GAP = 3000;
     const CART_V = 300, CART_DELAY = 1;   // カート：px/秒、ボールが消えてからの出遅れ（秒）
     let raf = 0, t0 = null, played = false, timer = 0, gone = null;   // gone：ボールが右端から消えた時刻
     const place = (x, y, rot, op) => {
       ball.style.transform = `translate(${x}px, ${-y}px) rotate(${rot}deg)`; ball.style.opacity = op;
-      shadow.style.transform = `translateX(${x}px) scale(${1 + y / 60})`; shadow.style.opacity = op * Math.max(0, 1 - y / 120);
+      shadow.style.transform = `translateX(${x}px) scale(${1 + y / 60})`; shadow.style.opacity = op * Math.max(0, 1 - y / 40);
     };
     const placeCart = (x, k, op) => {
       const bump = Math.sin(k * 23) * 0.6 + Math.sin(k * 37) * 0.4;   // 芝の上の小さな揺れ
