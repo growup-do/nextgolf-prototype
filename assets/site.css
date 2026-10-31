@@ -348,8 +348,6 @@ html.no3d .kv-bg .b-base { background: var(--page); }
 .finder.ready .fd-canvas { opacity: 1; }
 /* 名前は出さない。キーボードで選ぶための見えないボタンだけ */
 .fd-labels { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-.fd-hint { position: absolute; right: max(24px, calc(50% - var(--w) / 2)); bottom: 24px; font: 600 12px/1 var(--ja); color: var(--sub); pointer-events: none; transition: opacity .3s; }
-.finder.picking .fd-hint { opacity: 0; }
 .fd-panel { position: absolute; right: 0; top: 0; bottom: 0; z-index: 3; width: min(46%, 460px); overflow-y: auto; padding: 48px 40px; background: rgba(20,20,20,.82); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-left: 1px solid rgba(255,255,255,.12); color: #f2f2f2; }
 .fd-panel .fd-x { position: absolute; right: 14px; top: 14px; width: 36px; height: 36px; border: 0; background: none; cursor: pointer; }
 .fd-panel .fd-x::before, .fd-panel .fd-x::after { content: ""; position: absolute; left: 9px; right: 9px; top: 50%; height: 1.5px; background: #fff; rotate: 45deg; transition: background .2s; }
@@ -381,9 +379,6 @@ html.no3d .kv-bg .b-base { background: var(--page); }
 .fd-look { font: 700 13px/1 var(--ja); padding: 11px 16px; border: 1px solid var(--k90); background: none; color: var(--k90); cursor: pointer; transition: background .2s, color .2s, border-color .2s; }
 .fd-look:hover { background: var(--point); border-color: var(--point); color: var(--on-point); }
 .fd-empty { font-size: 15px; line-height: 1.8; padding: 24px 28px; background: var(--panel); border: 1px solid var(--line); }
-.fd-note { grid-column: 1 / -1; margin-top: 24px; font-size: 12px; line-height: 1.8; color: var(--sub); }
-.fd-note a { text-decoration: underline; text-underline-offset: 3px; }
-.fd-note a:hover { color: var(--point); }
 .finder.no3d .fd-stage { display: none; }
 /* すべての製品：上の段にシャフトの柄（finder.js が描く。3D が使えないときは出さない） */
 .lus { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
@@ -404,7 +399,11 @@ html.no3d .kv-bg .b-base { background: var(--page); }
   .fd-top .ptitle a { pointer-events: auto; }
   .fd-top .fd-sec, .fd-top .fd-sec > .wrap, .fd-top .finder { position: static; }
   .fd-top .fd-stage { position: absolute; left: 0; right: 0; top: 0; height: calc(100svh - var(--hd)); min-height: 640px; margin: 0; }
-  .fd-top .fd-q { min-height: calc(100svh - var(--hd) - var(--pth, 260px)); display: flex; flex-direction: column; justify-content: center; padding: 0 0 40px; }
+  .fd-top .ptitle { padding: 56px 0 0; }
+  .fd-top .fd-q { min-height: calc(100svh - var(--hd) - var(--pth, 260px)); display: flex; flex-direction: column; justify-content: center; padding: 40px 0; }
+  .fd-top .fd-h { font-size: 24px; margin: 10px 0 8px; }   /* 見出しの下でも、画面の高さに収まるように詰める */
+  .fd-top .fd-grp { margin-top: 20px; }
+  .fd-top .chip { padding: 9px 12px; }
 }
 
 /* 製品一覧のページは黒い地（トップの製品一覧と同じ）。ヘッダーも暗いまま */
