@@ -106,6 +106,8 @@ main { padding-top: var(--hd); }
 
 /* ===== 共通部品 ===== */
 .sec { padding: 120px 0; position: relative; }
+/* フッターの上端でボールとカートが動くので、フッターの直前のセクションは下の余白を 2 倍に */
+main > .sec:last-child, .sec:has(+ .ft) { padding-bottom: 240px; }
 .sec.alt { background: linear-gradient(180deg, rgba(255,255,255,.6), rgba(255,255,255,0)); border-top: 1px solid rgba(255,255,255,.8); }
 .sh { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 48px; }
 /* TITLE：Familjen Grotesk Bold 49px */
@@ -480,6 +482,8 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .p3d-text p.closing { margin-top: 2.1em; }   /* 締めの一文は 1 行あける */
 .at-br .p3d-text { right: 5vw; bottom: 10vh; }
 .at-tl .p3d-text { left: 5vw; top: calc(var(--hd) + 6vh); }
+.at-tr .p3d-text { right: 5vw; top: calc(var(--hd) + 6vh); }   /* 左上・右上・左下・右下のうち、シャフトにかからない所を product3d.js が選ぶ */
+.at-bl .p3d-text { left: 5vw; bottom: 10vh; }
 .p3d.fade .p3d-text { position: fixed; opacity: 0; transform: translateY(18px); transition: opacity .35s, transform .35s; }
 .p3d.fade .p3d-text.on { opacity: 1; transform: none; transition: opacity 1s .35s, transform 1.2s .35s cubic-bezier(.2,.7,.2,1); }
 @media (prefers-reduced-motion: reduce) { .p3d.fade .p3d-text { transform: none; } }
@@ -588,7 +592,8 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .p3d-text { width: auto; left: 20px !important; right: 20px !important; font-size: 16px; line-height: 1.9; padding: 16px; background: rgba(240,240,240,.72);
     -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
   .at-br .p3d-text { bottom: 8vh; top: auto; }
-  .at-tl .p3d-text { top: calc(var(--hd) + 4vh); }
+  .at-tl .p3d-text, .at-tr .p3d-text { top: calc(var(--hd) + 4vh); bottom: auto; }
+  .at-bl .p3d-text { bottom: 8vh; top: auto; }
   .p3d-lead .copy { font-size: 16px; }   /* 21 文字のコピーが 1 行に収まる大きさ */
   .p3d-lead .sub { font-size: 14px; }   /* コピー（16px）より大きくしない */
   .p3d-info { padding: 76vh 20px 96px 64px; }
@@ -597,6 +602,7 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   body { font-size: 15px; }
   .hd .logo svg { height: 34px; }
   .sec { padding: 72px 0; }
+  main > .sec:last-child, .sec:has(+ .ft) { padding-bottom: 144px; }
   .sh { margin-bottom: 32px; }
   .sh .e { font-size: 34px; line-height: 1; }
   .ptitle { padding: 56px 0 40px; }

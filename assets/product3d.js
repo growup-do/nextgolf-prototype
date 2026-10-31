@@ -439,6 +439,9 @@
   }
   addEventListener('resize', resize);
   resize();
+  // 画面の大きさが変わったら、説明文の位置を選び直す（下の placeTexts。描くのは次のコマ）
+  let placeT = 0;
+  addEventListener('resize', () => { clearTimeout(placeT); placeT = setTimeout(() => { placeTexts(); frame(); }, 200); });
   // カメラの距離：'fit' は全体が画面の幅に少しはみ出すくらい、'tall' は縦にしたシャフトが画面の高さの 2.4 倍
   const dist = d => d === 'kv' ? kvD : d === 'fit' ? LEN * U * 1.03 / (2 * TAN * aspect) : d === 'tall' ? LEN * U / (2.4 * 2 * TAN) : d * distScale;
 
@@ -506,6 +509,63 @@
     renderer.render(scene, camera);
   }
 
+  // 説明文の位置：各カットでシャフトが画面のどこに映るかを計算し、四隅（左上・右上・左下・右下）のうち、シャフトに一番かからない所に置く。
+  // 段落はそのカット（k）の構図で読まれ、次のカット（k+1）へ移り始めるまで残るので、次の構図も少しだけ考える。スマホは全幅の帯なので動かさない
+  const CORNERS = ['at-tl', 'at-tr', 'at-bl', 'at-br'];
+  const pv = new THREE.Vector3(), pc = new THREE.Vector3();
+  function shaftOnScreen(k) {   // カット k で止まったときのシャフトの軸（画面の px の点と半径の列）
+    const a = shots[Math.min(k, shots.length - 1)], d = dist(a.d), sx = a.sx === 'left' ? leftX : a.sx;
+    spin.position.x = -wx(a.focus);
+    const lx = -sx * 2 * d * TAN * aspect, ly = -a.sy * 2 * d * TAN;
+    camera.position.set(lx, ly + d * 0.03, d);
+    camera.lookAt(look.set(lx, ly, 0));
+    root.position.set(0, 0, 0);
+    root.rotation.set(a.tilt, 0, a.rz === 'kv' ? (KIND === 'rafale' ? kvA : -kvA) : a.rz);
+    spin.rotation.x = a.roll;
+    root.updateMatrixWorld(true); camera.updateMatrixWorld(true);
+    const w = innerWidth, h = innerHeight, out = [];
+    for (let i = 0; i <= 120; i++) {
+      const mm = LEN * i / 120;
+      pv.set(mm * U, 0, 0).applyMatrix4(shaft.matrixWorld);
+      const z = pc.copy(pv).applyMatrix4(camera.matrixWorldInverse).z;
+      if (z > -0.02) continue;   // カメラの後ろ
+      pv.project(camera);
+      out.push([(pv.x + 1) / 2 * w, (1 - pv.y) / 2 * h, radius(mm) * U / (-z * 2 * TAN) * h]);
+    }
+    return out;
+  }
+  function hits(pts, r) {   // 箱 r の中で、シャフトにかかる点の割合（箱を 16×10 の点で調べる。シャフトのまわり 16px も含める）
+    let n = 0;
+    for (let gy = 0; gy < 10; gy++) for (let gx = 0; gx < 16; gx++) {
+      const x = r.l + (gx + 0.5) / 16 * r.w, y = r.t + (gy + 0.5) / 10 * r.h;
+      for (let i = 1; i < pts.length; i++) {
+        const [x0, y0, r0] = pts[i - 1], [x1, y1] = pts[i], dx = x1 - x0, dy = y1 - y0;
+        const u = clamp01(((x - x0) * dx + (y - y0) * dy) / Math.max(1e-6, dx * dx + dy * dy));
+        if (Math.hypot(x - x0 - dx * u, y - y0 - dy * u) < r0 + 16) { n++; break; }
+      }
+    }
+    return n / 160;
+  }
+  function placeTexts() {
+    if (innerWidth <= 760 || !texts.length) return;
+    const w = innerWidth, h = innerHeight, hd = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hd')) || 88;
+    const mx = w * 0.05, top = hd + h * 0.06, bot = h * 0.1;
+    texts.forEach(([sec, t]) => {
+      const k = marks.indexOf(sec);
+      if (k < 0) return;
+      const tw = t.offsetWidth, th = t.offsetHeight;
+      const box = c => ({ l: c.endsWith('l') ? mx : w - mx - tw, t: c.includes('-t') ? top : h - bot - th, w: tw, h: th });
+      const now = shaftOnScreen(k), next = shaftOnScreen(k + 1);
+      const cur = CORNERS.find(c => sec.classList.contains(c));
+      let best = cur, score = Infinity;
+      for (const c of CORNERS) {
+        const v = hits(now, box(c)) + hits(next, box(c)) * 0.35 - (c === cur ? 0.01 : 0);   // 同じくらいなら元の位置のまま
+        if (v < score) { score = v; best = c; }
+      }
+      sec.classList.remove(...CORNERS); sec.classList.add(best);
+    });
+  }
+
   // 本文（縦にしたシャフトの右を流れる部分）を過ぎて、半透明の本文（.pbody）が画面を覆ったら、最後の絵のまま描くのを休む
   const cover = document.querySelector('.pbody');
   let running = false;
@@ -521,7 +581,7 @@
   // ページ移動のクロスフェードが終わってからフェードインする（重ねると、切り替わりの瞬間にシャフトがちらつく）
   const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
   Promise.race([Promise.all(loads), new Promise(r => setTimeout(r, 8000))])
-    .then(() => { if (!introDone) buildParticles(); frame(); return Promise.race([window.p3dReveal, new Promise(r => setTimeout(r, 1500))]); })
+    .then(() => { if (!introDone) buildParticles(); placeTexts(); frame(); return Promise.race([window.p3dReveal, new Promise(r => setTimeout(r, 1500))]); })
     .then(nextFrame).then(nextFrame)
     .then(() => {
       box.classList.add('ready');
