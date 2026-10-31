@@ -352,14 +352,14 @@
       const S2 = [L[0] + Math.cos(ang) * (0.4 + Math.random() * 1.2) + (Math.random() - 0.5) * 0.8, L[1] + (Math.random() - 0.3) * 1.4, L[2] + Math.sin(ang) * (0.4 + Math.random() * 1.2)];
       const [f, t] = out ? [L, S2] : [S2, L];
       a.set(f, i * 3); b.set(t, i * 3); pos.set(f, i * 3);
-      const c = pal[(Math.random() * pal.length) | 0].clone().lerp(WHITE, 0.3);
+      const c = pal[(Math.random() * pal.length) | 0].clone().lerp(WHITE, 0.45);
       col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
       d[i] = Math.random() * 0.35;
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    const mat = new THREE.PointsMaterial({ size: 0.05, map: dot, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0 });
+    const mat = new THREE.PointsMaterial({ size: 0.065, map: dot, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0 });
     const pts = new THREE.Points(geo, mat);
     scene.add(pts);
     bursts.push({ pts, a, b, d, t: 0, dur: out ? 1.4 : 0.9, out });

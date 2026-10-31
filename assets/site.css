@@ -403,6 +403,7 @@ html.no3d .kv-bg .b-base { background: var(--page); }
   .fd-top .fd-h { font-size: 24px; margin: 10px 0 8px; }   /* 見出しの下でも、画面の高さに収まるように詰める */
   .fd-top .finder { grid-template-columns: 400px minmax(0, 1fr); }   /* 要望のボタンを 1 行に多く並べ、縦を短く */
   .fd-top .fd-grp { margin-top: 20px; }
+  .fd-top .fd-reset { align-self: flex-start; }
   .fd-top .chip { padding: 9px 12px; }
 }
 
