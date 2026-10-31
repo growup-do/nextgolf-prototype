@@ -137,7 +137,7 @@
   // ---------- 出し始めのパーティクル（トップの KV と同じ作り。kv.js） ----------
   // ページを開いて最初に描くときだけ、シャフトの表面から拾った点（色は展開図のテクスチャから）が、
   // まわりに散らばった位置から表面へ集まり（A：0→1。INTRO_MS で）、集まりきる手前で本体と入れ替わる
-  const PCOUNT = 14000, INTRO_MS = 2200;
+  const PCOUNT = 14000, INTRO_MS = 1100;
   const P_VS = `attribute vec3 aOff; attribute vec3 aColor; attribute float aSeed;
     uniform float uA, uPx; uniform mat3 uW2L; varying vec3 vC;
     void main() {

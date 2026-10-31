@@ -314,7 +314,8 @@
       s.g.visible = c.op > 0.02;
       // 名前：シャフトの下端の少し下
       const [, [bx, by]] = ends(s), on = state ? state.top.findIndex(x => x.p.slug === s.p.slug) : -1;
-      s.lb.style.transform = `translate(${bx.toFixed(1)}px, ${(by + 10).toFixed(1)}px)`;
+      const stagger = on < 0 && !picked && c.z < 1 && s.i % 2 ? 16 : 0;   // 横一列のときは、隣どうしの名前が重ならないよう 1 本おきに下げる
+      s.lb.style.transform = `translate(${bx.toFixed(1)}px, ${(by + 10 + stagger).toFixed(1)}px)`;
       s.lb.style.opacity = Math.min(1, c.op * 1.2).toFixed(2);
       s.lb.classList.toggle('top', on >= 0);
       s.lb.querySelector('i').textContent = on < 0 ? '' : on === 0 ? 'BEST' : `No.${on + 1}`;
