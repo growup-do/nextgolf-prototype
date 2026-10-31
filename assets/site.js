@@ -227,17 +227,17 @@
   });
 
   // フッター：上端をフェアウェイに見立て、左からティーショットのボールが飛んできて弾み、転がって止まる。
-  // 動きは最初に物理で計算しておき（放物線→弾む→転がる）、止まる位置が幅の 68% になるよう横方向だけ伸び縮みさせて再生する
+  // 動きは最初に物理で計算しておき（放物線→弾む→転がる）、止まる位置が幅の 86% になるよう横方向だけ伸び縮みさせて再生する
   if (ft) {
     const ball = document.createElement('div'), shadow = document.createElement('div');
     ball.className = 'ft-ball'; ball.innerHTML = '<i></i>'; shadow.className = 'ft-shadow';
     ft.append(shadow, ball);
     const path = [];   // [t, x, y]（y は上端からの高さ。上が正）
     { let x = 0, y = 230, vx = 760, vy = 60, t = 0; const G = 980, DT = 1 / 240;
-      while (t < 6) {
+      while (t < 12) {
         path.push([t, x, y]);
         vy -= G * DT; x += vx * DT; y += vy * DT; vx *= 1 - 0.12 * DT;   // 空気の抵抗を少し
-        if (y <= 0) { y = 0; if (vy < -60) { vy = -vy * 0.32; vx *= 0.78; } else { vy = 0; vx = Math.max(0, vx - 260 * DT); } }   // 弾む／転がる
+        if (y <= 0) { y = 0; if (vy < -60) { vy = -vy * 0.32; vx *= 0.78; } else { vy = 0; vx = Math.max(0, vx - 60 * DT); } }   // 弾む／転がる
         if (y === 0 && vy === 0 && vx < 1) { path.push([t + DT, x, 0]); break; }
         t += DT;
       }
@@ -250,7 +250,7 @@
     };
     const at = k => {   // k：経過秒 → 画面の座標
       const i = Math.min(path.length - 1, Math.round(k * 240)), [, px, py] = path[i];
-      const sx = (ft.clientWidth * 0.68 - START) / END[1];
+      const sx = (ft.clientWidth * 0.86 - START) / END[1];
       return [START + px * sx, py, px * sx / R * 57.3];
     };
     const frame = now => {
