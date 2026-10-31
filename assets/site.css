@@ -159,8 +159,8 @@ main { padding-top: var(--hd); }
 /* 回転木馬の円（kv.js が位置と半径を読む） */
 .ln-ring { position: absolute; left: var(--x); top: calc(var(--stage) * var(--y) / 100); width: calc(var(--u) * var(--r) * 2); height: 0; translate: -50% 0; }
 .ln-body { position: absolute; display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 48); pointer-events: auto; transition: opacity .5s; }
-.s-shinogi .ln-body { left: 45.77%; top: calc(var(--stage) * .2485); width: calc(var(--u) * 371); }
-.s-rafale .ln-body { left: 12.83%; top: calc(var(--stage) * .236); width: calc(var(--u) * 321); }
+.s-shinogi .ln-body { left: 45.77%; top: calc(var(--stage) * .2485 + var(--hd) / 2); width: calc(var(--u) * 371); }
+.s-rafale .ln-body { left: 12.83%; top: calc(var(--stage) * .236 + var(--hd) / 2); width: calc(var(--u) * 321); }
 .ln-logo { display: block; width: 100%; }
 .ln-mark { display: block; width: 100%; height: auto; }
 .ln-names { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 24); }
