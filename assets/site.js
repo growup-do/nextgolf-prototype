@@ -228,7 +228,6 @@
 
   // フッター：上端をフェアウェイに見立て、左からティーショットのボールが飛んできて弾み、転がって止まる。
   // 動きは最初に物理で計算しておき（放物線→弾む→転がる）、止まる位置が幅の 68% になるよう横方向だけ伸び縮みさせて再生する
-  const ft = document.querySelector('.ft');
   if (ft) {
     const ball = document.createElement('div'), shadow = document.createElement('div');
     ball.className = 'ft-ball'; ball.innerHTML = '<i></i>'; shadow.className = 'ft-shadow';
