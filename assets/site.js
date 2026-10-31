@@ -227,7 +227,7 @@
   });
 
   // フッター：上端をフェアウェイに見立て、左からティーショットのボールが飛んできて弾み、転がって画面の右端から消える。
-  // ボールが着地したら、ゴルファーがカートに乗って左から追いかけ、同じく右端から消える。カートが消えて 3 秒したら、また次の 1 球（フッターが見えているあいだ繰り返す）。
+  // ボールが消えて 1 秒したら、ゴルファーがカートに乗って左から追いかけ、同じく右端から消える。カートが消えて 3 秒したら、また次の 1 球（フッターが見えているあいだ繰り返す）。
   // ボールの動きは最初に物理で計算しておき（放物線→弾む→転がる）、まだ転がっている途中（転がる距離の 80%）で右端を越えるよう横方向だけ伸び縮みさせて再生する
   if (ft) {
     const ball = document.createElement('div'), shadow = document.createElement('div'), cart = document.createElement('div');
@@ -244,19 +244,18 @@
     ft.append(shadow, ball, cart);
     const wheels = [...cart.querySelectorAll('.w')];
     const path = [];   // [t, x, y]（y は上端からの高さ。上が正）
-    let LAND = 0;      // 最初に着地する時刻（カートが走り出す合図）
     { let x = 0, y = 230, vx = 760, vy = 60, t = 0; const G = 980, DT = 1 / 240;
       while (t < 12) {
         path.push([t, x, y]);
         vy -= G * DT; x += vx * DT; y += vy * DT; vx *= 1 - 0.12 * DT;   // 空気の抵抗を少し
-        if (y <= 0) { y = 0; if (!LAND) LAND = t; if (vy < -60) { vy = -vy * 0.32; vx *= 0.78; } else { vy = 0; vx = Math.max(0, vx - 60 * DT); } }   // 弾む／転がる
+        if (y <= 0) { y = 0; if (vy < -60) { vy = -vy * 0.32; vx *= 0.78; } else { vy = 0; vx = Math.max(0, vx - 60 * DT); } }   // 弾む／転がる
         if (y === 0 && vy === 0 && vx < 1) { path.push([t + DT, x, 0]); break; }
         t += DT;
       }
     }
     const END = path[path.length - 1], R = 7, START = -40, OUT = 20, GAP = 3000;
-    const CART_V = 300, CART_DELAY = 0.35;   // カート：px/秒、着地からの出遅れ（秒）
-    let raf = 0, t0 = null, played = false, timer = 0;
+    const CART_V = 300, CART_DELAY = 1;   // カート：px/秒、ボールが消えてからの出遅れ（秒）
+    let raf = 0, t0 = null, played = false, timer = 0, gone = null;   // gone：ボールが右端から消えた時刻
     const place = (x, y, rot, op) => {
       ball.style.transform = `translate(${x}px, ${-y}px) rotate(${rot}deg)`; ball.style.opacity = op;
       shadow.style.transform = `translateX(${x}px) scale(${1 + y / 60})`; shadow.style.opacity = op * Math.max(0, 1 - y / 120);
@@ -272,13 +271,13 @@
       const sx = (ft.clientWidth + OUT - START) / (END[1] * 0.8);
       return [START + px * sx, py, px * sx / R * 57.3];
     };
-    const shoot = () => { timer = 0; t0 = null; cancelAnimationFrame(raf); raf = requestAnimationFrame(frame); };
+    const shoot = () => { timer = 0; t0 = null; gone = null; cancelAnimationFrame(raf); raf = requestAnimationFrame(frame); };
     const frame = now => {
       if (t0 === null) t0 = now;
       const k = (now - t0) / 1000, [x, y, r] = at(k), W = ft.clientWidth;
-      const ballIn = x < W + OUT && k < END[0];
-      if (ballIn) place(x, y, r, 1); else place(START, 0, 0, 0);
-      const cx = -cart.offsetWidth - 10 + Math.max(0, k - LAND - CART_DELAY) * CART_V, cartIn = cx < W + OUT;
+      const ballIn = gone === null && x < W + OUT && k < END[0];
+      if (ballIn) place(x, y, r, 1); else { place(START, 0, 0, 0); if (gone === null) gone = k; }
+      const cx = -cart.offsetWidth - 10 + (gone === null ? 0 : Math.max(0, k - gone - CART_DELAY) * CART_V), cartIn = cx < W + OUT;
       placeCart(cx, k, cartIn ? 1 : 0);
       if (ballIn || cartIn) raf = requestAnimationFrame(frame);
       else { raf = 0; timer = setTimeout(shoot, GAP); }   // カートも右端から消えたら、3 秒おいて次の 1 球
