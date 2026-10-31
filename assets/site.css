@@ -287,9 +287,9 @@ html.no3d .kv-bg .b-base { background: var(--page); }
    日本地図が点から組み上がったあと（site.js が .green を付ける）に、右下から広がるようにかかる */
 .bgl[data-bg="shop"]::after { content: ""; position: absolute; inset: 0; pointer-events: none;
   opacity: 0; transform: scale(.8); transform-origin: 82% 100%; transition: opacity 1.4s ease, transform 1.8s cubic-bezier(.2,.7,.2,1);
-  background: #7fa86a;
-  -webkit-mask-image: radial-gradient(85% 62% at 82% 112%, #000 30%, rgba(0,0,0,.55) 55%, transparent 80%);
-  mask-image: radial-gradient(85% 62% at 82% 112%, #000 30%, rgba(0,0,0,.55) 55%, transparent 80%); }
+  background: var(--kv-green);   /* Rafale の緑と同じ */
+  -webkit-mask-image: radial-gradient(110% 95% at 78% 112%, #000 25%, rgba(0,0,0,.5) 55%, transparent 85%);
+  mask-image: radial-gradient(110% 95% at 78% 112%, #000 25%, rgba(0,0,0,.5) 55%, transparent 85%); }
 .bgl[data-bg="shop"].green::after { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .bgl[data-bg="shop"]::after { opacity: 1; transform: none; transition: none; } }
 
