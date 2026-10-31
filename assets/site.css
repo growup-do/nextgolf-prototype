@@ -117,6 +117,7 @@ main { padding-top: var(--hd); }
 .tag { display: inline-block; font: 700 12px/1 var(--en); padding: 6px 10px; background: var(--accent, var(--k90)); color: var(--on-accent, #fff); }
 .tag.gray { background: var(--k10); color: var(--k70); }
 .tag.cancel { background: #000; color: #fff; }   /* 試打会の中止：黒ベタに白文字（終了のグレーと見分ける） */
+.tag.soon { padding: 5px 9px; background: none; border: 1px solid #000; color: #000; }   /* 試打会の開催予定：黒の罫線、塗りなし、黒文字（罫線のぶん余白を 1px 減らし、大きさをそろえる） */
 
 /* ページの見出し */
 .ptitle { padding: 96px 0 56px; border-bottom: 1px solid var(--line); }

@@ -45,7 +45,7 @@
     const state = cancel ? 'cancel' : day.key < TODAY ? 'done' : 'soon';
     return { ...e, day, title, place, state };
   };
-  const STATE = { cancel: '<span class="tag cancel">中止</span>', done: '<span class="tag gray">終了</span>', soon: '<span class="tag">開催予定</span>' };
+  const STATE = { cancel: '<span class="tag cancel">中止</span>', done: '<span class="tag gray">終了</span>', soon: '<span class="tag soon">開催予定</span>' };
   const evItem = (e, showState) =>
     `<a class="ev" href="event.html?id=${esc(e.id)}"><div class="d"><b>${e.day.m}.${String(e.day.d).padStart(2, '0')}</b><span>${WD[e.day.w]}</span></div>` +
     `<div>${showState ? STATE[e.state] + '<br>' : ''}<div class="tt">${esc(e.title)}</div>${e.place ? `<div class="pl">${esc(e.place)}</div>` : ''}</div></a>`;
