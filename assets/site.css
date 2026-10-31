@@ -397,6 +397,16 @@ html.no3d .kv-bg .b-base { background: var(--page); }
 .lu:hover b { color: var(--point); }
 .series + .series .lus, .series .lus { margin-bottom: 0; }
 
+/* 見出しとシャフト探しは区切らない。舞台はヘッダーの下から画面の下端まで、見出しの後ろにも広げ、シャフトが見出しにも突き出る */
+@media (min-width: 1101px) {
+  .fd-top { position: relative; }
+  .fd-top .ptitle { position: relative; z-index: 2; border-bottom: 0; pointer-events: none; }
+  .fd-top .ptitle a { pointer-events: auto; }
+  .fd-top .fd-sec, .fd-top .fd-sec > .wrap, .fd-top .finder { position: static; }
+  .fd-top .fd-stage { position: absolute; left: 0; right: 0; top: 0; height: calc(100svh - var(--hd)); min-height: 640px; margin: 0; }
+  .fd-top .fd-q { min-height: calc(100svh - var(--hd) - var(--pth, 260px)); display: flex; flex-direction: column; justify-content: center; padding: 0 0 40px; }
+}
+
 /* 製品一覧のページは黒い地（トップの製品一覧と同じ）。ヘッダーも暗いまま */
 html:has(body.pg-dark) { background: #000; }
 .pg-dark { --fg: #f2f2f2; --sub: rgba(255,255,255,.62); --line: rgba(255,255,255,.14); --panel: rgba(255,255,255,.04); color: var(--fg); }

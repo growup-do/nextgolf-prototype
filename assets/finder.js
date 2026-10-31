@@ -267,10 +267,12 @@
     camera.aspect = aspect; camera.updateProjectionMatrix();
     dist = (narrow ? 6.6 : 7.4) / (2 * TAN);   // 画面の高さに入るのは 7.4（シャフトは 11.2）
     camera.position.set(0, CY, dist); camera.lookAt(0, CY, 0);
+    const pt = document.querySelector('.fd-top .ptitle');   // 見出しの高さ（要望の欄を、見出しの下の残りの高さの中ほどに置くため）
+    if (pt) root.style.setProperty('--pth', pt.offsetHeight + 'px');
     const sr = stage.getBoundingClientRect(), q = root.querySelector('.fd-q').getBoundingClientRect();
     const side = Math.max(24, (W - 1200) / 2);
-    areaL = narrow ? 28 : q.right - sr.left + 64;
-    areaR = W - (narrow ? 28 : side);
+    areaL = narrow ? 28 : q.right - sr.left + 180;   // 要望の欄から離して右へ寄せる
+    areaR = W - (narrow ? 28 : Math.max(24, side * 0.4));
   }
   function target(s) {
     const n = all.length, u = (s.i + (s.p.series === 'rafale' ? SERIES_GAP : 0)) / (n - 1 + SERIES_GAP), arc = 2 * u - 1;
