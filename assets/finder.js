@@ -13,7 +13,8 @@
   const LBL = { need: '求めること', hs: 'ヘッドスピード', wt: '重さ' };
 
   // ---------- 選んだ要望 → 提案 ----------
-  // 選んだ項目のうち、当てはまる数が多い順に上位 3 本を提案する
+  // 選んだ項目のうち、当てはまる数が多い順に上位 3 本を提案する。
+  // 旧モデル（legacy：鎬White-50・Athlete S-60）は、当てはまる数にかかわらず今のモデルの後ろに回す
   const sel = { club: null, need: new Set(), hs: null, wt: null };
   const picks = () => [...[...sel.need].map(v => ['need', v]), ...['hs', 'wt'].filter(q => sel[q]).map(q => [q, sel[q]])];
   function rank() {
@@ -23,7 +24,7 @@
       const why = [];
       for (const [q, v] of ps) { const it = m[q].find(x => x[0] === v); if (it && it[2].includes(p.slug)) why.push([LBL[q], it[1]]); }
       return { p, score: why.length, why };
-    }).sort((a, b) => b.score - a.score);
+    }).sort((a, b) => (a.p.legacy - b.p.legacy) || (b.score - a.score));
     const top = ps.length ? list.filter(r => r.score > 0).slice(0, 3) : [];
     return { list, top, pool: new Set(list.map(r => r.p.slug)), n: ps.length };
   }
