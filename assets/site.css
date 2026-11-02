@@ -407,8 +407,8 @@ html.no3d .kv-bg .b-base { background: var(--page); }
   .fd-top .ptitle { padding: 56px 0 0; }
   .fd-top .fd-q { min-height: calc(100svh - var(--hd) - var(--pth, 260px)); display: flex; flex-direction: column; justify-content: flex-start; padding: 40px 0; }   /* 上に揃え、項目が出ても見出しの位置が動かないように */
   .fd-top .fd-h { font-size: 24px; margin: 10px 0 8px; }   /* 見出しの下でも、画面の高さに収まるように詰める */
-  .fd-top .finder { grid-template-columns: 440px minmax(0, 1fr); }   /* 要望のボタンを 1 行に多く並べ、縦を短く */
-  .fd-top .fd-more { display: grid; grid-template-columns: auto auto; justify-content: start; gap: 0 32px; }   /* ヘッドスピードと重さは横に並べる */
+  .fd-top .finder { grid-template-columns: 480px minmax(0, 1fr); }   /* 要望のボタンを 1 行に多く並べ、縦を短く */
+  .fd-top .fd-more { display: grid; grid-template-columns: auto auto; justify-content: start; gap: 0 24px; }   /* ヘッドスピードと重さは横に並べる */
   .fd-top .fd-more[hidden] { display: none; }
   .fd-top .fd-more > :first-child { grid-column: 1 / -1; }
   .fd-top .chips { gap: 6px; }
