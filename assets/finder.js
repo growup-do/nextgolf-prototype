@@ -1,113 +1,35 @@
-// 製品一覧：13 本のシャフトを 3D で並べ、要望（使うクラブ・求めること・ヘッドスピード）を選ぶと、合うシャフトが前に出て理由と一緒に提案される
+// 製品一覧：13 本のシャフトを 3D で並べ、要望（使うクラブ → 求めること・ヘッドスピード・重さ）を選ぶと、合うシャフトが前に出て提案される
 // シャフトの形とテクスチャは KV・トップの製品一覧と同じ（kv-data.js：鎬BLUE・RS1.0、lineup-data.js：ほかの 11 本）
-// 製品の名前・スペックは build_site.py が window.FINDER_DATA に書き出す。要望と製品の対応（点数と理由）はこのファイルの FIT
+// 製品の名前・スペックは window.FINDER_DATA、要望と製品の対応は window.FINDER_MATCH（どちらも build_site.py が書き出す）
 (() => {
   const root = document.getElementById('finder');
   const P = window.FINDER_DATA;
   if (!root || !P) return;
 
   // ---------- 要望と製品の対応 ----------
-  // 点数（3：いちばん合う、2：合う、1：少し合う）と、提案するときに出す理由。旧サイトの製品説明とスペックから選んだ仮のもの（メーカーに確認して直す）
-  const FIT = {
-    'shinogi-blue': {
-      lowspin: [3, '鎬シリーズの代名詞である低スピン性能。吹け上がらず、前へ強く進む弾道'],
-      moi: [3, '高MOI（慣性モーメント）ヘッドに合わせて開発。振りづらさを抑え、ヘッドの性能を引き出す'],
-      straight: [2, 'インパクトでのフェースの向きがそろいやすく、方向が安定する'],
-      heavy: [1, 'X・TX（65〜68g）もあり、しっかり振りたい人にも'],
-    },
-    'shinogi-athlete-gx': {
-      heavy: [3, '64〜69g の重めの設計。手元から先まで、しっかり振り切れる'],
-      straight: [2, 'トルク 3.5 度と、ねじれにくい。叩いても先が暴れにくい'],
-      easy: [1, 'プロではなくアマチュアのスイングを基準に設計した、振りやすいアスリートモデル'],
-    },
-    'shinogi-black-50': {
-      short: [3, '短めのレングスでの性能に特化。短尺ドライバーで真価を発揮する'],
-      straight: [3, '「叩きにいける」50g 台。強く振っても左へのミスを怖がらずに打てる'],
-      lowspin: [1, '短く持っても、強い弾道を打ちやすい'],
-    },
-    'shinogi-sp-40': {
-      light: [3, '48〜50g の軽さ。40g 台でも当たり負けしない'],
-      lowspin: [3, '軽いのに、当たり負けしない低スピンの強い弾道'],
-      design: [2, '3 つの版を 1/3 周ずつずらして刷った、ほかにない柄'],
-      easy: [1, '軽さで振り抜けて、飛距離と方向性の両方を狙える'],
-    },
-    'shinogi-athlete-s-60': {
-      heavy: [3, '60〜62g・トルク 4.2 度。しっかりした手応えで振れる'],
-      straight: [1, 'アスリート向けの粘りで、叩いても安定しやすい'],
-    },
-    'shinogi-athlete-t-60': {
-      heavy: [3, '60〜65g。SX・X も選べる、しっかり系のアスリートモデル'],
-      straight: [2, 'ツアー向けの精密さ。狙った方向へ打ち出しやすい'],
-      lowspin: [1, '先が走りすぎず、吹け上がりを抑えやすい'],
-    },
-    'shinogi-white-50': {
-      easy: [3, '先端・中間・手元でしなり方を変えた設計。しなり戻りの速さでヘッドスピードが上がる。飛距離が落ちてきたと感じる人に'],
-      light: [2, '52〜57g の軽さで、楽に振り抜ける'],
-      design: [2, '白を基調にした、清潔感のあるデザイン'],
-    },
-    'shinogi-athlete-fw': {
-      heavy: [3, '62〜69g・5 段階の硬さ。FW でもしっかり振り切れる'],
-      straight: [2, 'トルク 4.0 度のアスリート設計で、FW でも方向が安定する'],
-    },
-    'shinogi-fw-60': {
-      easy: [3, 'FW の苦手を克服するための、やさしさ重視の設計。ダフり・トップを減らし、キャリーを出しやすい'],
-      light: [1, '57〜63g と、FW 用としては軽めで振りやすい'],
-      design: [2, '灰から黒へ、墨が散るようなデザイン'],
-    },
-    'rafale-rs1': {
-      easy: [3, '大きくしなる設計で、しなりを最大限に活かして飛ばす。スイングを変えずにスピードが出る'],
-      light: [3, '46g・53g の軽さ。フレックスはひとつ（Multi）で、幅広いヘッドスピードに合う'],
-      design: [3, '黒地に鮮やかな色が走る、飛距離特化ブランド Rafale のグラフィック'],
-    },
-    'rafale-ma1': {
-      light: [3, '50〜54g の軽量モデル。軽いのに当たり負けしない強いインパクト'],
-      easy: [2, '軽さとスピード感で、楽にヘッドスピードを上げられる'],
-      design: [3, '黒地に黄緑の筆記体「Rafale」が映える、目を引くデザイン'],
-    },
-    'rafale-kt1': {
-      straight: [3, '力を入れて振っても言うことを聞く走り系。強く振ってもタイミングがずれにくい'],
-      easy: [1, 'ヘッドスピードとボールスピードの両方を上げる設計'],
-      design: [2, '黒地に Rafale のロゴが走る、飛距離特化ブランドのデザイン'],
-    },
-    'rafale-kt-fw': {
-      straight: [2, 'FW でミート率を上げ、スピードと正確さを両立'],
-      easy: [2, 'アマチュアが FW で最大飛距離を出しやすい設計'],
-      heavy: [2, '61〜66g。FW でもしっかり振れる'],
-      design: [2, '黒地に Rafale のロゴが走る、飛距離特化ブランドのデザイン'],
-    },
-  };
-  const NEED_LABEL = { easy: '楽に飛ばしたい', straight: '叩いても曲げたくない', lowspin: '強い弾道', light: '軽く振り抜きたい', heavy: '重めでしっかり', design: '人とは違うデザイン', moi: '高MOIヘッド', short: '短めのドライバー' };
-  // ヘッドスピード：重さとフレックスから
-  const hsFit = (p, hs) => {
-    const hard = p.flex.some(f => /^(X|TX|SX|T-1)$/.test(f));
-    if (hs === 'slow') return p.wmin <= 52 ? [2, `いちばん軽いもので ${p.wmin}g。ゆったりしたスイングでも振り切りやすい`] : p.wmin <= 57 ? [1, `${p.wmin}g からあり、無理なく振れる`] : [0];
-    if (hs === 'fast') return p.wmax >= 64 || hard ? [2, `${hard ? 'X など硬めのフレックスもあり、' : ''}速いヘッドスピードでも当たり負けしない`] : [0];
-    return p.wmin <= 62 && p.wmax >= 52 ? [1, '40〜45m/s に合う重さと硬さがそろう'] : [0];
-  };
+  // ドライバーとフェアウェイウッドで、選べる項目が違う。対応表はメーカーの資料から（build_site.py の MATCH → window.FINDER_MATCH）
+  // M[クラブ][項目] = [[値, 表示名, [合う製品の slug…]], …]。項目は need（求めること・いくつでも）・hs（ヘッドスピード）・wt（重さ）
+  const M = window.FINDER_MATCH || {};
+  const LBL = { need: '求めること', hs: 'ヘッドスピード', wt: '重さ' };
 
   // ---------- 選んだ要望 → 提案 ----------
-  const sel = { club: null, need: new Set(), hs: null };
+  // 選んだ項目のうち、当てはまる数が多い順に上位 3 本を提案する
+  const sel = { club: null, need: new Set(), hs: null, wt: null };
+  const picks = () => [...[...sel.need].map(v => ['need', v]), ...['hs', 'wt'].filter(q => sel[q]).map(q => [q, sel[q]])];
   function rank() {
-    const any = sel.club || sel.need.size || sel.hs;
-    if (!any) return null;
-    const list = P.map(p => {
-      if (sel.club && p.fw !== (sel.club === 'fw')) return null;
-      let score = 0;
+    if (!sel.club || !M[sel.club]) return null;
+    const m = M[sel.club], ps = picks();
+    const list = P.filter(p => p.fw === (sel.club === 'fw')).map(p => {
       const why = [];
-      for (const n of sel.need) {
-        const f = FIT[p.slug] && FIT[p.slug][n];
-        if (f) { score += f[0]; why.push([NEED_LABEL[n], f[1]]); }
-      }
-      if (sel.hs) { const [v, t] = hsFit(p, sel.hs); if (v) { score += v * 0.6; why.push(['ヘッドスピード', t]); } }
-      return { p, score, why };
-    }).filter(Boolean).sort((a, b) => b.score - a.score);
-    const hasNeed = sel.need.size || sel.hs;
-    const top = hasNeed ? list.filter(r => r.score > 0).slice(0, 3) : [];
-    return { list, top, pool: new Set(list.map(r => r.p.slug)) };
+      for (const [q, v] of ps) { const it = m[q].find(x => x[0] === v); if (it && it[2].includes(p.slug)) why.push([LBL[q], it[1]]); }
+      return { p, score: why.length, why };
+    }).sort((a, b) => b.score - a.score);
+    const top = ps.length ? list.filter(r => r.score > 0).slice(0, 3) : [];
+    return { list, top, pool: new Set(list.map(r => r.p.slug)), n: ps.length };
   }
 
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const resultEl = root.querySelector('.fd-result'), resetBtn = root.querySelector('.fd-reset');
+  const resultEl = root.querySelector('.fd-result'), resetBtn = root.querySelector('.fd-reset'), first = root.querySelector('.fd-first');
   let state = null;   // rank() の結果
   const specLine = p => [p.wmin != null ? (p.wmin === p.wmax ? `${p.wmin}g` : `${p.wmin}–${p.wmax}g`) : '', p.flex.length ? p.flex.join(' / ') : '', p.kick].filter(Boolean).join('　');
   function drawResult() {
@@ -115,31 +37,37 @@
     resetBtn.hidden = !state;
     if (!state) { resultEl.innerHTML = ''; return; }
     if (!state.top.length) {
-      resultEl.innerHTML = sel.need.size || sel.hs
+      resultEl.innerHTML = state.n
         ? '<div class="fd-empty">この組み合わせにぴったりのシャフトは見つかりませんでした。条件を減らしてみてください。</div>'
-        : `<div class="fd-empty">${sel.club === 'fw' ? 'フェアウェイウッド用' : 'ドライバー用'}のシャフトは ${state.list.length} 本です。求めることを選ぶと、さらに絞り込んで提案します。</div>`;
+        : `<div class="fd-empty">${sel.club === 'fw' ? 'フェアウェイウッド用' : 'ドライバー用'}のシャフトは ${state.list.length} 本です。求めることを選ぶと、合うシャフトを提案します。</div>`;
       return;
     }
     resultEl.innerHTML = '<div class="e">RECOMMEND</div><h3 class="fd-rh">あなたへの提案</h3><div class="fd-cards">' + state.top.map((r, i) =>
       `<article class="fd-card s-${r.p.series}"><div class="fd-rank">${i === 0 ? 'BEST MATCH' : `No.${i + 1}`}</div>` +
       `<h4>${esc(r.p.name)}</h4><div class="fd-spec">${esc(specLine(r.p))}</div>` +
+      (r.p.catch ? `<p class="fd-cc">${esc(r.p.catch)}</p>` : '') +
       `<ul>${r.why.map(([k, t]) => `<li><b>${esc(k)}</b>${esc(t)}</li>`).join('')}</ul>` +
-      `<div class="fd-acts"><button type="button" class="fd-look" data-slug="${r.p.slug}">3D で見る</button><a class="more" href="${r.p.url}">製品ページ</a></div></article>`).join('') + '</div>';
+      `<div class="fd-acts"><a class="more" href="${r.p.url}">製品ページ</a></div></article>`).join('') + '</div>';
+  }
+  const press = q => root.querySelectorAll(`.chip[data-q="${q}"]`).forEach(c => c.setAttribute('aria-pressed', q === 'need' ? sel.need.has(c.dataset.v) : sel[q] === c.dataset.v));
+  function setClub(v) {   // クラブを変えたら、ほかの選択は消して、そのクラブの項目を出す
+    sel.club = v; sel.need.clear(); sel.hs = sel.wt = null;
+    ['club', 'need', 'hs', 'wt'].forEach(press);
+    root.querySelectorAll('.fd-more').forEach(g => { g.hidden = g.dataset.club !== v; });
+    first.hidden = !!v;
   }
   root.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => {
     const q = b.dataset.q, v = b.dataset.v;
-    if (q === 'need') sel.need.has(v) ? sel.need.delete(v) : sel.need.add(v);
-    else sel[q] = sel[q] === v ? null : v;
-    root.querySelectorAll(`.chip[data-q="${q}"]`).forEach(c => c.setAttribute('aria-pressed', q === 'need' ? sel.need.has(c.dataset.v) : sel[q] === c.dataset.v));
+    if (q === 'club') setClub(sel.club === v ? null : v);
+    else {
+      if (q === 'need') sel.need.has(v) ? sel.need.delete(v) : sel.need.add(v);
+      else sel[q] = sel[q] === v ? null : v;
+      press(q);
+    }
     drawResult();
     pick(null);
   }));
-  resetBtn.addEventListener('click', () => {
-    sel.club = null; sel.need.clear(); sel.hs = null;
-    root.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', 'false'));
-    drawResult(); pick(null);
-  });
-  resultEl.addEventListener('click', e => { const b = e.target.closest('.fd-look'); if (b) { pick(b.dataset.slug); root.querySelector('.fd-stage').scrollIntoView({ behavior: 'smooth', block: 'center' }); } });
+  resetBtn.addEventListener('click', () => { setClub(null); drawResult(); pick(null); });
 
   // ---------- 詳しく見る（シャフトを押したとき） ----------
   const panel = root.querySelector('.fd-panel');
