@@ -29,7 +29,7 @@
   }
 
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const resultEl = root.querySelector('.fd-result'), resetBtn = root.querySelector('.fd-reset'), first = root.querySelector('.fd-first');
+  const resultEl = root.querySelector('.fd-result'), resetBtn = root.querySelector('.fd-reset');
   let state = null;   // rank() の結果
   const specLine = p => [p.wmin != null ? (p.wmin === p.wmax ? `${p.wmin}g` : `${p.wmin}–${p.wmax}g`) : '', p.flex.length ? p.flex.join(' / ') : '', p.kick].filter(Boolean).join('　');
   function drawResult() {
@@ -54,7 +54,6 @@
     sel.club = v; sel.need.clear(); sel.hs = sel.wt = null;
     ['club', 'need', 'hs', 'wt'].forEach(press);
     root.querySelectorAll('.fd-more').forEach(g => { g.hidden = g.dataset.club !== v; });
-    first.hidden = !!v;
   }
   root.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => {
     const q = b.dataset.q, v = b.dataset.v;

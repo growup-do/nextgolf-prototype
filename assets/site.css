@@ -344,7 +344,6 @@ html.no3d .kv-bg .b-base { background: var(--page); }
 .chip { font: 700 13px/1 var(--ja); padding: 11px 14px; border: 1px solid var(--k20); background: rgba(255,255,255,.7); color: var(--k90); cursor: pointer; transition: background .2s, color .2s, border-color .2s; }
 .chip:hover { border-color: var(--k90); }
 .chip[aria-pressed="true"] { background: var(--k90); border-color: var(--k90); color: #fff; }
-.fd-first { margin-top: 14px; font-size: 13px; line-height: 1.6; color: var(--sub); }
 .fd-more { animation: fdIn .45s ease both; }   /* クラブを選ぶと、そのクラブの項目が出る */
 @keyframes fdIn { from { opacity: 0; transform: translateY(8px); } }
 .fd-cc { margin-top: 12px; font: 700 14px/1.7 var(--ja); }
