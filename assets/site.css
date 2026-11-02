@@ -405,7 +405,7 @@ html.no3d .kv-bg .b-base { background: var(--page); }
   .fd-top .fd-sec, .fd-top .fd-sec > .wrap, .fd-top .finder { position: static; }
   .fd-top .fd-stage { position: absolute; left: 0; right: 0; top: 0; height: calc(100svh - var(--hd)); min-height: 640px; margin: 0; }
   .fd-top .ptitle { padding: 56px 0 0; }
-  .fd-top .fd-q { min-height: calc(100svh - var(--hd) - var(--pth, 260px)); display: flex; flex-direction: column; justify-content: center; padding: 40px 0; }
+  .fd-top .fd-q { min-height: calc(100svh - var(--hd) - var(--pth, 260px)); display: flex; flex-direction: column; justify-content: flex-start; padding: 40px 0; }   /* 上に揃え、項目が出ても見出しの位置が動かないように */
   .fd-top .fd-h { font-size: 24px; margin: 10px 0 8px; }   /* 見出しの下でも、画面の高さに収まるように詰める */
   .fd-top .finder { grid-template-columns: 400px minmax(0, 1fr); }   /* 要望のボタンを 1 行に多く並べ、縦を短く */
   .fd-top .fd-grp { margin-top: 20px; }
