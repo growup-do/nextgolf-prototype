@@ -672,7 +672,8 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
   opacity: 0; visibility: hidden; transform: translateY(-12px); transition: opacity .3s, transform .3s, visibility 0s .3s; }
 .area-nav.show { opacity: 1; visibility: visible; transform: none; transition: opacity .3s, transform .3s; }
 html:has(.area-nav) { scroll-padding-top: calc(var(--hd) + 90px); }   /* 地域へ飛んだとき、見出しが帯に隠れないように */
-.area-nav .wrap { overflow-x: auto; padding-top: 14px; padding-bottom: 14px; }
+.area-nav .wrap { overflow-x: auto; scrollbar-width: none; padding-top: 14px; padding-bottom: 14px; }
+.area-nav .wrap::-webkit-scrollbar { display: none; }
 /* 地域のボタンはセグメンテッドコントロール。いま見ている地域へ、地（.seg-ind）が滑る（site.js）。幅に収まらないときは横にスクロール */
 .seg-n { display: flex; width: max-content; min-width: 100%; max-width: none; }
 .seg-n::before { display: none; }
