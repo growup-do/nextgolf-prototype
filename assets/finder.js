@@ -50,15 +50,15 @@
       `<ul>${r.why.map(([k, t]) => `<li><b>${esc(k)}</b>${esc(t)}</li>`).join('')}</ul>` +
       `<div class="fd-acts"><a class="more" href="${r.p.url}">製品ページ</a></div></article>`).join('') + '</div>';
   }
-  const press = q => root.querySelectorAll(`.chip[data-q="${q}"]`).forEach(c => c.setAttribute('aria-pressed', q === 'need' ? sel.need.has(c.dataset.v) : sel[q] === c.dataset.v));
+  const press = q => root.querySelectorAll(`[data-q="${q}"]`).forEach(c => c.setAttribute('aria-pressed', q === 'need' ? sel.need.has(c.dataset.v) : sel[q] === c.dataset.v));
   function setClub(v) {   // クラブを変えたら、ほかの選択は消して、そのクラブの項目を出す
     sel.club = v; sel.need.clear(); sel.hs = sel.wt = null;
     ['club', 'need', 'hs', 'wt'].forEach(press);
     root.querySelectorAll('.fd-more').forEach(g => { g.hidden = g.dataset.club !== v; });
   }
-  root.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => {
+  root.querySelectorAll('.chip, .seg-b').forEach(b => b.addEventListener('click', () => {
     const q = b.dataset.q, v = b.dataset.v;
-    if (q === 'club') setClub(sel.club === v ? null : v);
+    if (q === 'club') { if (sel.club === v) return; setClub(v); }   // セグメンテッドコントロール：選んでいる側を押しても外さない（外すのは「選び直す」）
     else {
       if (q === 'need') sel.need.has(v) ? sel.need.delete(v) : sel.need.add(v);
       else sel[q] = sel[q] === v ? null : v;
