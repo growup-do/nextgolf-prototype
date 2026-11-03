@@ -307,7 +307,21 @@
   const anav = document.querySelector('.area-nav'), afind = document.querySelector('.shopfind');
   if (anav && afind) {
     const hd = document.querySelector('.hd');
-    const toggle = () => anav.classList.toggle('show', afind.getBoundingClientRect().bottom < (hd ? hd.offsetHeight : 0));
+    // 帯はセグメンテッドコントロール。いま見ている地域のボタンへ、地（.seg-ind）を滑らせる
+    const seg = anav.querySelector('.seg-n'), ind = anav.querySelector('.seg-ind'), links = [...anav.querySelectorAll('.seg-b')];
+    let cur = null;
+    const spy = () => {
+      const line = (hd ? hd.offsetHeight : 0) + anav.offsetHeight + 24;
+      let a = null;
+      for (const l of links) { const sec = document.querySelector(l.getAttribute('href')); if (sec && sec.getBoundingClientRect().top <= line) a = l; }
+      if (a === cur) return;
+      cur = a;
+      links.forEach(l => l.toggleAttribute('aria-current', l === a));
+      seg.classList.toggle('on', !!a);
+      if (a) { ind.style.left = a.offsetLeft + 'px'; ind.style.width = a.offsetWidth + 'px'; const w = seg.parentElement; w.scrollTo({ left: a.offsetLeft + a.offsetWidth / 2 - w.clientWidth / 2, behavior: 'smooth' }); }   // 横にはみ出すときは、その地域を帯の中央へ
+    };
+    const toggle = () => { anav.classList.toggle('show', afind.getBoundingClientRect().bottom < (hd ? hd.offsetHeight : 0)); spy(); };
+    addEventListener('resize', () => { cur = null; spy(); });
     addEventListener('scroll', toggle, { passive: true });
     addEventListener('resize', toggle);
     toggle();

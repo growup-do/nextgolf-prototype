@@ -16,6 +16,7 @@
   --point: #ffae00; --on-point: #fff;
   --en: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif; --ja: "Noto Sans JP", sans-serif;
   --hd: 88px; --w: 1200px; --px: 40px;
+  --r: 8px; --r-s: 6px;   /* 四角いボタンの角R（大きいボタン・小さいボタン）。セグメンテッドコントロールの中の地は、枠の内側に合わせて --r-s
   --hd-x: 48px;   /* ヘッダーのロゴとメニューは、画面の左右の端から 48px の位置に固定 */
   /* トップの KV の状態（kv.js・site.js が書き換える）：鎬／Rafale へのフォーカス、マウスの位置、背景の切り替えの進み具合 */
   --sh: 0; --rf: 0; --mx: 0; --my: 0; --blend: 0; --cue: 1;
@@ -123,7 +124,7 @@ main > .sec:last-child, .sec:has(+ .ft), main > .pbody:last-child > .sec:last-ch
 .more { transition: color .2s; }
 .more:hover { color: var(--point); }
 .more:hover::after { width: 44px; background: var(--point); height: 2px; }
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 14px; height: 54px; padding: 0 32px; border: 1px solid var(--k90);
+.btn { border-radius: var(--r); display: inline-flex; align-items: center; justify-content: center; gap: 14px; height: 54px; padding: 0 32px; border: 1px solid var(--k90);
   font: 600 15px/1 var(--en); transition: background .3s, color .3s; background: rgba(255,255,255,.35); white-space: nowrap; cursor: pointer; }
 .btn::after { content: "→"; font-family: var(--ja); }
 .btn:hover { background: var(--point); border-color: var(--point); color: var(--on-point); }
@@ -190,7 +191,7 @@ main > .sec:last-child, .sec:has(+ .ft), main > .pbody:last-child > .sec:last-ch
 .ln-names a:hover, .ln-names a:focus-visible, .ln-names a.on { color: #ffae00; }
 /* 製品一覧ページのシャフト探しへ：2 つのシリーズの下、中央。文字と同じく、罫線を引くあいだはその場に留める */
 .ln-find { position: absolute; left: 50%; top: calc(var(--stage) - var(--u) * 112); z-index: 3; translate: -50% var(--lnhold, 0px); }
-.ln-find a { display: inline-flex; align-items: center; gap: 14px; padding: 17px 28px; background: #000; border: 1px solid rgba(255,255,255,.55); color: #fff; font: 700 15px/1 var(--ja); white-space: nowrap; transition: color .2s, border-color .2s; }
+.ln-find a { border-radius: var(--r); display: inline-flex; align-items: center; gap: 14px; padding: 17px 28px; background: #000; border: 1px solid rgba(255,255,255,.55); color: #fff; font: 700 15px/1 var(--ja); white-space: nowrap; transition: color .2s, border-color .2s; }
 .ln-find a::after { content: ""; width: 28px; height: 1px; background: currentColor; transition: width .3s, height .3s; }
 .ln-find a:hover, .ln-find a:focus-visible { color: var(--point); border-color: var(--point); }
 .ln-find a:hover::after, .ln-find a:focus-visible::after { width: 44px; height: 2px; }
@@ -341,12 +342,12 @@ html.no3d .kv-bg .b-base { background: var(--page); }
 .fd-l { font: 700 14px/1 var(--ja); margin-bottom: 12px; display: flex; align-items: baseline; gap: 8px; }
 .fd-l small { font: 400 12px/1 var(--ja); color: var(--sub); }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { font: 700 13px/1 var(--ja); padding: 11px 14px; border: 1px solid var(--k20); background: rgba(255,255,255,.7); color: var(--k90); cursor: pointer; transition: background .2s, color .2s, border-color .2s; }
+.chip { border-radius: var(--r-s); font: 700 13px/1 var(--ja); padding: 11px 14px; border: 1px solid var(--k20); background: rgba(255,255,255,.7); color: var(--k90); cursor: pointer; transition: background .2s, color .2s, border-color .2s; }
 .chip:hover { border-color: var(--k90); }
 .chip[aria-pressed="true"] { background: var(--k90); border-color: var(--k90); color: #fff; }
 /* クラブの選択：セグメンテッドコントロール。選んだ側へ地（::before）が滑って動く。選ぶまでは地を出さない */
-.seg { position: relative; display: grid; grid-template-columns: 1fr 1fr; width: 100%; max-width: 380px; padding: 3px; border: 1px solid var(--k20); background: rgba(255,255,255,.7); }
-.seg::before { content: ""; position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 3px); background: var(--k90); opacity: 0; transition: translate .35s cubic-bezier(.2,.8,.2,1), opacity .2s; }
+.seg { border-radius: var(--r); position: relative; display: grid; grid-template-columns: 1fr 1fr; width: 100%; max-width: 380px; padding: 3px; border: 1px solid var(--k20); background: rgba(255,255,255,.7); }
+.seg::before { border-radius: var(--r-s); content: ""; position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 3px); background: var(--k90); opacity: 0; transition: translate .35s cubic-bezier(.2,.8,.2,1), opacity .2s; }
 .seg:has([aria-pressed="true"])::before { opacity: 1; }
 .seg:has(.seg-b:nth-child(2)[aria-pressed="true"])::before { translate: 100% 0; }
 .seg-b { position: relative; font: 700 14px/1 var(--ja); padding: 12px 8px; border: 0; background: none; color: var(--k90); cursor: pointer; transition: color .3s; }
@@ -488,7 +489,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 /* 取扱店を探す：日本地図と地域ボタン */
 .shopfind { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 56px; align-items: center; }
 .areas { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.areas a { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; border: 1px solid var(--line); background: var(--panel);
+.areas a { border-radius: var(--r); height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; border: 1px solid var(--line); background: var(--panel);
   font: 700 15px/1 var(--ja); transition: background .3s, color .3s; }
 .areas a span { font: 400 14px/1 var(--en); color: var(--sub); transition: color .3s; }
 .areas a span::after { content: " SHOPS"; font-size: 12px; }
@@ -671,9 +672,15 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
   opacity: 0; visibility: hidden; transform: translateY(-12px); transition: opacity .3s, transform .3s, visibility 0s .3s; }
 .area-nav.show { opacity: 1; visibility: visible; transform: none; transition: opacity .3s, transform .3s; }
 html:has(.area-nav) { scroll-padding-top: calc(var(--hd) + 90px); }   /* 地域へ飛んだとき、見出しが帯に隠れないように */
-.area-nav .wrap { display: flex; gap: 8px; overflow-x: auto; padding-top: 14px; padding-bottom: 14px; }
-.area-nav a { flex: 0 0 auto; padding: 10px 20px; border: 1px solid var(--line); background: var(--panel); font-size: 14px; line-height: 1.5; transition: background .3s, color .3s; }
-.area-nav a:hover { background: var(--point); border-color: var(--point); color: var(--on-point); }
+.area-nav .wrap { overflow-x: auto; padding-top: 14px; padding-bottom: 14px; }
+/* 地域のボタンはセグメンテッドコントロール。いま見ている地域へ、地（.seg-ind）が滑る（site.js）。幅に収まらないときは横にスクロール */
+.seg-n { display: flex; width: max-content; min-width: 100%; max-width: none; }
+.seg-n::before { display: none; }
+.seg-n .seg-b { flex: 1 0 auto; padding: 10px 18px; font: 700 14px/1.5 var(--ja); text-align: center; white-space: nowrap; }
+.seg-n .seg-b[aria-current] { color: #fff; cursor: pointer; }
+.seg-n .seg-b[aria-current]:hover { color: #fff; }
+.seg-ind { position: absolute; top: 3px; bottom: 3px; left: 3px; width: 0; border-radius: var(--r-s); background: var(--k90); opacity: 0; transition: left .35s cubic-bezier(.2,.8,.2,1), width .35s cubic-bezier(.2,.8,.2,1), opacity .2s; }
+.seg-n.on .seg-ind { opacity: 1; }
 .area + .area { margin-top: 96px; }
 .area > h2 { font: 700 38px/1.2 var(--ja); padding-bottom: 20px; border-bottom: 1px solid var(--line); }
 .area > h2 span { font: 600 15px/1 var(--en); color: var(--sub); margin-left: 16px; }
