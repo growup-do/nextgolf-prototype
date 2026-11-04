@@ -16,7 +16,7 @@
   --point: #ffae00; --on-point: #fff;
   --en: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif; --ja: "Noto Sans JP", sans-serif;
   --hd: 88px; --w: 1200px; --px: 40px;
-  --r: 8px; --r-s: 6px;   /* 四角いボタンの角R（大きいボタン・小さいボタン）。セグメンテッドコントロールの中の地は、枠の内側に合わせて --r-s
+  --r: 8px; --r-s: 6px;   /* 四角いボタンの角R（大きいボタン・小さいボタン）。セグメンテッドコントロールの中の地は、枠の内側に合わせて --r-s */
   --hd-x: 48px;   /* ヘッダーのロゴとメニューは、画面の左右の端から 48px の位置に固定 */
   /* トップの KV の状態（kv.js・site.js が書き換える）：鎬／Rafale へのフォーカス、マウスの位置、背景の切り替えの進み具合 */
   --sh: 0; --rf: 0; --mx: 0; --my: 0; --blend: 0; --cue: 1;
