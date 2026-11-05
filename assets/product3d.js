@@ -240,11 +240,12 @@
       { focus: MID - 60, d: 3.4, rz: -0.1, sx: 0, sy: 0.2, tilt: 0.06, roll: 0.4 },
       { focus: TIP, d: 0.6, rz: 0.2, sx: 0.04, sy: -0.12, tilt: 0, roll: 0 },   // 文章（左上）を避けて、右上がりに下へ
       LEFT(LAB - 120, 1.6), TALL()],
-    // SP-40：金のマーク → 1/3 周ずつずれた線の版 → ラベル → 引きの全体 → 立てた全体
+    // SP-40：金のマーク → 1/3 周ずつずれた線の版 → ラベル → 断面の吹き出し → 引きの全体 → 立てた全体
     'shinogi-sp-40': () => [KV0,
       { focus: mark(0).mm, d: 0.8, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
       { focus: X0 + 200, d: 1.3, rz: 0.12, sx: 0, sy: 0, tilt: 0, roll: TURN / 3 },
       { focus: LAB, d: 1.0, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
+      XS_SHOT,   // 手元部の 4 軸組布の吹き出し（説明文が 6 段なので、SP-40 だけカットが 1 つ多い）
       { focus: MID, d: 3.4, rz: 0.08, sx: 0, sy: -0.2, tilt: -0.05, roll: TURN * 2 / 3 },
       LEFT(X0 + 150, 1.4), TALL()],
     // Rafale KT1.0：裏のラベル → オレンジの帯 → ロゴ → シール（裏）→ 立てた全体（裏を正面に）
