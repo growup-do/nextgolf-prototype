@@ -654,7 +654,9 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .kv-bg .b-kvimg .photo { position: absolute; inset: 0 0 auto auto; height: 165vh; aspect-ratio: 1413 / 2000; background: center top / cover no-repeat;
   -webkit-mask: linear-gradient(90deg, transparent, #000 12%); mask: linear-gradient(90deg, transparent, #000 12%);
   transform-origin: 100% 0; transform: translateX(calc((var(--fv,1) - 1) * 80px)) scale(1.04); }
-.p3d-hero.has-kv .p3d-fv { left: 6vw; top: 54%; align-items: flex-start; text-align: left; gap: 32px; }
+.p3d-hero.has-kv .p3d-fv { left: 6vw; top: 54%; gap: 32px; }   /* ロゴ・製品名・コピーを横の中央でそろえる */
+.p3d-hero.has-kv .p3d-mark { gap: 18px; }
+.p3d-hero.has-kv .p3d-mark .nm { height: clamp(28px, 2.6vw, 40px); }   /* 製品名（Athlete GX）のロゴ。色はシャフトの赤（--accent） */
 .p3d-logo { display: block; width: clamp(260px, 30vw, 460px); height: auto; filter: drop-shadow(0 2px 16px rgba(0,0,0,.6)); }
 .p3d-hero.has-kv .copy { font-size: clamp(28px, 2.6vw, 40px); line-height: 1.4; }
 .p3d-hero.has-kv .sub { font-size: clamp(16px, 1.35vw, 20px); color: #f2e6ec; }
