@@ -49,7 +49,7 @@ button { font: inherit; color: inherit; }
    後ろが暗いとき（--hdk：0〜1）は、地を濃いグレーに、ロゴと文字を白にする。
    KV で鎬・Rafale の暗い背景が出ているとき（どちらかへのフォーカス × KV の背景が残っている割合）と、フッターの上に来たとき（site.js が .hd-dark） */
 .hd { view-transition-name: site-header; --hdk: calc(max(var(--shb), var(--rfb)) * (1 - var(--blend))); position: fixed; top: 0; left: 0; right: 0; height: var(--hd); z-index: 50;
-  background: color-mix(in srgb, rgba(25,25,25,.82) calc(var(--hdk) * 100%), rgba(246,246,246,.72));
+  background: color-mix(in srgb, var(--hd-dk, rgba(25,25,25,.82)) calc(var(--hdk) * 100%), var(--hd-lt, rgba(246,246,246,.72)));   /* 製品ページは、地の色に合わせて --hd-lt・--hd-dk を変える */
   color: color-mix(in srgb, #fff calc(var(--hdk) * 100%), var(--k90));
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid color-mix(in srgb, rgba(255,255,255,.14) calc(var(--hdk) * 100%), rgba(0,0,0,.12)); transition: background-color .3s; }
@@ -298,9 +298,9 @@ html.kv-off .kv-bg { visibility: hidden; }
 .kv-item.s-rafale .lg { filter: drop-shadow(0 2px 14px rgba(0,0,0, calc(.08 + var(--rfb) * .45))); }
 .kv-item.s-rafale .go { color: color-mix(in srgb, #fff calc(var(--rfb) * 100%), var(--k90)); }
 .kv-item { pointer-events: auto; align-self: center; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px; }   /* 位置は kv.js が毎コマなめらかに動かすので、transition は付けない */
-/* --ax・--ay：シャフトと重ならないように kv.js がずらす量。選ばれていないほうのロゴ・コピー・ボタンは、不透明度 20% まで薄くする */
-.kv-item.s-shinogi { justify-self: start; opacity: calc(1 - var(--rf) * .8); transform: translate(var(--ax, 0px), var(--ay, 0px)) translateX(calc(var(--sh) * -1.5vw)) scale(calc(1 + var(--sh) * .06)); }
-.kv-item.s-rafale { justify-self: end; opacity: calc(1 - var(--sh) * .8); transform: translate(var(--ax, 0px), var(--ay, 0px)) translateX(calc(var(--rf) * 1.5vw)) scale(calc(1 + var(--rf) * .06)); }
+/* --ax・--ay：シャフトと重ならないように kv.js がずらす量。選ばれていないほうのロゴ・コピー・ボタンは、不透明度 10% まで薄くする */
+.kv-item.s-shinogi { justify-self: start; opacity: calc(1 - var(--rf) * .9); transform: translate(var(--ax, 0px), var(--ay, 0px)) translateX(calc(var(--sh) * -1.5vw)) scale(calc(1 + var(--sh) * .06)); }
+.kv-item.s-rafale { justify-self: end; opacity: calc(1 - var(--sh) * .9); transform: translate(var(--ax, 0px), var(--ay, 0px)) translateX(calc(var(--rf) * 1.5vw)) scale(calc(1 + var(--rf) * .06)); }
 .kv-item .lg { display: block; width: clamp(220px, 27vw, 500px); aspect-ratio: var(--ar); background: var(--accent);
   -webkit-mask: var(--m) center / contain no-repeat; mask: var(--m) center / contain no-repeat; filter: drop-shadow(0 6px 12px rgba(0,0,0,.08)); }
 .kv-item .col { font: 600 15px/1 var(--en); color: var(--k70); }
@@ -688,13 +688,13 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .p3d-page .scroll-hint::after { background: currentColor; }
 /* 製品ごとの地の色（最初の暗い画面が消えたあとに見える、ページ全体の地。ほかの製品はグレーのまま）
    Rafale は薄い色（RS1.0 は緑、Ma1.0 は青、KT1.0・KT FW はオレンジ）、鎬の多くは暗い色（build_site.py の P3D_DARK。文字は pg-dark で明るく） */
-html:has(.p3d[data-slug="rafale-rs1"]) { background: radial-gradient(130% 90% at 50% -10%, #f6fbf1 0%, #e6f1dc 45%, #d2e5c2 100%) fixed; }
-html:has(.p3d[data-slug="rafale-ma1"]) { background: radial-gradient(130% 90% at 50% -10%, #f4f8fd 0%, #e1eaf6 45%, #ccdaee 100%) fixed; }
-html:has(.p3d:is([data-slug="rafale-kt1"], [data-slug="rafale-kt-fw"])) { background: radial-gradient(130% 90% at 50% -10%, #fdf7f1 0%, #f6e6d7 45%, #ebd0b9 100%) fixed; }
-html:has(.p3d[data-slug="shinogi-blue"]) { background: #070b16 radial-gradient(60% 70% at 75% 40%, #0d1730 0%, #070b16 70%) fixed; }   /* 最初の画面（.b-shinogi）と同じネイビー */
-html:has(.p3d[data-slug="shinogi-athlete-gx"]) { background: #14040c radial-gradient(70% 70% at 70% 35%, #4a1030 0%, #14040c 75%) fixed; }   /* 最初の画面の広告素材の赤紫 */
-html:has(.p3d:is([data-slug="shinogi-black-50"], [data-slug="shinogi-sp-40"], [data-slug="shinogi-athlete-t-60"], [data-slug="shinogi-athlete-fw"])) { background: #000 radial-gradient(75% 70% at 60% 40%, #262626 0%, #0b0b0b 55%, #000 85%) fixed; }   /* 黒。真っ黒だと黒いシャフトが沈むので、中央だけわずかに明るく */
-html:has(.p3d[data-slug="shinogi-athlete-s-60"]) { background: #05070b radial-gradient(75% 70% at 60% 40%, #1c2433 0%, #0a0d14 55%, #05070b 85%) fixed; }   /* 少しだけ青みのある黒 */
+html:has(.p3d[data-slug="rafale-rs1"]) { --hd-lt: rgba(228,240,217,.8); background: radial-gradient(130% 90% at 50% -10%, #f6fbf1 0%, #e6f1dc 45%, #d2e5c2 100%) fixed; }
+html:has(.p3d[data-slug="rafale-ma1"]) { --hd-lt: rgba(223,233,246,.8); background: radial-gradient(130% 90% at 50% -10%, #f4f8fd 0%, #e1eaf6 45%, #ccdaee 100%) fixed; }
+html:has(.p3d:is([data-slug="rafale-kt1"], [data-slug="rafale-kt-fw"])) { --hd-lt: rgba(247,231,216,.8); background: radial-gradient(130% 90% at 50% -10%, #fdf7f1 0%, #f6e6d7 45%, #ebd0b9 100%) fixed; }
+html:has(.p3d[data-slug="shinogi-blue"]) { --hd-dk: rgba(12,21,44,.85); background: #070b16 radial-gradient(60% 70% at 75% 40%, #0d1730 0%, #070b16 70%) fixed; }   /* 最初の画面（.b-shinogi）と同じネイビー */
+html:has(.p3d[data-slug="shinogi-athlete-gx"]) { --hd-dk: rgba(52,11,32,.85); background: #14040c radial-gradient(70% 70% at 70% 35%, #4a1030 0%, #14040c 75%) fixed; }   /* 最初の画面の広告素材の赤紫 */
+html:has(.p3d:is([data-slug="shinogi-black-50"], [data-slug="shinogi-sp-40"], [data-slug="shinogi-athlete-t-60"], [data-slug="shinogi-athlete-fw"])) { --hd-dk: rgba(14,14,14,.85); background: #000 radial-gradient(75% 70% at 60% 40%, #262626 0%, #0b0b0b 55%, #000 85%) fixed; }   /* 黒。真っ黒だと黒いシャフトが沈むので、中央だけわずかに明るく */
+html:has(.p3d[data-slug="shinogi-athlete-s-60"]) { --hd-dk: rgba(20,26,38,.85); background: #05070b radial-gradient(75% 70% at 60% 40%, #1c2433 0%, #0a0d14 55%, #05070b 85%) fixed; }   /* 少しだけ青みのある黒 */
 /* 暗い地の製品：説明文・製品名・価格・吹き出しの注記を明るく */
 .p3d-dark .p3d-text { color: #f2f2f2; }
 .p3d-dark .p3d-name.mono { --accent: #fff; }
