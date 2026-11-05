@@ -660,6 +660,8 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .p3d-hero.has-kv .sub { font-size: clamp(16px, 1.35vw, 20px); color: #f2e6ec; }
 .p3d-lead .copy { font: 700 23px/1.5 var(--ja); font-feature-settings: "palt"; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.45); word-break: keep-all; overflow-wrap: anywhere; }
 .p3d-lead .sub { font: 700 20px/1.6 var(--ja); font-feature-settings: "palt"; color: #e9eef7; text-shadow: 0 2px 12px rgba(0,0,0,.45); margin-top: 10px; }
+.p3d-lead .copy em { font-style: normal; font-size: 1.3em; color: var(--accent); }   /* 「」の言葉（P3D_EM の製品） */
+.p3d-lead .sub small { font-size: .55em; }
 .p3d-page .scroll-hint { color: color-mix(in srgb, #dfe6f2 calc(var(--fv, 1) * 100%), var(--sub)); }
 .p3d-page .scroll-hint::after { background: currentColor; }
 /* 4〜6：寄りのカットに添える説明文（右下・左上）。画面に固定し、1 画面に 1 段落だけをフェードインで出す（product3d.js が .on を付ける） */
