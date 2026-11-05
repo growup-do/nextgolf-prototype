@@ -371,6 +371,8 @@
       ];
     })();
   if (xs) shots[XS_K] = XS_SHOT;
+  // RS1.0：最後の段落の下にレーダーチャート（build_site.py の P3D_RADAR）があり縦に長いので、シャフトは左に立てて右側を空ける（裏のシールを見せたまま）
+  if (SLUG === 'rafale-rs1') shots[5] = LEFT(X0 + 60, 1.4, -Math.PI);
   const lerp = (a, b, t) => a + (b - a) * t;
   const ease = t => t * t * (3 - 2 * t);
   // カットのつなぎ方は、製品の名前に合わせて変える（各カットで止まったときの構図は同じ）

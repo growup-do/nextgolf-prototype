@@ -745,6 +745,10 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .p3d-name .price { margin-top: 18px; font-size: 14px; color: #000; }
 .p3d-name .price b { font: 700 24px/1 var(--en); color: #000; margin: 0 4px 0 14px; }
 .p3d-info .spec-wrap { margin-top: 40px; background: rgba(255,255,255,.45); }
+/* スペック表の下の、モデルごとのおすすめ（RS1.0 の T-401・T-501） */
+.spec-note { margin: 32px 0 0; display: grid; gap: 24px; }
+.spec-note dt { font: 700 17px/1.2 var(--en); color: var(--k90); }
+.spec-note dd { margin: 8px 0 0; font: 500 15px/1.8 var(--ja); color: var(--k70); }
 .p3d-info .gallery { margin-top: 56px; }
 
 
