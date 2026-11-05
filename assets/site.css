@@ -116,6 +116,7 @@ main { padding-top: var(--hd); }
 
 /* ===== フッター（ページの締めは K90 の濃いグレー） ===== */
 .ft { --line: rgba(255,255,255,.14); padding: 72px 0 40px; background: var(--k90); color: #f2f2f2; position: relative; z-index: 2; overflow-x: clip; }   /* 右端から消えるボールで横にスクロールしないように */
+.ft > .wrap { max-width: none; padding: 0 var(--hd-x); }   /* 左右の余白はヘッダーと同じ（全幅＋--hd-x） */
 .ft .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 40px; }
 .ft .logo svg { height: 56px; width: auto; color: #fff; }
 .ft nav { display: flex; flex-wrap: wrap; gap: 18px 40px; font: 600 14px/1 var(--en); }   /* メニューは 1 列に並べる */
