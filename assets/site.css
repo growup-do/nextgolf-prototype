@@ -663,6 +663,15 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .p3d-logo { display: block; width: clamp(260px, 30vw, 460px); height: auto; filter: drop-shadow(0 2px 16px rgba(0,0,0,.6)); }
 .p3d-logo.wide { width: clamp(300px, 34vw, 540px); }   /* 横長のロゴ（SP-40） */
 .p3d-logo.tall { width: clamp(220px, 22vw, 340px); }   /* 縦長のロゴ（Athlete S-60・FW） */
+.p3d-logo.xtall { width: clamp(150px, 14vw, 230px); }   /* さらに縦長のロゴ（FW-60） */
+.p3d-tx { font: 700 clamp(28px, 2.6vw, 40px)/1 var(--en); color: #907436; }   /* ロゴの下の製品名の文字（FW-60）。色はロゴの金 */
+/* 白地の広告素材（FW-60）：地を白に、文字とヘッダーを暗い色に */
+.kv-bg .b-kvimg.light { background: #fff; }
+.p3d-page:has(.kv-light) { --shb: 0; --rfb: 0; }
+.p3d-page:has(.kv-light) .scroll-hint { color: var(--sub); }
+.p3d-hero.kv-light .p3d-logo { filter: none; }
+.p3d-hero.kv-light .copy { color: var(--k90); text-shadow: none; }
+.p3d-hero.kv-light .sub { color: var(--k70); text-shadow: none; }
 .p3d-hero.has-kv .copy { font-size: clamp(28px, 2.6vw, 40px); line-height: 1.4; }
 .p3d-hero.has-kv .sub { font-size: clamp(16px, 1.35vw, 20px); color: #f2e6ec; }
 .p3d-lead .copy { font: 700 23px/1.5 var(--ja); font-feature-settings: "palt"; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.45); word-break: keep-all; overflow-wrap: anywhere; }
@@ -821,6 +830,7 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .p3d-hero.has-kv .p3d-fv { left: 20px; right: 20px; top: auto; bottom: 9vh; transform: none; gap: 20px; }
   .p3d-logo { width: min(78vw, 320px); }
   .p3d-logo.tall { width: min(60vw, 240px); }
+  .p3d-logo.xtall { width: min(42vw, 170px); }
   .p3d-hero.has-kv .copy { font-size: 24px; }
   .p3d-hero.has-kv .sub { font-size: 15px; }
   .p3d-info { padding: 76vh 20px 96px 64px; }
