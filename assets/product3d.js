@@ -222,6 +222,9 @@
   const LEFT = (focus, d, roll = 0) => ({ focus, d, rz: -1.2, sx: -0.3, sy: 0, tilt: 0, roll });
   const KV0 = { focus: MID, d: 'kv', rz: 'kv', sx: 0, sy: 0, tilt: 0, roll: KV_ROLL };
   const TALL = (roll = TURN) => ({ focus: MID, d: 'tall', rz: -Math.PI / 2, sx: 'left', sy: 0, tilt: 0, roll });
+  // 断面の吹き出し（.p3d-xs。build_site.py）を出すカット：シャフトの全体を横に、右を少し上げて置く（メーカーの「断面イメージ」の図と同じ向き）
+  const xs = box.querySelector('.p3d-xs'), XS_K = xs ? +xs.dataset.shot : -1;
+  const XS_SHOT = { focus: MID, d: 'xs', rz: 0.08, sx: 0, sy: 0.02, tilt: 0, roll: 0 };
   const SHOTS = {
     // Athlete S-60：ラベル → ロゴを斜めに → 先端シール → 手元の炎 → 立てた全体
     'shinogi-athlete-s-60': () => [KV0,
@@ -292,13 +295,13 @@
       { focus: MID + 60, d: 2.6, rz: -1.2, sx: -0.3, sy: 0, tilt: -0.06, roll: 0 },   // 最後の説明文は右側に長く出るので、シャフトは左に立て気味に
       { focus: MID, d: 'tall', rz: -Math.PI / 2, sx: 'left', sy: 0, tilt: 0, roll: TURN },
     ],
-    // White-50：金の「鎬」→ 手元の筆の SHINOGI（側面）→ 白から黒へ変わる筆の模様 → 引きの全体 → 黒い先端 → 縦
+    // White-50：金の「鎬」→ 手元の筆の SHINOGI（側面）→ 全体を横にして断面の吹き出し（XS_SHOT）→ 白から黒へ変わる筆の模様 → 黒い先端 → 縦
     'shinogi-white-50': () => [
       { focus: MID, d: 'kv', rz: 'kv', sx: 0, sy: 0, tilt: 0, roll: KV_ROLL },
       { focus: mark(0).mm, d: 1.0, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
       { focus: X0 + 35, d: 1.2, rz: 0, sx: 0, sy: 0, tilt: 0, roll: -1.63 },
+      XS_SHOT,
       { focus: X0 + 175, d: 1.5, rz: 0.16, sx: 0.02, sy: -0.04, tilt: 0, roll: 0.4 },
-      { focus: MID - 40, d: 3.4, rz: -0.08, sx: 0, sy: 0.2, tilt: -0.05, roll: 0 },
       { focus: TIP + 60, d: 0.9, rz: -1.2, sx: -0.3, sy: 0, tilt: 0, roll: 0 },   // 最後の説明文は右側に長く出るので、シャフトは左に立て気味に
       { focus: MID, d: 'tall', rz: -Math.PI / 2, sx: 'left', sy: 0, tilt: 0, roll: TURN },
     ],
@@ -340,6 +343,7 @@
         { focus: MID, d: 'tall', rz: -Math.PI / 2, sx: 'left', sy: 0, tilt: 0, roll: TURN },
       ];
     })();
+  if (xs) shots[XS_K] = XS_SHOT;
   const lerp = (a, b, t) => a + (b - a) * t;
   const ease = t => t * t * (3 - 2 * t);
   // カットのつなぎ方は、製品の名前に合わせて変える（各カットで止まったときの構図は同じ）
@@ -443,7 +447,8 @@
   let placeT = 0;
   addEventListener('resize', () => { clearTimeout(placeT); placeT = setTimeout(() => { placeTexts(); frame(); }, 200); });
   // カメラの距離：'fit' は全体が画面の幅に少しはみ出すくらい、'tall' は縦にしたシャフトが画面の高さの 2.4 倍
-  const dist = d => d === 'kv' ? kvD : d === 'fit' ? LEN * U * 1.03 / (2 * TAN * aspect) : d === 'tall' ? LEN * U / (2.4 * 2 * TAN) : d * distScale;
+  // 'xs'：全体が画面の幅に収まり、両端に少し余白（スマホは幅いっぱい）
+  const dist = d => d === 'xs' ? LEN * U * (aspect < 1 ? 1.02 : 1.1) / (2 * TAN * aspect) : d === 'kv' ? kvD : d === 'fit' ? LEN * U * 1.03 / (2 * TAN * aspect) : d === 'tall' ? LEN * U / (2.4 * 2 * TAN) : d * distScale;
 
   // スクロールの位置 → カットの番号（小数）。各カットは、その区間の頭が画面の上に来たところでぴったりその構図になり、
   // 区間の前後 15% ずつはその構図のまま止めて、文字を読みやすくする
@@ -507,6 +512,33 @@
     spin.rotation.x = lerp(a.roll, b.roll, t) + gust.roll + user + (idle - follow.y * 0.5) * calm;
     intro();
     renderer.render(scene, camera);
+    placeXS(s);
+  }
+
+  // 断面の吹き出し：カット XS_K の前後だけ出し、各点をシャフト上の位置（手元 0 → 先端 1）に合わせる（吹き出しのしっぽの先がその点）
+  const xsPts = xs ? [...xs.querySelectorAll('.xs-pt')].map(el => [el, +el.dataset.at]) : [];
+  const xsCap = xs && xs.querySelector('.xs-cap');
+  const xv = new THREE.Vector3();
+  const toScreen = at => {
+    xv.set(LEN * at * U, 0, 0).applyMatrix4(shaft.matrixWorld).project(camera);
+    return [(xv.x + 1) / 2 * innerWidth, (1 - xv.y) / 2 * innerHeight];
+  };
+  function placeXS(s) {
+    if (!xs) return;
+    const o = clamp01(1 - Math.abs(s - XS_K) * 3);
+    xs.style.setProperty('--o', o.toFixed(3));
+    xs.classList.toggle('on', o > 0);
+    if (!o) return;
+    for (const [el, at] of xsPts) {
+      const [x, y] = toScreen(at), rpx = radius(LEN * at) * U / (2 * TAN * camera.position.distanceTo(look)) * innerHeight;   // しっぽの先は、シャフトの上の縁に
+      el.style.setProperty('--x', x.toFixed(1) + 'px');
+      el.style.setProperty('--y', (y - rpx).toFixed(1) + 'px');
+    }
+    if (xsCap) {   // 「断面イメージ」は、先端の下に
+      const [x, y] = toScreen(0.97);
+      xsCap.style.setProperty('--x', x.toFixed(1) + 'px');
+      xsCap.style.setProperty('--y', (y + 22).toFixed(1) + 'px');
+    }
   }
 
   // 説明文の位置：各カットでシャフトが画面のどこに映るかを計算し、四隅（左上・右上・左下・右下）のうち、シャフトに一番かからない所に置く。
@@ -553,6 +585,7 @@
     texts.forEach(([sec, t]) => {
       const k = marks.indexOf(sec);
       if (k < 0) return;
+      if (k === XS_K) { sec.classList.remove(...CORNERS); sec.classList.add('at-br'); return; }   // 吹き出しはシャフトの上に出るので、説明文は右下に
       const tw = t.offsetWidth, th = t.offsetHeight;
       const box = c => ({ l: c.endsWith('l') ? mx : w - mx - tw, t: c.includes('-t') ? top : h - bot - th, w: tw, h: th });
       const now = shaftOnScreen(k), next = shaftOnScreen(k + 1);
