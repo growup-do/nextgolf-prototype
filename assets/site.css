@@ -266,18 +266,18 @@ html.kv-off .kv-bg { visibility: hidden; }
   -webkit-mask: url("img/kv-shinogi-type.png") center / contain no-repeat; mask: url("img/kv-shinogi-type.png") center / contain no-repeat; }
 /* Rafale：シャフトを設計した計算式を、シャフトの後ろに大きく透かして敷く（この計算から生まれたシャフト、という見せ方）。
    いちばん大きな断面二次モーメントの式をシャフトの下に、ほかの 2 つとシールを右下にまとめる */
-.kv-bg .b-rafale .seal, .kv-bg .b-rafale .f { position: absolute; aspect-ratio: var(--ar);
+.kv-bg :is(.b-rafale, .b-rfdeco) .seal, .kv-bg :is(.b-rafale, .b-rfdeco) .f { position: absolute; aspect-ratio: var(--ar);
   transform: translate(calc(var(--mx) * -18px), calc(var(--my) * -10px)); }
-.kv-bg .b-rafale .seal { right: 6%; bottom: 8%; width: min(22vw, 40vh, 340px); opacity: .1; }
-.kv-bg .b-rafale .seal > i { position: absolute; inset: 0; background: #fff;
+.kv-bg :is(.b-rafale, .b-rfdeco) .seal { right: 6%; bottom: 8%; width: min(22vw, 40vh, 340px); opacity: .1; }
+.kv-bg :is(.b-rafale, .b-rfdeco) .seal > i { position: absolute; inset: 0; background: #fff;
   -webkit-mask: url("img/kv-rafale-seal.png") center / contain no-repeat; mask: url("img/kv-rafale-seal.png") center / contain no-repeat; }
-.kv-bg .b-rafale .f > i { position: absolute; inset: 0; background: #ff7a45; }
-.kv-bg .b-rafale .f3 { left: 4%; top: 52%; width: min(64vw, 1150px); opacity: .2; }    /* I=π(D⁴-d⁴)/64 */
-.kv-bg .b-rafale .f1 { left: 46%; top: 76%; width: min(30vw, 540px); opacity: .16; }  /* D=2πT+d */
-.kv-bg .b-rafale .f2 { left: 8%; top: 82%; width: min(17vw, 300px); opacity: .16; }   /* E=σ/ε */
-.kv-bg .b-rafale .f1 > i { -webkit-mask: url("img/kv-rafale-f1.png") center / contain no-repeat; mask: url("img/kv-rafale-f1.png") center / contain no-repeat; }
-.kv-bg .b-rafale .f2 > i { -webkit-mask: url("img/kv-rafale-f2.png") center / contain no-repeat; mask: url("img/kv-rafale-f2.png") center / contain no-repeat; }
-.kv-bg .b-rafale .f3 > i { -webkit-mask: url("img/kv-rafale-f3.png") center / contain no-repeat; mask: url("img/kv-rafale-f3.png") center / contain no-repeat; }
+.kv-bg :is(.b-rafale, .b-rfdeco) .f > i { position: absolute; inset: 0; background: var(--deco, #ff7a45); }   /* Rafale のほかの製品は、そのシャフトの色（--deco） */
+.kv-bg :is(.b-rafale, .b-rfdeco) .f3 { left: 4%; top: 52%; width: min(64vw, 1150px); opacity: .2; }    /* I=π(D⁴-d⁴)/64 */
+.kv-bg :is(.b-rafale, .b-rfdeco) .f1 { left: 46%; top: 76%; width: min(30vw, 540px); opacity: .16; }  /* D=2πT+d */
+.kv-bg :is(.b-rafale, .b-rfdeco) .f2 { left: 8%; top: 82%; width: min(17vw, 300px); opacity: .16; }   /* E=σ/ε */
+.kv-bg :is(.b-rafale, .b-rfdeco) .f1 > i { -webkit-mask: url("img/kv-rafale-f1.png") center / contain no-repeat; mask: url("img/kv-rafale-f1.png") center / contain no-repeat; }
+.kv-bg :is(.b-rafale, .b-rfdeco) .f2 > i { -webkit-mask: url("img/kv-rafale-f2.png") center / contain no-repeat; mask: url("img/kv-rafale-f2.png") center / contain no-repeat; }
+.kv-bg :is(.b-rafale, .b-rfdeco) .f3 > i { -webkit-mask: url("img/kv-rafale-f3.png") center / contain no-repeat; mask: url("img/kv-rafale-f3.png") center / contain no-repeat; }
 /* 前面の文字とロゴ */
 .kv-ui { position: absolute; inset: var(--hd) 0 0; z-index: 2; pointer-events: none; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr auto; padding: 4vh 5vw 5vh; }
 /* 背景は、ホバーしても明るいまま。製品ページへ移るときに鎬の暗い背景が出てくるのに合わせて、ロゴを明るい青に、文字とボタンを白に寄せる（--shb：0〜1） */
