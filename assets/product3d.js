@@ -22,6 +22,29 @@
   addEventListener('resize', fv);
   fv();
 
+  // レーダーチャート（.p3d-radar。build_site.py）：段落が出たら、各軸の値を 0 から伸ばし、数値を数え上げる（chart.js の radar の出方）。消えたら 0 に戻す
+  const radar = (t, on) => {
+    const fig = t.querySelector('.p3d-radar');
+    if (!fig) return;
+    const vs = fig.dataset.v.split(',').map(Number), n = vs.length, R = 100;
+    const area = fig.querySelector('.rd-area'), dots = fig.querySelectorAll('.rd-pt'), nums = fig.querySelectorAll('.rd-v');
+    const draw = e => {
+      const xy = vs.map((v, i) => { const a = (-90 + 360 / n * i) * Math.PI / 180, r = R * v * e; return [r * Math.cos(a), r * Math.sin(a)]; });
+      area.setAttribute('points', xy.map(q => q.map(c => c.toFixed(1)).join(',')).join(' '));
+      dots.forEach((d, i) => { d.setAttribute('cx', xy[i][0].toFixed(1)); d.setAttribute('cy', xy[i][1].toFixed(1)); });
+      nums.forEach(el => { el.textContent = (+el.dataset.v * e).toFixed(1); });
+    };
+    cancelAnimationFrame(fig._raf);
+    if (!on) { draw(0); return; }
+    if (reduce) { draw(1); return; }
+    const t0 = performance.now() + 450, D = 1300;   // 段落のフェードインが少し進んでから
+    const step = now => {
+      const k = Math.min(1, Math.max(0, (now - t0) / D)), e = 1 - Math.pow(1 - k, 4);   // easeOutQuart（chart.js の既定に近い）
+      draw(e);
+      if (k < 1) fig._raf = requestAnimationFrame(step);
+    };
+    fig._raf = requestAnimationFrame(step);
+  };
   const texts = [...track.querySelectorAll('.p3d-sec')].map(sec => [sec, sec.querySelector('.p3d-text')]).filter(([, t]) => t);
   const nameEl = info && info.querySelector('.p3d-name');
   if (texts.length) {
@@ -30,7 +53,9 @@
       const named = nameEl && nameEl.getBoundingClientRect().top < h;
       for (const [sec, t] of texts) {
         const top = sec.getBoundingClientRect().top;
-        t.classList.toggle('on', !named && top <= h * 0.25 && top > -h * 0.75);
+        const on = !named && top <= h * 0.25 && top > -h * 0.75;
+        if (on !== t.classList.contains('on')) radar(t, on);
+        t.classList.toggle('on', on);
       }
     };
     addEventListener('scroll', showText, { passive: true });

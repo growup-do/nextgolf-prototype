@@ -691,6 +691,15 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .at-tl .p3d-text { left: 5vw; top: calc(var(--hd) + 6vh); }
 .at-tr .p3d-text { right: 5vw; top: calc(var(--hd) + 6vh); }   /* 左上・右上・左下・右下のうち、シャフトにかからない所を product3d.js が選ぶ */
 .at-bl .p3d-text { left: 5vw; bottom: 10vh; }
+/* 説明文の下のレーダーチャート（Rafale KT1.0 のシャフト性能）。線は細く、塗りは製品の色を薄く */
+.p3d-radar { margin: 1.4em 0 0; width: min(440px, 100%); }
+.p3d-radar figcaption { font: 500 13px/1 var(--ja); color: var(--k70); margin-bottom: 8px; }
+.p3d-radar svg { display: block; width: 100%; height: auto; overflow: visible; }
+.rd-grid { fill: none; stroke: rgba(0,0,0,.14); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.rd-area { fill: var(--c); fill-opacity: .22; stroke: var(--c); stroke-width: 1.5; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.rd-pt { fill: #fff; stroke: var(--c); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.rd-lb { font: 500 13px var(--ja); fill: var(--k70); }
+.rd-v { font: 700 17px var(--en, var(--ja)); fill: var(--c); font-variant-numeric: tabular-nums; }
 .p3d.fade .p3d-text { position: fixed; opacity: 0; transform: translateY(18px); transition: opacity .35s, transform .35s; }
 .p3d.fade .p3d-text.on { opacity: 1; transform: none; transition: opacity 1s .35s, transform 1.2s .35s cubic-bezier(.2,.7,.2,1); }
 @media (prefers-reduced-motion: reduce) { .p3d.fade .p3d-text { transform: none; } }
@@ -706,7 +715,9 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .xs-in { position: absolute; left: 0; right: 0; top: 0; height: calc(var(--d) * 58 / 60); display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: calc(var(--d) * .05); font: 500 calc(var(--d) * .105)/1.2 var(--ja); color: #231815; text-align: center; }
 .xs-in b { font-weight: 500; color: var(--c); }
-.xs-in .sm { font-size: max(.78em, 9px); line-height: 1.3; }   /* 2 行の素材名（ボロン材＋高剛性カーボン材）は小さく */
+.xs-in .sm { font-size: max(.7em, 8px); line-height: 1.25; }   /* 2 行の素材名（ボロン材＋高剛性カーボン材）：円の下の狭い所にかからないよう、文字とアイコンを小さく、間を詰める */
+.xs-in:has(.sm) { gap: calc(var(--d) * .03); padding-bottom: calc(var(--d) * .04); }
+.xs-in:has(.sm) .xs-ic { width: 62%; }
 .xs-ic { width: 82%; height: auto; color: var(--c); }
 /* FW-60：四角い吹き出し（左に部位・アイコン・素材、右に図）。しっぽは左の欄の真下から、手元部を指す */
 .xs-card { --d: clamp(104px, 13vw, 190px); --tl: calc(var(--d) * .5); width: calc(var(--d) * 2); height: calc(var(--d) + var(--tl));
