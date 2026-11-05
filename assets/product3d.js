@@ -158,6 +158,12 @@
   key.position.set(3, 6, 8);
   scene.add(key);
   scene.add(new THREE.HemisphereLight(0xffffff, 0x9a9a9a, 0.7));
+  // 暗い地の製品（.p3d-dark。build_site.py の P3D_DARK）：黒いシャフトが地に沈まないよう、上下からかすめる光で縁を光らせる
+  if (document.body.classList.contains('p3d-dark')) {
+    const rim1 = new THREE.DirectionalLight(0xffffff, 2.4); rim1.position.set(0, 8, 1.5); scene.add(rim1);    // 上の縁
+    const rim2 = new THREE.DirectionalLight(0xdfe8ff, 1.4); rim2.position.set(0, -8, 1.5); scene.add(rim2);   // 下の縁
+    shaft.traverse(o => [].concat(o.material || []).forEach(m => { if ('envMapIntensity' in m) m.envMapIntensity *= 2.2; }));   // 映り込みを強めて、黒い塗装にも光の帯が出るように（three r160 は scene.environmentIntensity がない）
+  }
 
   // ---------- 出し始めのパーティクル（トップの KV と同じ作り。kv.js） ----------
   // ページを開いて最初に描くときだけ、シャフトの表面から拾った点（色は展開図のテクスチャから）が、
