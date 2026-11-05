@@ -72,9 +72,12 @@ html.kv-leaving .hd { transition: none; }   /* KV から製品ページへ移る
 .nav-p.open .mega { opacity: 1; visibility: visible; translate: 0 0; transition: opacity .25s, translate .25s; }
 .nav-p.open > a { opacity: 1; }
 .mega-in { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 56px; max-width: 1240px; margin: 0 auto; padding: 40px var(--hd-x) 48px; }
-.mega-h { display: inline-flex; height: 26px; margin-bottom: 20px; opacity: .9; }
-.mega-h .shinogi-logo { height: 100%; aspect-ratio: var(--ar); background: currentColor; -webkit-mask: url("img/logo-shinogi.png") left center / contain no-repeat; mask: url("img/logo-shinogi.png") left center / contain no-repeat; }
-.mega-h svg { height: 100%; width: auto; }
+.mega-h { display: inline-flex; align-items: center; height: 28px; margin-bottom: 20px; opacity: .9; }
+/* SHINOGI は横に長いので、同じ高さだと大きく見える。面積がそろうよう、SHINOGI を低く・Rafale を高く */
+.mega-shinogi .mega-h > * { height: 20px; }
+.mega-rafale .mega-h > * { height: 27px; }
+.mega-h .shinogi-logo { aspect-ratio: var(--ar); background: currentColor; -webkit-mask: url("img/logo-shinogi.png") left center / contain no-repeat; mask: url("img/logo-shinogi.png") left center / contain no-repeat; }
+.mega-h svg { width: auto; }
 .mega-h:hover { color: var(--point); opacity: 1; }
 .mega ul { list-style: none; display: grid; gap: 0 32px; }
 .mega-shinogi ul { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, auto); grid-auto-flow: column; }   /* 縦に読む順に並べる */
