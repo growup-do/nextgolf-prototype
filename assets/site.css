@@ -717,7 +717,9 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .xs-ill { width: var(--d); height: 100%; object-fit: cover; display: block; }
 .xs-tail { position: absolute; left: calc(var(--d) * .5 - var(--d) * .07); top: calc(var(--d) - 1px); width: calc(var(--d) * .14); height: calc(var(--tl) + 1px); overflow: visible; }
 .xs-tail path { fill: #fff; stroke: #231815; stroke-width: 1; vector-effect: non-scaling-stroke; }
-.xs-cap { position: absolute; left: 0; top: 0; margin: 0; transform: translate(calc(var(--x, 0px) - 100%), var(--y, 0px)); font: 500 13px/1 var(--ja); color: var(--k70); white-space: nowrap; }
+/* 「断面イメージ」は最後の吹き出しのすぐ上（丸）／本体のすぐ下（四角）に、右端をそろえて置く */
+.xs-cap { position: absolute; right: calc(var(--d) * 3 / 60); bottom: calc(100% + 6px); margin: 0; font: 500 12px/1 var(--ja); color: var(--k70); white-space: nowrap; }
+.xs-card .xs-cap { right: 0; bottom: auto; top: calc(var(--d) + 7px); }
 /* 7：縦にしたシャフト（画面の左 2 割ほど）の右を、製品名・価格・スペック・写真が流れる */
 .p3d-info { position: relative; z-index: 1; padding: 76vh 6vw 140px 24vw; pointer-events: auto; }   /* 上の余白：最後の段落も、ほかの段落と同じ 1 画面分読めてから製品名が入ってくる（product3d.js） */
 .p3d-info > .p3d-name:first-child { margin-top: 0; }

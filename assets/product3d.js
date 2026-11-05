@@ -517,7 +517,6 @@
 
   // 断面の吹き出し：カット XS_K の前後だけ出し、各点をシャフト上の位置（手元 0 → 先端 1）に合わせる（吹き出しのしっぽの先がその点）
   const xsPts = xs ? [...xs.querySelectorAll('.xs-pt')].map(el => [el, +el.dataset.at]) : [];
-  const xsCap = xs && xs.querySelector('.xs-cap');
   const xv = new THREE.Vector3();
   const toScreen = at => {
     xv.set(LEN * at * U, 0, 0).applyMatrix4(shaft.matrixWorld).project(camera);
@@ -533,11 +532,6 @@
       const [x, y] = toScreen(at), rpx = radius(LEN * at) * U / (2 * TAN * camera.position.distanceTo(look)) * innerHeight;   // しっぽの先は、シャフトの上の縁に
       el.style.setProperty('--x', x.toFixed(1) + 'px');
       el.style.setProperty('--y', (y - rpx).toFixed(1) + 'px');
-    }
-    if (xsCap) {   // 「断面イメージ」は、先端の下に
-      const [x, y] = toScreen(0.97);
-      xsCap.style.setProperty('--x', x.toFixed(1) + 'px');
-      xsCap.style.setProperty('--y', (y + 22).toFixed(1) + 'px');
     }
   }
 
