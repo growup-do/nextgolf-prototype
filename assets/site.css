@@ -662,7 +662,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .p3d-hero.has-kv .p3d-mark .nm { height: clamp(28px, 2.6vw, 40px); }   /* 製品名（Athlete GX）のロゴ。色はシャフトの赤（--accent） */
 .p3d-logo { display: block; width: clamp(260px, 30vw, 460px); height: auto; filter: drop-shadow(0 2px 16px rgba(0,0,0,.6)); }
 .p3d-logo.wide { width: clamp(300px, 34vw, 540px); }   /* 横長のロゴ（SP-40） */
-.p3d-logo.tall { width: clamp(220px, 22vw, 340px); }   /* 縦長のロゴ（Athlete S-60） */
+.p3d-logo.tall { width: clamp(220px, 22vw, 340px); }   /* 縦長のロゴ（Athlete S-60・FW） */
 .p3d-hero.has-kv .copy { font-size: clamp(28px, 2.6vw, 40px); line-height: 1.4; }
 .p3d-hero.has-kv .sub { font-size: clamp(16px, 1.35vw, 20px); color: #f2e6ec; }
 .p3d-lead .copy { font: 700 23px/1.5 var(--ja); font-feature-settings: "palt"; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.45); word-break: keep-all; overflow-wrap: anywhere; }
