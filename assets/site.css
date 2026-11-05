@@ -692,7 +692,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .at-tr .p3d-text { right: 5vw; top: calc(var(--hd) + 6vh); }   /* 左上・右上・左下・右下のうち、シャフトにかからない所を product3d.js が選ぶ */
 .at-bl .p3d-text { left: 5vw; bottom: 10vh; }
 /* 説明文の下のレーダーチャート（Rafale KT1.0 のシャフト性能）。線は細く、塗りは製品の色を薄く */
-.p3d-radar { margin: 1.4em 0 0; width: min(440px, 100%); }
+.p3d-radar { margin: 3em 0 0; width: min(440px, 100%); }
 .p3d-radar figcaption { font: 500 13px/1 var(--ja); color: var(--k70); margin-bottom: 8px; }
 .p3d-radar svg { display: block; width: 100%; height: auto; overflow: visible; }
 .rd-grid { fill: none; stroke: rgba(0,0,0,.14); stroke-width: 1; vector-effect: non-scaling-stroke; }
