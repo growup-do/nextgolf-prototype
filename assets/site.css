@@ -666,6 +666,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .p3d-logo.wide { width: clamp(300px, 34vw, 540px); }   /* 横長のロゴ（SP-40） */
 .p3d-logo.tall { width: clamp(220px, 22vw, 340px); }   /* 縦長のロゴ（Athlete S-60・FW） */
 .p3d-logo.xtall { width: clamp(150px, 14vw, 230px); }   /* さらに縦長のロゴ（FW-60） */
+.p3d[data-slug="shinogi-white-50"] .p3d-fv > * { zoom: .8; }   /* White-50：ロゴ・製品名・コピーを 80% に（位置はそのまま） */
 .p3d-tx { font: 700 clamp(28px, 2.6vw, 40px)/1 var(--en); color: #907436; }   /* ロゴの下の製品名の文字（FW-60）。色はロゴの金 */
 /* 白地の広告素材（FW-60）：地を白に、文字とヘッダーを暗い色に */
 .kv-bg .b-kvimg.light { background: #fff; }
