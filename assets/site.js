@@ -303,6 +303,21 @@
     check();
   }
 
+  // 取扱店：地域ボタン（上のボタン・地図・帯）を押したら、その地域までなめらかにスクロールする
+  // 位置は scroll-padding-top（ヘッダーと帯の高さ）に合わせて止まる
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href*="#area-"], a[href*="#pref-"]');
+    if (!a || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey) return;
+    const u = new URL(a.href, location.href);
+    if (u.pathname !== location.pathname) return;
+    const to = document.getElementById(decodeURIComponent(u.hash.slice(1)));
+    if (!to) return;
+    e.preventDefault();
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    to.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    history.pushState(null, '', u.hash);
+  });
+
   // 取扱店：上の地域ボタンがヘッダーの下に隠れたら、地域の帯をヘッダーの下に出す
   const anav = document.querySelector('.area-nav'), afind = document.querySelector('.shopfind');
   if (anav && afind) {
