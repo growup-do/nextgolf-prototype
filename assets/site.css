@@ -64,6 +64,29 @@ html.kv-leaving .hd { transition: none; }   /* KV から製品ページへ移る
 .hd nav a:hover, .hd nav a.on { opacity: 1; }
 .hd nav a:hover { box-shadow: inset 0 -2px 0 var(--point); color: var(--point); }
 .hd nav a.on { box-shadow: inset 0 -2px 0 currentColor; }
+/* PRODUCTS のメガメニュー：ヘッダーの下いっぱいに、ヘッダーと同じ地で出す（site.js が .open を付け外し） */
+.hd nav { align-self: stretch; align-items: center; }
+.nav-p { display: flex; align-items: center; align-self: stretch; }   /* ヘッダーの下端まで伸ばし、メニューへ移る途中で閉じないように */
+.mega { position: absolute; top: 100%; left: 0; right: 0; background: inherit; color: inherit; border-bottom: inherit; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  opacity: 0; visibility: hidden; translate: 0 -8px; transition: opacity .25s, translate .25s, visibility 0s .25s; font-family: var(--ja); }
+.nav-p.open .mega { opacity: 1; visibility: visible; translate: 0 0; transition: opacity .25s, translate .25s; }
+.nav-p.open > a { opacity: 1; }
+.mega-in { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 56px; max-width: 1240px; margin: 0 auto; padding: 40px var(--hd-x) 48px; }
+.mega-h { display: inline-flex; height: 26px; margin-bottom: 20px; opacity: .9; }
+.mega-h .shinogi-logo { height: 100%; aspect-ratio: var(--ar); background: currentColor; -webkit-mask: url("img/logo-shinogi.png") left center / contain no-repeat; mask: url("img/logo-shinogi.png") left center / contain no-repeat; }
+.mega-h svg { height: 100%; width: auto; }
+.mega-h:hover { color: var(--point); opacity: 1; }
+.mega ul { list-style: none; display: grid; gap: 0 32px; }
+.mega-shinogi ul { grid-template-columns: 1fr 1fr; }
+.mega .hd-x, .hd nav .mega a { opacity: 1; box-shadow: none; padding: 0; }
+.mega li a { display: block; padding: 10px 0; border-bottom: 1px solid color-mix(in srgb, rgba(255,255,255,.14) calc(var(--hdk) * 100%), rgba(0,0,0,.12)); transition: color .2s, border-color .2s; }
+.mega li a b { display: block; font: 700 16px/1.3 var(--en); }
+.mega li a span { display: block; margin-top: 3px; font: 500 12px/1.4 var(--en); opacity: .6; }
+.hd nav .mega li a:hover { color: var(--point); border-color: var(--point); box-shadow: none; }
+.mega-side { display: flex; flex-direction: column; gap: 12px; padding-top: 46px; }
+.mega-side a { display: block; padding: 16px 18px; border: 1px solid currentColor; border-radius: var(--r); font: 700 14px/1.4 var(--ja); transition: color .2s; }
+.mega-side a small { display: block; margin-top: 4px; font: 600 11px/1 var(--en); opacity: .6; }
+.hd nav .mega-side a:hover { color: var(--point); box-shadow: none; }
 .sns { display: flex; gap: 18px; }
 .sns a { opacity: .85; transition: opacity .2s; }
 .sns a:hover { opacity: 1; color: var(--point); }
@@ -390,14 +413,20 @@ html.no3d .kv-bg .b-base { background: var(--page); }
 .fd-rh { font: 700 24px/1.5 var(--ja); margin: 10px 0 20px; }
 .fd-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 .fd-card { border-radius: var(--r); display: flex; flex-direction: column; padding: 28px; background: var(--panel); border: 1px solid var(--line); }
-.fd-card:first-child { border-color: var(--k90); box-shadow: inset 0 0 0 1px var(--k90); }
 .fd-rank { font: 700 12px/1 var(--en); color: var(--sub); }
-.fd-card:first-child .fd-rank { color: var(--k90); }
 .fd-card h4 { font: 700 24px/1.3 var(--en); margin: 10px 0 6px; }
 .fd-spec { font: 500 12px/1.6 var(--en); color: var(--sub); }
 .fd-card ul { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 10px; flex: 1; }
 .fd-card li b { color: var(--k90); }
 .fd-acts { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+/* 提案のカードは、カード全体が製品ページへのリンク。ホバーでは、ほかのカードと同じく文字と罫線をすべてオレンジに */
+.fd-card { transition: border-color .3s, background .3s; }
+.fd-card :is(.fd-rank, h4, .fd-spec, .fd-cc, li, li b, .more) { transition: color .2s; }
+.fd-card:hover { border-color: var(--point); background: rgba(255,255,255,.85); box-shadow: inset 0 0 0 1px var(--point); }
+.pg-dark .fd-card:hover { background: rgba(255,255,255,.08); }
+.fd-card:hover :is(.fd-rank, h4, .fd-spec, .fd-cc, li, li b, .more) { color: var(--point); }
+.fd-card:hover .fd-acts { border-color: var(--point); }
+.fd-card:hover .more::after { width: 44px; height: 2px; background: var(--point); }
 .fd-empty { border-radius: var(--r); font-size: 15px; line-height: 1.8; padding: 24px 28px; background: var(--panel); border: 1px solid var(--line); }
 .finder.no3d .fd-stage { display: none; }
 /* すべての製品：上の段にシャフトの柄（finder.js が描く。3D が使えないときは出さない） */
@@ -445,8 +474,7 @@ html:has(body.pg-dark) { background: #000; }
 .pg-dark .seg-b::after { background: #fff; }
 .pg-dark .seg-b:not([aria-pressed="true"]):not([aria-current]):hover::after { opacity: .14; }
 .pg-dark .seg-b[aria-pressed="true"] { color: var(--k90); }
-.pg-dark .fd-card:first-child { border-color: #fff; box-shadow: inset 0 0 0 1px #fff; }
-.pg-dark .fd-card:first-child .fd-rank, .pg-dark .fd-card li b { color: #fff; }
+.pg-dark .fd-card li b { color: #fff; }
 .pg-dark .lu:hover { background: rgba(255,255,255,.08); }
 .pg-dark .series-h .rafale-logo { color: #fff; }
 .pg-dark .series-h .shinogi-logo { background: #fff; }
@@ -624,7 +652,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 /* 広告素材で組む最初の画面（Athlete GX など。build_site.py の P3D_KV）：縦長の写真を右に寄せて上から敷き、左端は黒へ溶かす。ロゴとコピーは左 */
 .kv-bg .b-kvimg { background: #000; }
 .kv-bg .b-kvimg .photo { position: absolute; inset: 0 0 auto auto; height: 165vh; aspect-ratio: 1413 / 2000; background: center top / cover no-repeat;
-  -webkit-mask: linear-gradient(90deg, transparent, #000 26%); mask: linear-gradient(90deg, transparent, #000 26%);
+  -webkit-mask: linear-gradient(90deg, transparent, #000 12%); mask: linear-gradient(90deg, transparent, #000 12%);
   transform-origin: 100% 0; transform: translateX(calc((var(--fv,1) - 1) * 80px)) scale(1.04); }
 .p3d-hero.has-kv .p3d-fv { left: 6vw; top: 54%; align-items: flex-start; text-align: left; gap: 32px; }
 .p3d-logo { display: block; width: clamp(260px, 30vw, 460px); height: auto; filter: drop-shadow(0 2px 16px rgba(0,0,0,.6)); }

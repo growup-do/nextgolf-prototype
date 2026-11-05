@@ -44,11 +44,11 @@
       return;
     }
     resultEl.innerHTML = '<div class="e">RECOMMEND</div><h3 class="fd-rh">あなたへの提案</h3><div class="fd-cards">' + state.top.map((r, i) =>
-      `<article class="fd-card s-${r.p.series}"><div class="fd-rank">${i === 0 ? 'BEST MATCH' : `No.${i + 1}`}</div>` +
+      `<a class="fd-card s-${r.p.series}" href="${r.p.url}"><div class="fd-rank">${i === 0 ? 'BEST MATCH' : `No.${i + 1}`}</div>` +
       `<h4>${esc(r.p.name)}</h4><div class="fd-spec">${esc(specLine(r.p))}</div>` +
       (r.p.catch ? `<p class="fd-cc">${esc(r.p.catch)}</p>` : '') +
       `<ul>${r.why.map(([k, t]) => `<li><b>${esc(k)}</b>${esc(t)}</li>`).join('')}</ul>` +
-      `<div class="fd-acts"><a class="more" href="${r.p.url}">製品ページ</a></div></article>`).join('') + '</div>';
+      `<div class="fd-acts"><span class="more">製品ページ</span></div></a>`).join('') + '</div>';
   }
   const press = q => root.querySelectorAll(`[data-q="${q}"]`).forEach(c => c.setAttribute('aria-pressed', q === 'need' ? sel.need.has(c.dataset.v) : sel[q] === c.dataset.v));
   function setClub(v) {   // クラブを変えたら、ほかの選択は消して、そのクラブの項目を出す

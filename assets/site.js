@@ -367,3 +367,18 @@
     t.scrollIntoView({ block: 'center' });
   });
 })();
+
+// ---------- ヘッダーの PRODUCTS のメガメニュー：マウスを乗せると開き、離れて少ししたら閉じる。キーボードでは中にフォーカスがあるあいだ開く。Esc で閉じる ----------
+(() => {
+  const np = document.querySelector('.nav-p');
+  if (!np) return;
+  const a = np.querySelector(':scope > a');
+  let t = 0;
+  const set = on => { clearTimeout(t); np.classList.toggle('open', on); a.setAttribute('aria-expanded', on); };
+  np.addEventListener('pointerenter', e => { if (e.pointerType !== 'touch') set(true); });
+  np.addEventListener('pointerleave', () => { t = setTimeout(() => set(false), 180); });
+  np.addEventListener('focusin', () => set(true));
+  np.addEventListener('focusout', e => { if (!np.contains(e.relatedTarget)) set(false); });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && np.classList.contains('open')) { set(false); a.focus(); } });
+  np.querySelectorAll('.mega a').forEach(x => x.addEventListener('click', () => set(false)));
+})();
