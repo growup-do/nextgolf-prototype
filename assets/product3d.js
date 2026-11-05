@@ -214,7 +214,7 @@
   // rz＝画面の上での傾き（'kv'：KV と同じ斜め）、sx・sy＝focus を置く位置（画面の中心からの、幅・高さに対する割合。右・上がプラス。'left' は縦にしたシャフトの位置）、tilt＝手前への傾き、roll＝軸まわり
   const wx = mm => (mm - LEN / 2) * U;   // シャフト上の位置（mm）→ シャフトの中心からの距離
   const MID = LEN / 2, TURN = Math.PI * 2;
-  const KV_ROLL = 0.45;   // KV でホバーしたときの、軸まわりの向き（kv.js の 0.3 + 0.15）
+  const KV_ROLL = 0;   // 最初の画面の軸まわりの向き。マウスが画面の縦の中央にあるときに、ロゴが正面を向く（マウスの上下で ±0.5 回る）
   const mark = k => (L.marks || [])[k] || { mm: X0 + 140, roll: 0 };
   const TIP = LEN - 140;   // 先端シールの中心（build_tex.py）
   const LAB = L.label_mm || X0 + L.b_mm - 60;   // 展開図とは別に貼ったラベルの中心（Black-50・SP-40）
