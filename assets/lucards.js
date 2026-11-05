@@ -6,7 +6,7 @@
   const start = () => {
   const THREE = window.THREE;
   if (!THREE || !window.KV_DATA || !window.LINEUP_DATA || !window.Shaft3D) return;
-  const { setup, lit, build, manager, TAN } = window.Shaft3D();
+  const { setup, lit, build, manager, TAN, U } = window.Shaft3D();
   // ---------- すべての製品のカード：シャフトを横に寝かせて、柄のある部分を見せる。カードにマウスを乗せると、軸まわりに回る ----------
   // カードは 13 枚あるので、WebGL は 1 つだけ（見えないキャンバス）で 1 本ずつ描き、それぞれのカードのキャンバスへ写す
   let drawCards = () => {};

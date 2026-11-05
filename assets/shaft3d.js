@@ -61,5 +61,5 @@ window.Shaft3D = () => {
   const build = (slug, sc) => slug === 'shinogi-blue' ? makeShaft(D.layShinogi, shinParts(D.texShinogi, 120), sc)
     : slug === 'rafale-rs1' ? makeShaft(D.layRafale, rafParts(D.texRafale, 120), sc)
     : LD[slug] ? makeShaft(LD[slug].lay, LD[slug].kind === 'rafale' ? rafParts(LD[slug].tex, 80) : shinParts(LD[slug].tex, 80), sc) : null;
-  return { setup, lit, build, manager, TAN };
+  return { setup, lit, build, manager, TAN, U };
 };
