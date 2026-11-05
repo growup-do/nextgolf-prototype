@@ -633,7 +633,8 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .scroll-hint { position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); font: 600 12px/1 var(--en); color: var(--sub); pointer-events: none; transition: opacity .4s; z-index: 1; }
 .scroll-hint::after { content: ""; display: block; width: 1px; height: 64px; background: var(--sub); margin: 14px auto 0; }   /* バーは下端までくっつける */
 /* 3D の区間のあとの本文（試打会・取扱店から下）：地を少し透かしてぼかし、後ろの 3D のシャフトがうっすら見えるようにする */
-.pbody { position: relative; z-index: 2; background: rgba(232,232,232,.5); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+/* 下部（試打会・取扱店とほかの製品）の地。製品ページは、地の色に合わせて --pb を変える（Rafale の薄い緑・青・オレンジ） */
+.pbody { position: relative; z-index: 2; background: var(--pb, rgba(232,232,232,.5)); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 /* ===== 3D の製品ページ（Figma のコンテ図「NEW PRODUCT」）：1 区間 = 1 画面。区間の頭が画面の上に来たところで、そのカットになる ===== */
 .p3d-track .p3d-sec { display: block; position: relative; min-height: 0; height: 100vh; height: 100svh; padding: 0; }
 .p3d-track .p3d-sec.p3d-hero { height: calc(100vh - var(--hd)); height: calc(100svh - var(--hd)); }
@@ -688,9 +689,9 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .p3d-page .scroll-hint::after { background: currentColor; }
 /* 製品ごとの地の色（最初の暗い画面が消えたあとに見える、ページ全体の地。ほかの製品はグレーのまま）
    Rafale は薄い色（RS1.0 は緑、Ma1.0 は青、KT1.0・KT FW はオレンジ）、鎬の多くは暗い色（build_site.py の P3D_DARK。文字は pg-dark で明るく） */
-html:has(.p3d[data-slug="rafale-rs1"]) { --hd-lt: rgba(228,240,217,.8); background: radial-gradient(130% 90% at 50% -10%, #f6fbf1 0%, #e6f1dc 45%, #d2e5c2 100%) fixed; }
-html:has(.p3d[data-slug="rafale-ma1"]) { --hd-lt: rgba(223,233,246,.8); background: radial-gradient(130% 90% at 50% -10%, #f4f8fd 0%, #e1eaf6 45%, #ccdaee 100%) fixed; }
-html:has(.p3d:is([data-slug="rafale-kt1"], [data-slug="rafale-kt-fw"])) { --hd-lt: rgba(247,231,216,.8); background: radial-gradient(130% 90% at 50% -10%, #fdf7f1 0%, #f6e6d7 45%, #ebd0b9 100%) fixed; }
+html:has(.p3d[data-slug="rafale-rs1"]) { --hd-lt: rgba(228,240,217,.8); --pb: rgba(214,231,199,.55); background: radial-gradient(130% 90% at 50% -10%, #f6fbf1 0%, #e6f1dc 45%, #d2e5c2 100%) fixed; }
+html:has(.p3d[data-slug="rafale-ma1"]) { --hd-lt: rgba(223,233,246,.8); --pb: rgba(206,220,240,.55); background: radial-gradient(130% 90% at 50% -10%, #f4f8fd 0%, #e1eaf6 45%, #ccdaee 100%) fixed; }
+html:has(.p3d:is([data-slug="rafale-kt1"], [data-slug="rafale-kt-fw"])) { --hd-lt: rgba(247,231,216,.8); --pb: rgba(239,214,192,.55); background: radial-gradient(130% 90% at 50% -10%, #fdf7f1 0%, #f6e6d7 45%, #ebd0b9 100%) fixed; }
 html:has(.p3d[data-slug="shinogi-blue"]) { --hd-dk: rgba(12,21,44,.85); background: #070b16 radial-gradient(60% 70% at 75% 40%, #0d1730 0%, #070b16 70%) fixed; }   /* 最初の画面（.b-shinogi）と同じネイビー */
 html:has(.p3d[data-slug="shinogi-athlete-gx"]) { --hd-dk: rgba(52,11,32,.85); background: #14040c radial-gradient(70% 70% at 70% 35%, #4a1030 0%, #14040c 75%) fixed; }   /* 最初の画面の広告素材の赤紫 */
 html:has(.p3d:is([data-slug="shinogi-black-50"], [data-slug="shinogi-sp-40"], [data-slug="shinogi-athlete-t-60"], [data-slug="shinogi-athlete-fw"])) { --hd-dk: rgba(14,14,14,.85); background: #000 radial-gradient(75% 70% at 60% 40%, #262626 0%, #0b0b0b 55%, #000 85%) fixed; }   /* 黒。真っ黒だと黒いシャフトが沈むので、中央だけわずかに明るく */
