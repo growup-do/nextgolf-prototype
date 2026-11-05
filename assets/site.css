@@ -666,7 +666,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .p3d-logo.wide { width: clamp(300px, 34vw, 540px); }   /* 横長のロゴ（SP-40） */
 .p3d-logo.tall { width: clamp(220px, 22vw, 340px); }   /* 縦長のロゴ（Athlete S-60・FW） */
 .p3d-logo.xtall { width: clamp(150px, 14vw, 230px); }   /* さらに縦長のロゴ（FW-60） */
-.p3d[data-slug="shinogi-white-50"] .p3d-fv > * { zoom: .8; }   /* White-50：ロゴ・製品名・コピーを 80% に（位置はそのまま） */
+.p3d:is([data-slug="shinogi-white-50"], [data-slug="shinogi-fw-60"]) .p3d-fv > * { zoom: .8; }   /* White-50・FW-60：ロゴ・製品名・コピーを 80% に（位置はそのまま） */
 .p3d-tx { font: 700 clamp(28px, 2.6vw, 40px)/1 var(--en); color: #907436; }   /* ロゴの下の製品名の文字（FW-60）。色はロゴの金 */
 /* 白地の広告素材（FW-60）：地を白に、文字とヘッダーを暗い色に */
 .kv-bg .b-kvimg.light { background: #fff; }
@@ -707,6 +707,16 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
   gap: calc(var(--d) * .05); font: 500 calc(var(--d) * .105)/1.2 var(--ja); color: #231815; text-align: center; }
 .xs-in b { font-weight: 500; color: var(--c); }
 .xs-ic { width: 82%; height: auto; color: var(--c); }
+/* FW-60：四角い吹き出し（左に部位・アイコン・素材、右に図）。しっぽは左の欄の真下から、手元部を指す */
+.xs-card { --d: clamp(104px, 13vw, 190px); --tl: calc(var(--d) * .5); width: calc(var(--d) * 2); height: calc(var(--d) + var(--tl));
+  transform: translate(calc(var(--x, 0px) - var(--d) * .5), calc(var(--y, 0px) - 100%)) scale(calc(.9 + var(--o, 0) * .1)); transform-origin: 25% 100%; }
+.xs-box { position: absolute; left: 0; top: 0; width: 100%; height: var(--d); display: flex; background: #fff; border: 1px solid #231815; box-shadow: 0 4px 14px rgba(0,0,0,.14); }
+.xs-card .xs-in { position: static; flex: 1; height: auto; gap: calc(var(--d) * .07); }
+.xs-card .xs-in b { color: #fff; background: var(--c); padding: .15em .9em; }
+.xs-card .xs-ic { width: 84%; display: block; }
+.xs-ill { width: var(--d); height: 100%; object-fit: cover; display: block; }
+.xs-tail { position: absolute; left: calc(var(--d) * .5 - var(--d) * .07); top: calc(var(--d) - 1px); width: calc(var(--d) * .14); height: calc(var(--tl) + 1px); overflow: visible; }
+.xs-tail path { fill: #fff; stroke: #231815; stroke-width: 1; vector-effect: non-scaling-stroke; }
 .xs-cap { position: absolute; left: 0; top: 0; margin: 0; transform: translate(calc(var(--x, 0px) - 100%), var(--y, 0px)); font: 500 13px/1 var(--ja); color: var(--k70); white-space: nowrap; }
 /* 7：縦にしたシャフト（画面の左 2 割ほど）の右を、製品名・価格・スペック・写真が流れる */
 .p3d-info { position: relative; z-index: 1; padding: 76vh 6vw 140px 24vw; pointer-events: auto; }   /* 上の余白：最後の段落も、ほかの段落と同じ 1 画面分読めてから製品名が入ってくる（product3d.js） */
