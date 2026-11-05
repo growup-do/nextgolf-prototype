@@ -67,7 +67,7 @@ html.kv-leaving .hd { transition: none; }   /* KV から製品ページへ移る
 /* PRODUCTS のメガメニュー：ヘッダーの下いっぱいに、ヘッダーと同じ地で出す（site.js が .open を付け外し） */
 .hd nav { align-self: stretch; align-items: center; }
 .nav-p { display: flex; align-items: center; align-self: stretch; }   /* ヘッダーの下端まで伸ばし、メニューへ移る途中で閉じないように */
-.mega { position: absolute; top: 100%; left: 0; right: 0; background: inherit; color: inherit; border-bottom: inherit; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+.mega { position: absolute; top: 100%; left: 0; right: 0; background: color-mix(in srgb, rgba(22,22,22,.97) calc(var(--hdk) * 100%), rgba(246,246,246,.97)); border-bottom: 1px solid color-mix(in srgb, rgba(255,255,255,.14) calc(var(--hdk) * 100%), rgba(0,0,0,.12)); box-shadow: 0 24px 48px rgba(0,0,0,.18);
   opacity: 0; visibility: hidden; translate: 0 -8px; transition: opacity .25s, translate .25s, visibility 0s .25s; font-family: var(--ja); }
 .nav-p.open .mega { opacity: 1; visibility: visible; translate: 0 0; transition: opacity .25s, translate .25s; }
 .nav-p.open > a { opacity: 1; }
