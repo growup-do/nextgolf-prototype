@@ -5,6 +5,15 @@
   const C = window.CMS;
   if (!C) return;
   const WD = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  const WDJ = '日月火水木金土';
+  // 試打会の日付：丸の中に「月／日」と曜日（Figma の date フレーム 202×202 をそのまま viewBox に）。月は斜線の左上に右寄せ、日は右下
+  const dateBadge = (d) =>
+    `<svg class="d" viewBox="0 0 202 202" role="img" aria-label="${d.m}月${d.d}日（${WDJ[d.w]}）">` +
+    `<circle cx="101" cy="101" r="100" fill="none" stroke="currentColor" stroke-width="2"/>` +
+    `<path d="M146 46 56 136" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>` +
+    `<text x="96" y="59" text-anchor="end" class="n">${d.m}</text>` +
+    `<text x="106" y="117" class="n">${String(d.d).padStart(2, '0')}</text>` +
+    `<text x="101" y="170.5" text-anchor="middle" class="w">${WD[d.w]}</text></svg>`;
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const $ = s => document.querySelector(`[data-cms="${s}"]`);
   const FAIL = '<div class="empty">読み込めませんでした。時間をおいて、もう一度お試しください。</div>';
@@ -55,7 +64,7 @@
   };
   const STATE = { cancel: '<span class="tag cancel">中止</span>', done: '<span class="tag gray">終了</span>', soon: '<span class="tag soon">開催予定</span>' };
   const evItem = (e, showState) =>
-    `<a class="ev" href="event.html?id=${esc(e.id)}"${e.pref ? ` data-pref="${e.pref}"` : ''}><div class="d"><b>${e.day.m}.${String(e.day.d).padStart(2, '0')}</b><span>${WD[e.day.w]}</span></div>` +
+    `<a class="ev" href="event.html?id=${esc(e.id)}"${e.pref ? ` data-pref="${e.pref}"` : ''}>${dateBadge(e.day)}` +
     `<div>${showState ? STATE[e.state] + '<br>' : ''}<div class="tt">${esc(e.title)}</div>${e.place ? `<div class="pl">${esc(e.place)}</div>` : ''}</div></a>`;
   const NO_EVENT = '<div class="empty">現在、開催予定の試打会はありません。決まり次第お知らせします。</div>';
   const events = async () => {

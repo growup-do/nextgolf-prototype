@@ -477,10 +477,12 @@ html:has(body.pg-dark) { background: #000; }
 .tops.fit > div, .tops.fit [data-cms] { display: flex; flex-direction: column; }
 .tops.fit [data-cms] { flex: 1; }
 .tops.fit [data-cms] > :is(.ev, .nw) { flex-grow: 1; align-content: center; }   /* 余った高さを行の間に配る */
-.ev { display: grid; grid-template-columns: 88px 1fr; gap: 24px; align-items: center; padding: 22px 0; border-bottom: 1px solid var(--line); }
-.ev .d { border-radius: var(--r-s); border: 1px solid var(--line); background: var(--panel); text-align: center; padding: 12px 0; }
-.ev .d b { display: block; font: 700 26px/1 var(--en); }
-.ev .d span { display: block; font: 600 12px/1 var(--en); color: var(--sub); margin-top: 6px; }
+.ev { display: grid; grid-template-columns: 96px 1fr; gap: 24px; align-items: center; padding: 22px 0; border-bottom: 1px solid var(--line); }
+/* 日付：丸・斜線・数字は Figma の date（202×202）を縮小。色は文字色に合わせる（暗いページでは白） */
+.ev .d { display: block; width: 100%; height: auto; color: var(--fg); overflow: visible; }
+.ev .d text { fill: currentColor; font-family: var(--en); font-weight: 700; dominant-baseline: central; }
+.ev .d .n { font-size: 49px; }
+.ev .d .w { font-size: 23px; }
 /* 本文強調：15px Bold */
 .ev .tt { font: 700 15px/1.8 var(--ja); }
 .ev .pl { font: 500 14px/1.5 var(--ja); color: var(--sub); margin-top: 4px; }
@@ -655,6 +657,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .ev-map .pf, .ev-map .pf.none { fill: #fff; fill-opacity: 1; stroke: #cfcfcf; transition: fill .25s; }
 .ev-map .pf.on { fill: var(--point); }
 .ev-map svg { pointer-events: none; }   /* 地図そのものは反応させない。色が変わるのは試打会の見出しにマウスを乗せたときだけ */
+@media (max-width: 600px) { .ev { grid-template-columns: 80px 1fr; gap: 16px; } }
 @media (max-width: 900px) { .ev-wrap { grid-template-columns: 1fr; } .ev-map { display: none; } }
 .ev-group + .ev-group { margin-top: 72px; }
 .ev-group h2 { font: 600 15px/1 var(--en); color: var(--sub); margin-bottom: 8px; }
