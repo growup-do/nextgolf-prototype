@@ -621,6 +621,15 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
   -webkit-mask: var(--m) center / contain no-repeat; mask: var(--m) center / contain no-repeat; }
 .p3d-mark .col-logo { display: inline-block; vertical-align: top; height: 22px;   /* 高さと縦横比から幅を決める（block だと幅が 0 になる） */ aspect-ratio: var(--ar); background: var(--accent);
   -webkit-mask: url("img/logo-blue.png") center / contain no-repeat; mask: url("img/logo-blue.png") center / contain no-repeat; }
+/* 広告素材で組む最初の画面（Athlete GX など。build_site.py の P3D_KV）：縦長の写真を右に寄せて上から敷き、左端は黒へ溶かす。ロゴとコピーは左 */
+.kv-bg .b-kvimg { background: #000; }
+.kv-bg .b-kvimg .photo { position: absolute; inset: 0 0 auto auto; height: 165vh; aspect-ratio: 1413 / 2000; background: center top / cover no-repeat;
+  -webkit-mask: linear-gradient(90deg, transparent, #000 26%); mask: linear-gradient(90deg, transparent, #000 26%);
+  transform-origin: 100% 0; transform: translateX(calc((var(--fv,1) - 1) * 80px)) scale(1.04); }
+.p3d-hero.has-kv .p3d-fv { left: 6vw; top: 54%; align-items: flex-start; text-align: left; gap: 32px; }
+.p3d-logo { display: block; width: clamp(260px, 30vw, 460px); height: auto; filter: drop-shadow(0 2px 16px rgba(0,0,0,.6)); }
+.p3d-hero.has-kv .copy { font-size: clamp(28px, 2.6vw, 40px); line-height: 1.4; }
+.p3d-hero.has-kv .sub { font-size: clamp(16px, 1.35vw, 20px); color: #f2e6ec; }
 .p3d-lead .copy { font: 700 23px/1.5 var(--ja); font-feature-settings: "palt"; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.45); word-break: keep-all; overflow-wrap: anywhere; }
 .p3d-lead .sub { font: 700 20px/1.6 var(--ja); font-feature-settings: "palt"; color: #e9eef7; text-shadow: 0 2px 12px rgba(0,0,0,.45); margin-top: 10px; }
 .p3d-page .scroll-hint { color: color-mix(in srgb, #dfe6f2 calc(var(--fv, 1) * 100%), var(--sub)); }
@@ -771,6 +780,11 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .at-bl .p3d-text { bottom: 8vh; top: auto; }
   .p3d-lead .copy { font-size: 16px; }   /* 21 文字のコピーが 1 行に収まる大きさ */
   .p3d-lead .sub { font-size: 14px; }   /* コピー（16px）より大きくしない */
+  .kv-bg .b-kvimg .photo { height: auto; width: 128vw; inset: 0 -14vw auto auto; -webkit-mask: linear-gradient(180deg, #000 55%, transparent 80%); mask: linear-gradient(180deg, #000 55%, transparent 80%); }
+  .p3d-hero.has-kv .p3d-fv { left: 20px; right: 20px; top: auto; bottom: 9vh; transform: none; gap: 20px; }
+  .p3d-logo { width: min(78vw, 320px); }
+  .p3d-hero.has-kv .copy { font-size: 24px; }
+  .p3d-hero.has-kv .sub { font-size: 15px; }
   .p3d-info { padding: 76vh 20px 96px 64px; }
   .p3d-name h2 { font-size: 24px; }
   :root { --hd: 64px; --px: 20px; --hd-x: 20px; }
