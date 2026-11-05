@@ -67,7 +67,7 @@ html.kv-leaving .hd { transition: none; }   /* KV から製品ページへ移る
 /* PRODUCTS のメガメニュー：ヘッダーの下いっぱいに、ヘッダーと同じ地で出す（site.js が .open を付け外し） */
 .hd nav { align-self: stretch; align-items: center; }
 .nav-p { display: flex; align-items: center; align-self: stretch; }   /* ヘッダーの下端まで伸ばし、メニューへ移る途中で閉じないように */
-.mega { position: absolute; top: 100%; left: 0; right: 0; background: color-mix(in srgb, rgba(22,22,22,.97) calc(var(--hdk) * 100%), rgba(246,246,246,.97)); border-bottom: 1px solid color-mix(in srgb, rgba(255,255,255,.14) calc(var(--hdk) * 100%), rgba(0,0,0,.12)); box-shadow: 0 24px 48px rgba(0,0,0,.18);
+.mega { position: absolute; top: 100%; left: 0; right: 0; background: color-mix(in srgb, #161616 calc(var(--hdk) * 100%), #f6f6f6); border-bottom: 1px solid color-mix(in srgb, rgba(255,255,255,.14) calc(var(--hdk) * 100%), rgba(0,0,0,.12)); box-shadow: 0 24px 48px rgba(0,0,0,.18);
   opacity: 0; visibility: hidden; translate: 0 -8px; transition: opacity .25s, translate .25s, visibility 0s .25s; font-family: var(--ja); }
 .nav-p.open .mega { opacity: 1; visibility: visible; translate: 0 0; transition: opacity .25s, translate .25s; }
 .nav-p.open > a { opacity: 1; }
@@ -77,14 +77,14 @@ html.kv-leaving .hd { transition: none; }   /* KV から製品ページへ移る
 .mega-h svg { height: 100%; width: auto; }
 .mega-h:hover { color: var(--point); opacity: 1; }
 .mega ul { list-style: none; display: grid; gap: 0 32px; }
-.mega-shinogi ul { grid-template-columns: 1fr 1fr; }
-.mega .hd-x, .hd nav .mega a { opacity: 1; box-shadow: none; padding: 0; }
-.mega li a { display: block; padding: 10px 0; border-bottom: 1px solid color-mix(in srgb, rgba(255,255,255,.14) calc(var(--hdk) * 100%), rgba(0,0,0,.12)); transition: color .2s, border-color .2s; }
+.mega-shinogi ul { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, auto); grid-auto-flow: column; }   /* 縦に読む順に並べる */
+.hd nav .mega a { opacity: 1; box-shadow: none; padding: 0; }
+.hd nav .mega li a { display: block; padding: 10px 0; border-bottom: 1px solid color-mix(in srgb, rgba(255,255,255,.14) calc(var(--hdk) * 100%), rgba(0,0,0,.12)); transition: color .2s, border-color .2s; }
 .mega li a b { display: block; font: 700 16px/1.3 var(--en); }
 .mega li a span { display: block; margin-top: 3px; font: 500 12px/1.4 var(--en); opacity: .6; }
 .hd nav .mega li a:hover { color: var(--point); border-color: var(--point); box-shadow: none; }
 .mega-side { display: flex; flex-direction: column; gap: 12px; padding-top: 46px; }
-.mega-side a { display: block; padding: 16px 18px; border: 1px solid currentColor; border-radius: var(--r); font: 700 14px/1.4 var(--ja); transition: color .2s; }
+.hd nav .mega-side a { display: block; padding: 16px 18px; border: 1px solid currentColor; border-radius: var(--r); font: 700 14px/1.4 var(--ja); transition: color .2s; }
 .mega-side a small { display: block; margin-top: 4px; font: 600 11px/1 var(--en); opacity: .6; }
 .hd nav .mega-side a:hover { color: var(--point); box-shadow: none; }
 .sns { display: flex; gap: 18px; }
