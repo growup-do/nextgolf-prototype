@@ -60,9 +60,15 @@
   const ft = document.querySelector('.ft'), hd = document.querySelector('.hd');
   if (ft && hd) {
     const ln = document.querySelector('.lineup');   // トップの製品一覧（黒い地）の上でも暗くする
+    const lnRaf = ln && ln.querySelector('.s-rafale');
     const dark = () => {
       const h = hd.offsetHeight, r = ln && ln.getBoundingClientRect();
-      document.documentElement.classList.toggle('hd-dark', ft.getBoundingClientRect().top < h || !!(r && r.top < h && r.bottom > h));
+      // 黒い地は、製品一覧の頭が画面の 3/4 → 1/4 に来るあいだにブレンドで現れる（下の「セクションごとの固定背景」）。
+      // ヘッダーは、地が半分ほど黒くなった時点（頭が画面の中央）で黒版に、抜けるときも次の地が半分ほど出た時点（下端が画面の中央）で明るい版に戻す。
+      // スマホは鎬（白）と Rafale（黒）が上下に並ぶので、Rafale の頭がヘッダーの下に来たら黒版に
+      const mid = innerHeight * 0.5, pin = getComputedStyle(ln || document.body).getPropertyValue('--pin').trim() === '1';
+      const top = r ? (pin || !lnRaf ? r.top - mid : lnRaf.getBoundingClientRect().top - h) : 1;
+      document.documentElement.classList.toggle('hd-dark', ft.getBoundingClientRect().top < h || !!(r && top < 0 && r.bottom > mid));
     };
     addEventListener('scroll', dark, { passive: true });
     addEventListener('resize', dark);
