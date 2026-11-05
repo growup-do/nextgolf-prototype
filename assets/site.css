@@ -691,8 +691,16 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .at-tl .p3d-text { left: 5vw; top: calc(var(--hd) + 6vh); }
 .at-tr .p3d-text { right: 5vw; top: calc(var(--hd) + 6vh); }   /* 左上・右上・左下・右下のうち、シャフトにかからない所を product3d.js が選ぶ */
 .at-bl .p3d-text { left: 5vw; bottom: 10vh; }
+/* 説明文の前の見出し（Rafale の F.S システムなど）：効果（小さく）→ 技術の名前と英語名 → 効果の説明（製品の色）→ 細い線で本文と区切る */
+.p3d-head { margin-bottom: 1.6em; padding-bottom: 1.4em; border-bottom: 1px solid rgba(0,0,0,.12); }
+.p3d-text .p3d-head p + p { margin-top: 0; }
+.p3d-head .eye { font: 700 13px/1 var(--ja); color: var(--c); }
+.p3d-head h3 { margin: 12px 0 0; font: 700 26px/1.25 var(--ja); color: var(--k90); }
+.p3d-head h3 span { display: block; margin-top: 6px; font: 500 14px/1.2 var(--en); color: var(--k50, #8a8a8a); }
+.p3d-head .lead { margin-top: 14px; font: 700 16px/1.8 var(--ja); color: var(--c); }
 /* 説明文の下のレーダーチャート（Rafale KT1.0 のシャフト性能）。線は細く、塗りは製品の色を薄く */
-.p3d-radar { margin: 3em 0 0; width: min(440px, 100%); }
+.p3d-radar { margin: min(3em, 4vh) 0 0; width: min(100%, clamp(200px, 70vh - 280px, 440px)); }   /* 見出し・本文と合わせて画面に収まるよう、低い画面では小さく（900px で 350px、720px で 224px） */
+.at-br .p3d-text:has(.p3d-radar) { bottom: 5vh; }
 .p3d-radar figcaption { font: 500 13px/1 var(--ja); color: var(--k70); margin-bottom: 8px; }
 .p3d-radar svg { display: block; width: 100%; height: auto; overflow: visible; }
 .rd-grid { fill: none; stroke: rgba(0,0,0,.14); stroke-width: 1; vector-effect: non-scaling-stroke; }
@@ -869,6 +877,15 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .at-br .p3d-text { bottom: 8vh; top: auto; }
   .at-tl .p3d-text, .at-tr .p3d-text { top: calc(var(--hd) + 4vh); bottom: auto; }
   .at-bl .p3d-text { bottom: 8vh; top: auto; }
+  /* 見出しとチャートが入る段落（Rafale）は縦に長いので、文字・余白・チャートを詰め、下からの余白も小さく */
+  .p3d-text:has(.p3d-head) { font-size: 14.5px; line-height: 1.75; }
+  .at-br .p3d-text:has(.p3d-radar) { bottom: 3vh; }
+  .p3d-head { margin-bottom: 1em; padding-bottom: .9em; }
+  .p3d-head .eye { font-size: 12px; }
+  .p3d-head h3 { margin-top: 8px; font-size: 20px; }
+  .p3d-head h3 span { font-size: 12px; margin-top: 4px; }
+  .p3d-head .lead { margin-top: 8px; font-size: 14px; line-height: 1.7; }
+  .p3d-radar { margin-top: 1em; width: min(100%, 290px); }
   .p3d-lead .copy { font-size: 16px; }   /* 21 文字のコピーが 1 行に収まる大きさ */
   .p3d-lead .sub { font-size: 14px; }   /* コピー（16px）より大きくしない */
   .kv-bg .b-kvimg .photo { height: auto; width: 128vw; inset: 0 -14vw auto auto; -webkit-mask: linear-gradient(180deg, #000 55%, transparent 80%); mask: linear-gradient(180deg, #000 55%, transparent 80%); }
