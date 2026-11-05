@@ -118,10 +118,12 @@ main { padding-top: var(--hd); }
 .ft { --line: rgba(255,255,255,.14); padding: 72px 0 40px; background: var(--k90); color: #f2f2f2; position: relative; z-index: 2; overflow-x: clip; }   /* 右端から消えるボールで横にスクロールしないように */
 .ft .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 40px; }
 .ft .logo svg { height: 56px; width: auto; color: #fff; }
-.ft nav { display: grid; grid-template-columns: repeat(4, auto); gap: 18px 48px; font: 600 14px/1 var(--en); }
+.ft nav { display: flex; flex-wrap: wrap; gap: 18px 40px; font: 600 14px/1 var(--en); }   /* メニューは 1 列に並べる */
 .ft nav a { opacity: .8; transition: color .2s, opacity .2s; } .ft nav a:hover { opacity: 1; color: var(--point); }
 .ft .bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line); font: 400 15px/1 var(--en); color: var(--k30); }
 .ft .sns .f { fill: var(--k90); }
+.ft .cp { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 32px; }   /* プライバシーポリシーはコピーライトの左に、レギュラーの太さで */
+.ft .cp a { font-weight: 400; color: inherit; transition: color .2s; } .ft .cp a:hover { color: var(--point); }
 /* フッターの上端をフェアウェイに見立て、左からティーショットのボールが飛んできて弾み、転がって止まる（site.js が動かす） */
 /* 大きさはカートに合わせる：実物の比率（カート約 2.4m に 43mm）だと 1.3px で見えないので、少し大きめの 8px に */
 .ft-ball { position: absolute; left: 0; top: 0; width: 8px; height: 8px; margin: -8px 0 0 -4px; border-radius: 50%; pointer-events: none; z-index: 3; opacity: 0;
@@ -984,6 +986,6 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .form .row { grid-template-columns: 1fr; gap: 8px; }
   .form label.l { padding-top: 0; }
   .ft .row { flex-direction: column; }
-  .ft nav { grid-template-columns: repeat(2, auto); gap: 18px 32px; }
+  .ft nav { display: grid; grid-template-columns: repeat(2, auto); justify-content: start; gap: 18px 32px; }   /* スマホは 6 項目が 1 列に入らないので 2 列 */
   .ft .bottom { flex-direction: column; gap: 16px; align-items: flex-start; }
 }
