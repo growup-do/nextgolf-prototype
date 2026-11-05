@@ -706,6 +706,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .xs-in { position: absolute; left: 0; right: 0; top: 0; height: calc(var(--d) * 58 / 60); display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: calc(var(--d) * .05); font: 500 calc(var(--d) * .105)/1.2 var(--ja); color: #231815; text-align: center; }
 .xs-in b { font-weight: 500; color: var(--c); }
+.xs-in .sm { font-size: max(.78em, 9px); line-height: 1.3; }   /* 2 行の素材名（ボロン材＋高剛性カーボン材）は小さく */
 .xs-ic { width: 82%; height: auto; color: var(--c); }
 /* FW-60：四角い吹き出し（左に部位・アイコン・素材、右に図）。しっぽは左の欄の真下から、手元部を指す */
 .xs-card { --d: clamp(104px, 13vw, 190px); --tl: calc(var(--d) * .5); width: calc(var(--d) * 2); height: calc(var(--d) + var(--tl));

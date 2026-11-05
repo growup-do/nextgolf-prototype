@@ -233,12 +233,13 @@
       { focus: TIP, d: 0.62, rz: 0.25, sx: 0.05, sy: 0, tilt: 0, roll: 0 },
       { focus: X0 + 40, d: 1.0, rz: 0, sx: 0, sy: -0.1, tilt: 0, roll: Math.PI / 2 },
       LEFT(MID, 2.6), TALL()],
-    // Black-50：炎 → ラベル → 引きの全体 → 先端シール → 立てた全体
+    // Black-50：炎 → ラベル → 引きの全体 → 先端シール → 断面の吹き出し → 立てた全体
     'shinogi-black-50': () => [KV0,
       { focus: X0 + 120, d: 1.5, rz: 0.1, sx: 0, sy: 0, tilt: 0, roll: 0 },
       { focus: LAB, d: 1.0, rz: 0, sx: 0, sy: 0, tilt: 0, roll: 0 },
       { focus: MID - 60, d: 3.4, rz: -0.1, sx: 0, sy: 0.2, tilt: 0.06, roll: 0.4 },
       { focus: TIP, d: 0.6, rz: 0.2, sx: 0.04, sy: -0.12, tilt: 0, roll: 0 },   // 文章（左上）を避けて、右上がりに下へ
+      XS_SHOT,   // 先端・中間・手元の断面の吹き出し（説明文が 6 段なので、Black-50 はカットが 1 つ多い）
       LEFT(LAB - 120, 1.6), TALL()],
     // SP-40：金のマーク → 1/3 周ずつずれた線の版 → ラベル → 断面の吹き出し → 引きの全体 → 立てた全体
     'shinogi-sp-40': () => [KV0,
