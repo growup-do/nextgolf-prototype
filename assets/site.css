@@ -279,6 +279,10 @@ html.kv-off .kv-bg { visibility: hidden; }
 .kv-bg :is(.b-rafale, .b-rfdeco) .seal { right: 6%; bottom: 8%; width: min(22vw, 40vh, 340px); opacity: .1; }
 .kv-bg :is(.b-rafale, .b-rfdeco) .seal > i { position: absolute; inset: 0; background: #fff;
   -webkit-mask: url("img/kv-rafale-seal.png") center / contain no-repeat; mask: url("img/kv-rafale-seal.png") center / contain no-repeat; }
+/* 製品ページの背景のシールは、製品ごとの名前入り（Ma1.0・KT1.0・KT FW） */
+.kv-bg .b-rfdeco .seal.sl-ma1 > i { -webkit-mask-image: url("img/kv-rafale-seal-ma1.png"); mask-image: url("img/kv-rafale-seal-ma1.png"); }
+.kv-bg .b-rfdeco .seal.sl-kt1 > i { -webkit-mask-image: url("img/kv-rafale-seal-kt1.png"); mask-image: url("img/kv-rafale-seal-kt1.png"); }
+.kv-bg .b-rfdeco .seal.sl-kt-fw > i { -webkit-mask-image: url("img/kv-rafale-seal-kt-fw.png"); mask-image: url("img/kv-rafale-seal-kt-fw.png"); }
 .kv-bg :is(.b-rafale, .b-rfdeco) .f > i { position: absolute; inset: 0; background: var(--deco, #ff7a45); }   /* Rafale のほかの製品は、そのシャフトの色（--deco） */
 .kv-bg :is(.b-rafale, .b-rfdeco) .f3 { left: 4%; top: 52%; width: min(64vw, 1150px); opacity: .2; }    /* I=π(D⁴-d⁴)/64 */
 .kv-bg :is(.b-rafale, .b-rfdeco) .f1 { left: 46%; top: 76%; width: min(30vw, 540px); opacity: .16; }  /* D=2πT+d */
