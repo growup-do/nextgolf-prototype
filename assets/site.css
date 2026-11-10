@@ -940,8 +940,8 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .p3d-lead .sub { font-size: 14px; }   /* コピー（16px）より大きくしない */
   .kv-bg .b-kvimg .photo { height: auto; width: 128vw; inset: 0 -14vw auto auto; -webkit-mask: linear-gradient(180deg, #000 55%, transparent 80%); mask: linear-gradient(180deg, #000 55%, transparent 80%); }
   .p3d-hero.has-kv .p3d-fv { left: 20px; right: 20px; top: auto; bottom: calc(9vh + 56px); transform: none; gap: 20px; }   /* 下の SCROLL（文字とバー）にかからない高さ */
-  /* 鎬シリーズ：ロゴとコピーは、ヘッダーの下の画面の縦横の中央に（Rafale は今の位置のまま） */
-  .p3d-hero.s-shinogi .p3d-fv, .p3d-hero.s-shinogi.has-kv .p3d-fv { left: 20px; right: 20px; top: 50%; bottom: auto; transform: translateY(-50%); align-items: center; text-align: center; }
+  /* 鎬・Rafale：ロゴとコピーは、ヘッダーの下の画面の縦横の中央に */
+  .p3d-hero:is(.s-shinogi, .s-rafale) .p3d-fv, .p3d-hero:is(.s-shinogi, .s-rafale).has-kv .p3d-fv { left: 20px; right: 20px; top: 50%; bottom: auto; transform: translateY(-50%); align-items: center; text-align: center; }
   /* ロゴ・コピーの大きさは Rafale（ロゴの幅 220px・コピー 16px・サブ 14px）にそろえる。縦長のロゴは、見た目の大きさが近くなる幅に */
   .p3d-logo { width: 220px; }
   .p3d-logo.tall { width: 170px; }
@@ -981,6 +981,7 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .kv3d[data-slide] .kv-tick { display: flex; }
   .kv-cue i { height: 48px; }
   .kv-bg .b-shinogi .photo { left: 50%; width: 115vw; }
+  .kv-bg .b-shinogi .type { left: -8%; top: 62%; width: 125vw; }   /* 鎬・Shinogi の文字の模様：スマホでは画面の幅より大きく */
   /* 製品一覧は、鎬と Rafale を縦に積む（写真は出さない。名前を押すと製品ページへ） */
   .lineup { height: auto; min-height: 0; --pin: 0; }
   /* 地は画面いっぱいの白に、黒を Rafale の頭（--lnrt。site.js）から下に重ねる */
