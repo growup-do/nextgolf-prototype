@@ -489,8 +489,7 @@
     for (const it of items) {
       const w = ease(clamp(it.f > 0 ? F : -F));   // この製品へのホバーの進み具合
       let tx = 0, ty = 0;
-      // スマホの 1 本ずつの切り替えでは、ロゴ類は画面の縦横の中央に固定する（シャフトをよけて動かさない）
-      if (w > 0.01 && !slideOn()) {
+      if (w > 0.01) {
         const ln = shaftLine(it.f > 0 ? shin : raf);
         // まとまりの四隅（いまずらしている分は差し引いて、ずらす前の位置で測る）
         let l = Infinity, t = Infinity, rr = -Infinity, bb = -Infinity;
