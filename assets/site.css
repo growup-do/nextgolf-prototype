@@ -962,8 +962,8 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   /* キービジュアル：ロゴを上下に置き、交差するシャフトを真ん中に見せる */
   .kv-ui { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr auto; padding: 20px 20px 96px; }   /* 下は SCROLL（下端にくっつけた文字とバー）の分を空ける */
   .kv-item { padding: 8px; gap: 8px; }
-  .kv-item.s-shinogi { justify-self: start; align-self: start; margin-top: 13vh; }   /* ヘッダーに詰まって見えないよう、上を空ける */
-  .kv-item.s-rafale { justify-self: end; align-self: end; margin-bottom: 2vh; }
+  /* ロゴ類は 2 つとも同じ場所（画面の縦横の中央）に重ね、切り替えで入れ替える */
+  .kv-item.s-shinogi, .kv-item.s-rafale { grid-row: 1 / 3; grid-column: 1; align-self: center; margin: 0; }
   /* 1 本ずつ切り替えるので、選ばれていないほうのロゴ類は完全に消し、押せないように */
   .kv-item.s-shinogi { opacity: calc(1 - var(--rf)); }
   .kv-item.s-rafale { opacity: calc(1 - var(--sh)); }
