@@ -114,10 +114,12 @@ html.kv-leaving .hd { transition: none; }   /* KV から製品ページへ移る
 .menu-open { overflow: hidden; }
 .spmenu a { font: 700 24px/1 var(--en); padding: 20px 0; border-bottom: 1px solid var(--line); }
 .spmenu a:hover { border-bottom-color: var(--point); box-shadow: inset 0 -1px 0 var(--point); color: var(--point); }
+.spmenu .sp-pp { align-self: flex-end; margin-top: auto; padding: 28px 0 0; border: 0; font: 500 12px/1 var(--ja); color: var(--sub); }   /* 右下に小さく */
+.spmenu .sp-pp:hover { box-shadow: none; }
 .spmenu a small { display: block; font: 500 12px/1 var(--ja); color: var(--sub); margin-top: 8px; }
 /* PRODUCTS の下に、シリーズごとの製品へ直接行ける一覧（PC のメガメニューと同じ並び） */
 .spmenu .sp-p { padding: 4px 0 20px; border-bottom: 1px solid var(--line); }
-.spmenu .sp-p > a { display: block; border-bottom: 0; padding-bottom: 20px; }
+.spmenu .sp-p > a:first-child { display: block; border-bottom: 0; padding-bottom: 20px; }
 .spmenu .sp-s + .sp-s { margin-top: 16px; }
 .spmenu .sp-s .mega-h { display: inline-flex; align-items: center; height: 24px; padding: 6px 0; margin-bottom: 4px; border: 0; }
 .spmenu .sp-s .mega-h > * { height: 15px; }
@@ -350,6 +352,11 @@ html.kv-off .kv-bg { visibility: hidden; }
   font: 600 14px/1 var(--en); color: color-mix(in srgb, #dfe6f2 calc(max(var(--shb), var(--rfb)) * 100%), var(--k80)); opacity: calc((1 - (var(--sh) + var(--rf)) * .6) * var(--cue));
   visibility: var(--cue-vis, visible); }
 /* スクロールの案内：細い線の中を、光の筋が上から下へ繰り返し流れる */
+.kv-tick { display: none; position: absolute; left: 20px; bottom: 66px; gap: 6px; pointer-events: none; }
+.kv3d[data-slide="0"] .kv-tick { display: none !important; }
+.kv-tick i { position: relative; width: 28px; height: 2px; background: rgba(0,0,0,.14); overflow: hidden; }
+.kv-tick i::after { content: ""; position: absolute; inset: 0; transform-origin: left; transform: scaleX(0); background: var(--k90); }
+.kv3d[data-slide="1"] .kv-tick .t-sh::after, .kv3d[data-slide="-1"] .kv-tick .t-rf::after { transform: scaleX(var(--slp, 0)); transition: transform .25s linear; }
 .kv-cue i { position: relative; display: block; width: 1px; height: 64px; background: rgba(0,0,0,.14); overflow: hidden; }
 .kv-cue i::after { content: ""; position: absolute; left: 0; top: 0; width: 1px; height: 100%; background: color-mix(in srgb, #fff calc(max(var(--shb), var(--rfb)) * 100%), var(--k90)); animation: kv-cue 2s cubic-bezier(.65,0,.35,1) infinite; }
 .kv-cue span { animation: kv-cue-text 2s ease-in-out infinite; }
@@ -952,7 +959,7 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   /* キービジュアル：ロゴを上下に置き、交差するシャフトを真ん中に見せる */
   .kv-ui { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr auto; padding: 20px 20px 96px; }   /* 下は SCROLL（下端にくっつけた文字とバー）の分を空ける */
   .kv-item { padding: 8px; gap: 8px; }
-  .kv-item.s-shinogi { justify-self: start; align-self: start; margin-top: 2vh; }
+  .kv-item.s-shinogi { justify-self: start; align-self: start; margin-top: 7vh; }   /* ヘッダーに詰まって見えないよう、上を空ける */
   .kv-item.s-rafale { justify-self: end; align-self: end; margin-bottom: 2vh; }
   /* 1 本ずつ切り替えるので、選ばれていないほうのロゴ類は完全に消し、押せないように */
   .kv-item.s-shinogi { opacity: calc(1 - var(--rf)); }
@@ -965,6 +972,8 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .kv-item .copy { font-size: 15px; }
   .kv-item .go { height: 38px; padding: 0 16px; font-size: 12px; margin-top: 4px; }
   .kv-cue { font-size: 12px; gap: 10px; }
+  /* 1 本ずつ切り替えるときの、次に切り替わるまでの残り時間（kv.js の --slp：0→1）。左下、SCROLL の文字と同じ高さに */
+  .kv3d[data-slide] .kv-tick { display: flex; }
   .kv-cue i { height: 48px; }
   .kv-bg .b-shinogi .photo { left: 50%; width: 115vw; }
   /* 製品一覧は、鎬と Rafale を縦に積む（写真は出さない。名前を押すと製品ページへ） */

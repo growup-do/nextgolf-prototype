@@ -271,6 +271,7 @@
   setInterval(() => {
     if (document.hidden || !slideOn() || kvA < 1) return;
     if ((slideMs += 250) >= 4000) { slideMs = 0; setSlide(slide ? -slide : 1); }
+    kv.style.setProperty('--slp', (slideMs / 4000).toFixed(3));   // 切り替えまでの残り時間のインジケーター（site.css の .kv-tick）
   }, 250);
   SP.addEventListener('change', () => setSlide(slideOn() ? 1 : 0));
 
@@ -393,7 +394,7 @@
     const s = m.s;
     if (!s.pts && !buildParticles(s, m.kind)) { m.mv = m.kv ? 1 - sstep(0, 0.12, disp) : sstep(0.82, 1, m.A); return; }
     m.mv = sstep(0.82, 1, m.A) * (1 - sstep(0, 0.12, disp));
-    const op = Math.max(1 - sstep(0.9, 1, m.A), sstep(0, 0.1, disp)) * (1 - sstep(0.75, 1, disp)) * (m.kv ? 1 : sstep(0, 0.2, hand)) * m.f;
+    const op = Math.max(1 - sstep(0.9, 1, m.A), sstep(0, 0.1, disp)) * (1 - sstep(0.75, 1, disp)) * (m.kv ? 1 : sstep(0, 0.2, hand)) * m.f * (m.hide ?? 1);
     const u = s.pts.material.uniforms;
     u.uA.value = m.A; u.uD.value = disp; u.uOp.value = op;
     u.uPx.value = renderer.getPixelRatio();   // 1 CSS px
@@ -484,7 +485,7 @@
   }
   function avoid(dt) {
     scene.updateMatrixWorld();
-    const vw = innerWidth, vh = innerHeight, k = 1 - Math.exp(-dt * 6), hd = kv.querySelector('.kv-ui').getBoundingClientRect().top;
+    const vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight, k = 1 - Math.exp(-dt * 6), hd = kv.querySelector('.kv-ui').getBoundingClientRect().top;
     for (const it of items) {
       const w = ease(clamp(it.f > 0 ? F : -F));   // この製品へのホバーの進み具合
       let tx = 0, ty = 0;
@@ -527,7 +528,7 @@
     // 鎬は左上から右下へ、Rafale は左下から右上へ。2 本で X を作る
     let ang = (side > 0 ? -A : A) + turn;
     // 選ばれたほうは 150% に拡大して手前へ。もう一方は 70% に縮んで奥へ下がり、不透明度 10% まで薄くなる（ロゴ類と同じ）
-    let sc = 1 + 0.5 * k - 0.3 * o, x = 0, y = 0, z = side * -0.15 + 2.2 * k - 1.2 * o;
+    let sc = (1 + 0.5 * k - 0.3 * o) * (SP.matches ? 1.2 : 1), x = 0, y = 0, z = side * -0.15 + 2.2 * k - 1.2 * o;   // スマホ幅は細くて柄が見えないので 120% に
     let roll = 0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15;
     let op = (1 - (SP.matches ? 1 : 0.9) * o) * (1 - vanish);   // スマホ幅では、選ばれていないほうは完全に消す
     if (member && hand > 0) {
@@ -537,6 +538,8 @@
       roll = lerp(roll, P.roll + (side > 0 ? TURN : 0), m);
       op = lerp(op, member.f, m);
     }
+    // スマホ幅：選ばれていないほうは、最初に集まるパーティクルも出さない（最初は SHINOGI だけが現れる）。製品一覧へ移るにつれて戻す
+    if (member) member.hide = SP.matches ? 1 - o * (1 - easeIO(clamp(hand))) : 1;
     if (member) {   // パーティクル：最初に集まって現れ（kvA）、製品一覧から次へ移るときに散る
       s.root.position.set(x, y, z); s.root.rotation.set(0, 0, ang); s.spin.rotation.x = roll; s.root.scale.setScalar(sc);
       s.root.updateMatrixWorld(true);
@@ -573,7 +576,19 @@
     const cut = (t, b) => { t = clamp(t, 0, h); b = clamp(b, 0, h); if (b <= t) return false; renderer.setScissor(0, h - b, w, b - t); return true; };
     renderer.setScissorTest(true);
     for (const m of members) m.s.root.visible = m.kv && !landed && vis[members.indexOf(m)];
-    if (!landed && cut(0, lr.bottom)) renderer.render(scene, camera);
+    // スマホ（上下に並ぶ）：KV から製品一覧へ移る途中の鎬のシャフトも、斜めの境目より下へは出さない
+    const rh = !PIN && RINGS.rafale && RINGS.shinogi ? RINGS.rafale.half.getBoundingClientRect() : null;
+    const stacked = rh && rh.top >= RINGS.shinogi.half.getBoundingClientRect().bottom - 1 && rh.top < h + SLANT * w;
+    if (!landed && cut(0, lr.bottom)) {
+      if (stacked && shin.root.visible) {
+        shin.root.visible = false;
+        renderer.render(scene, camera);
+        for (const m of members) m.s.root.visible = m.s === shin;
+        renderer.clippingPlanes = [slantPlane(rh.top, SLANT * w, w, h, false)];
+        renderer.render(scene, camera);
+        renderer.clippingPlanes = [];
+      } else renderer.render(scene, camera);
+    }
     catcher.visible = false;
     for (const kind of ['shinogi', 'rafale']) {
       const ms = members.filter(m => m.kind === kind && (!m.kv || landed));
@@ -583,7 +598,7 @@
       // 上端で切るのは、上にもう一方の半分があるとき（スマホの Rafale）だけ。それ以外は浮かび上がりながら KV に重なってよい
       // スマホでは、2 つの半分の境目は斜め（左上から右下へ。site.css の --lnsl）。境目の線の上下を、カメラを通る平面で切る
       if (PIN) { if (cut(0, h)) renderer.render(scene, camera); continue; }
-      const top = hr.top > lr.top + 1, sl = SLANT * innerWidth;
+      const top = hr.top > lr.top + 1, sl = SLANT * document.documentElement.clientWidth;   // 9vw（vw は表示幅）
       const nb = kind === 'shinogi' && ms[0].half.nextElementSibling ? ms[0].half.nextElementSibling.getBoundingClientRect() : null;   // 下に Rafale の半分があるか
       const edge = top ? hr.top : nb && nb.top >= hr.bottom - 1 ? hr.bottom : null;
       renderer.clippingPlanes = edge === null ? [] : [slantPlane(edge, sl, w, h, top)];
