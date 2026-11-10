@@ -266,12 +266,12 @@
   const slideOn = () => (noHover || SP.matches) && !reduce;
   const setSlide = v => { slide = v; kv.dataset.slide = v; syncTarget(); };
   if (slideOn()) { slide = target = 1; kv.dataset.slide = 1; }
-  // 4 秒ごとに切り替える。数えるのは、ページを開いたときに 2 本が集まりきってから（集まる途中で切り替わらないように）
+  // 3 秒ごとに切り替える。数えるのは、ページを開いたときに 2 本が集まりきってから（集まる途中で切り替わらないように）
   let slideMs = 0;
   setInterval(() => {
     if (document.hidden || !slideOn() || kvA < 1) return;
-    if ((slideMs += 250) >= 4000) { slideMs = 0; setSlide(slide ? -slide : 1); }
-    kv.style.setProperty('--slp', (slideMs / 4000).toFixed(3));   // 切り替えまでの残り時間のインジケーター（site.css の .kv-tick）
+    if ((slideMs += 250) >= 3000) { slideMs = 0; setSlide(slide ? -slide : 1); }
+    kv.style.setProperty('--slp', (slideMs / 3000).toFixed(3));   // 切り替えまでの残り時間のインジケーター（site.css の .kv-tick）
   }, 250);
   SP.addEventListener('change', () => setSlide(slideOn() ? 1 : 0));
 
