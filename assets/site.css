@@ -25,6 +25,7 @@
 }
 /* ホバーのない端末（スマホ）は、KV を最初から SHINOGI のホバー状態で見せる（kv.js が動き出す前から。2 本並んだ状態を一瞬も見せない） */
 @media (hover: none) and (prefers-reduced-motion: no-preference) { html:not(.no3d):has(.kv3d) { --sh: 1; } }
+@media (max-width: 760px) and (prefers-reduced-motion: no-preference) { html:not(.no3d):has(.kv3d) { --sh: 1; } }   /* スマホ幅も同じ（1 本ずつ切り替える） */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 /* ページの背景は html に敷く。body は透明にしておかないと、トップの固定背景（.kv-bg・.bg-next、z-index:-1）を body の背景が覆い隠してしまう */
 html { scroll-padding-top: calc(var(--hd) + 16px); background: #e4e4e4 var(--page) fixed; }
@@ -57,7 +58,8 @@ button { font: inherit; color: inherit; }
 .p3d-page .hd { --hdk: calc(clamp(0, (max(var(--shb), var(--rfb)) - .9) * 10, 1) * (1 - var(--blend))); }
 html.hd-dark .hd { --hdk: 1; }
 html.kv-leaving .hd { transition: none; }   /* KV から製品ページへ移るときは、背景と同時に色を変える */
-.menu-open .hd { --hdk: 0; }   /* スマホのメニューを開いたときは、明るいメニューに合わせる */
+.menu-open .hd { --hdk: 0 !important; }   /* スマホのメニューを開いたときは、明るいメニューに合わせる（暗いページ・暗い地の上でも） */
+.menu-open .hd { background: #eee; }   /* 透ける地だと、暗いページの上で灰色に沈むので、メニューと同じ色で塗る */
 .hd .in { height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 var(--hd-x); }
 .hd .logo svg { height: 50px; width: auto; display: block; color: inherit; }
 .hd .right { display: flex; align-items: center; gap: 40px; }
@@ -105,13 +107,23 @@ html.kv-leaving .hd { transition: none; }   /* KV から製品ページへ移る
 .menu-open .burger span:nth-child(1) { top: 10px; transform: rotate(45deg); }
 .menu-open .burger span:nth-child(2) { opacity: 0; }
 .menu-open .burger span:nth-child(3) { top: 10px; transform: rotate(-45deg); }
-.spmenu { position: fixed; top: var(--hd); left: 0; right: 0; bottom: 0; z-index: 49; background: rgba(238,238,238,.97); padding: 24px var(--px) 40px;
+.spmenu { position: fixed; top: var(--hd); left: 0; right: 0; bottom: 0; z-index: 49; background: #eee; padding: 24px var(--px) 40px;
+  color: var(--k90); --sub: var(--k60); --line: rgba(0,0,0,.12);   /* 暗いページ（製品一覧など）でも、明るいメニューの文字は暗い色で */
   display: flex; flex-direction: column; opacity: 0; visibility: hidden; transition: .3s; overflow-y: auto; }
 .menu-open .spmenu { opacity: 1; visibility: visible; }
 .menu-open { overflow: hidden; }
 .spmenu a { font: 700 24px/1 var(--en); padding: 20px 0; border-bottom: 1px solid var(--line); }
 .spmenu a:hover { border-bottom-color: var(--point); box-shadow: inset 0 -1px 0 var(--point); color: var(--point); }
 .spmenu a small { display: block; font: 500 12px/1 var(--ja); color: var(--sub); margin-top: 8px; }
+/* PRODUCTS の下に、シリーズごとの製品へ直接行ける一覧（PC のメガメニューと同じ並び） */
+.spmenu .sp-p { padding: 4px 0 20px; border-bottom: 1px solid var(--line); }
+.spmenu .sp-p > a { display: block; border-bottom: 0; padding-bottom: 20px; }
+.spmenu .sp-s + .sp-s { margin-top: 16px; }
+.spmenu .sp-s .mega-h { display: inline-flex; align-items: center; height: 24px; padding: 6px 0; margin-bottom: 4px; border: 0; }
+.spmenu .sp-s .mega-h > * { height: 15px; }
+.spmenu .sp-rafale .mega-h > * { height: 20px; }
+.spmenu .sp-s ul { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+.spmenu .sp-s li a { display: block; font: 700 15px/1.3 var(--en); padding: 10px 0; }
 main { padding-top: var(--hd); }
 
 /* ===== フッター（ページの締めは K90 の濃いグレー） ===== */
@@ -938,6 +950,12 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .kv-item { padding: 8px; gap: 8px; }
   .kv-item.s-shinogi { justify-self: start; align-self: start; margin-top: 2vh; }
   .kv-item.s-rafale { justify-self: end; align-self: end; margin-bottom: 2vh; }
+  /* 1 本ずつ切り替えるので、選ばれていないほうのロゴ類は完全に消し、押せないように */
+  .kv-item.s-shinogi { opacity: calc(1 - var(--rf)); }
+  .kv-item.s-rafale { opacity: calc(1 - var(--sh)); }
+  /* 画面の端で切れないよう、選んだときの拡大と横ずれはしない（シャフトをよける動き --ax・--ay だけ） */
+  .kv-item.s-shinogi, .kv-item.s-rafale { justify-self: center; transform: translate(var(--ax, 0px), var(--ay, 0px)); }
+  .kv3d[data-slide="1"] .kv-item.s-rafale, .kv3d[data-slide="-1"] .kv-item.s-shinogi { pointer-events: none; }
   .kv-item .lg { width: min(56vw, 240px); }
   .kv-item .col { font-size: 12px; }
   .kv-item .copy { font-size: 15px; }
@@ -950,10 +968,13 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   /* 地は画面いっぱいの白に、黒を Rafale の頭（--lnrt。site.js）から下に重ねる */
   .ln-bgl i { left: 0; right: 0; width: auto; transition: none; }
   .ln-bgl::after { display: none; }
-  .ln-bgl .b-r { top: var(--lnrt, 100%); }
-  /* スマホでは上下のあいだに罫線（左から右へ引く） */
-  .ln-bgl .b-r::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: rgba(255,255,255,.22);
-    transform: scaleX(var(--lnl, 0)); transform-origin: left; }
+  /* スマホでは上下のあいだに、左上から右下への斜めの罫線（左から右へ引く）。傾きは --lnsl（kv.js の SLANT と同じ）。
+     罫線の箱は、Rafale の頭（--lnrt）を中心に上下へ --lnsl ずつ。シャフトも同じ線で切り分ける（kv.js） */
+  .lineup, .ln-bgl { --lnsl: 9vw; }
+  .ln-bgl .b-r { top: calc(var(--lnrt, 100%) - var(--lnsl)); }
+  .ln-bgl .b-r::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: calc(var(--lnsl) * 2);
+    background: linear-gradient(to top right, transparent calc(50% - 1px), rgba(255,255,255,.22) 50%, transparent calc(50% + 1px));
+    clip-path: inset(0 calc((1 - var(--lnl, 0)) * 100%) 0 0); }
   .ln-ring { left: 50%; top: 46%; width: 76vw; }
   .ln-names a { text-shadow: 0 0 6px #000, 0 0 3px #000; }
   .ln-half { position: relative; width: auto; height: 88svh; min-height: 560px; }

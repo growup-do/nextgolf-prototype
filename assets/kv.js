@@ -33,6 +33,8 @@
   const canvas = kv.querySelector('canvas');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const noHover = matchMedia('(hover: none)').matches;
+  // スマホ幅（site.css の 760px と同じ）：KV の 2 本は同時に見せず、1 本ずつ切り替える。選ばれていないほうは完全に消す
+  const SP = matchMedia('(max-width: 760px)');
 
   const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -259,12 +261,18 @@
     if (a) go(a.href, overShaft);
   });
 
-  // ホバーのない端末（スマホ・タブレット）では、2 本が交差した状態は見せず、最初から SHINOGI のホバー状態で始めて、
-  // SHINOGI ⇄ Rafale のホバー状態をスライドショーのように切り替える
-  if (noHover && !reduce) {
-    slide = target = 1;
-    setInterval(() => { if (!document.hidden) { slide = -slide; syncTarget(); } }, 4000);
-  }
+  // ホバーのない端末（スマホ・タブレット）とスマホ幅では、2 本が交差した状態は見せず、最初から SHINOGI のホバー状態で始めて、
+  // SHINOGI ⇄ Rafale のホバー状態をスライドショーのように切り替える（画面の幅が変わったら、付け外しする）
+  const slideOn = () => (noHover || SP.matches) && !reduce;
+  const setSlide = v => { slide = v; kv.dataset.slide = v; syncTarget(); };
+  if (slideOn()) { slide = target = 1; kv.dataset.slide = 1; }
+  // 4 秒ごとに切り替える。数えるのは、ページを開いたときに 2 本が集まりきってから（集まる途中で切り替わらないように）
+  let slideMs = 0;
+  setInterval(() => {
+    if (document.hidden || !slideOn() || kvA < 1) return;
+    if ((slideMs += 250) >= 4000) { slideMs = 0; setSlide(slide ? -slide : 1); }
+  }, 250);
+  SP.addEventListener('change', () => setSlide(slideOn() ? 1 : 0));
 
   // ---------- 製品一覧のシャフト ----------
   // 鎬BLUE・RS1.0 は KV の 2 本をそのまま使い、ほかは KV のあとで読み込む（assets/lineup-data.js。テクスチャは小さくしたもの）
@@ -521,7 +529,7 @@
     // 選ばれたほうは 150% に拡大して手前へ。もう一方は 70% に縮んで奥へ下がり、不透明度 10% まで薄くなる（ロゴ類と同じ）
     let sc = 1 + 0.5 * k - 0.3 * o, x = 0, y = 0, z = side * -0.15 + 2.2 * k - 1.2 * o;
     let roll = 0.3 + Math.sin(clock * 0.35 + side) * 0.18 * (1 - k) + k * 0.15;
-    let op = (1 - 0.9 * o) * (1 - vanish);
+    let op = (1 - (SP.matches ? 1 : 0.9) * o) * (1 - vanish);   // スマホ幅では、選ばれていないほうは完全に消す
     if (member && hand > 0) {
       const P = ringPose(member), m = easeIO(clamp(hand));
       ang = lerp(ang, P.ang + (side > 0 ? 0 : TURN), m);
@@ -547,6 +555,15 @@
   // （シャフトは製品一覧の高さより長いので、はみ出しを切る。スマホでは 2 つの半分が上下に並ぶので、隣へはみ出さないように。
   //  KV の 2 本も、収まりきったら製品一覧の側で描く）
   renderer.autoClear = false;
+  const SLANT = 0.09;   // 境目の傾き：左右の端で、まん中から画面の幅の 9% ずつ上下にずれる（site.css の --lnsl）
+  const sp1 = new THREE.Vector3(), sp2 = new THREE.Vector3(), sp3 = new THREE.Vector3();
+  const unproj = (v, x, y, w, h) => v.set(x / w * 2 - 1, 1 - y / h * 2, 0.5).unproject(camera);
+  // 画面の上で (0, y−sl) → (w, y+sl) を通る線と、カメラを通る平面。below：線より下を残す（上の半分なら上を残す）
+  function slantPlane(y, sl, w, h, below) {
+    const pl = new THREE.Plane().setFromCoplanarPoints(camera.position, unproj(sp1, 0, y - sl, w, h), unproj(sp2, w, y + sl, w, h));
+    if ((pl.distanceToPoint(unproj(sp3, w / 2, y + (below ? 80 : -80), w, h)) < 0)) pl.negate();
+    return pl;
+  }
   function draw(lr) {
     const w = canvas.clientWidth, h = canvas.clientHeight;
     renderer.setScissorTest(false);
@@ -564,7 +581,14 @@
       const hr = ms[0].half.getBoundingClientRect();
       for (const m of members) m.s.root.visible = ms.includes(m) && (m.kv ? vis[members.indexOf(m)] : m.op > 0.01);
       // 上端で切るのは、上にもう一方の半分があるとき（スマホの Rafale）だけ。それ以外は浮かび上がりながら KV に重なってよい
-      if (PIN ? cut(0, h) : cut(hr.top > lr.top + 1 ? hr.top : 0, hr.bottom)) renderer.render(scene, camera);
+      // スマホでは、2 つの半分の境目は斜め（左上から右下へ。site.css の --lnsl）。境目の線の上下を、カメラを通る平面で切る
+      if (PIN) { if (cut(0, h)) renderer.render(scene, camera); continue; }
+      const top = hr.top > lr.top + 1, sl = SLANT * innerWidth;
+      const nb = kind === 'shinogi' && ms[0].half.nextElementSibling ? ms[0].half.nextElementSibling.getBoundingClientRect() : null;   // 下に Rafale の半分があるか
+      const edge = top ? hr.top : nb && nb.top >= hr.bottom - 1 ? hr.bottom : null;
+      renderer.clippingPlanes = edge === null ? [] : [slantPlane(edge, sl, w, h, top)];
+      if (cut(top ? hr.top - sl : 0, edge !== null && !top ? hr.bottom + sl : hr.bottom)) renderer.render(scene, camera);
+      renderer.clippingPlanes = [];
     }
     members.forEach((m, i) => { m.s.root.visible = vis[i]; });
     catcher.visible = cv;
