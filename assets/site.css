@@ -1055,3 +1055,6 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
 @media (prefers-reduced-motion: reduce) { .spec-hint i { animation: none; } }
 /* スマホ：シャフト性能のチャートは、説明文の枠の横幅の中央に */
 @media (max-width: 760px) { .p3d-radar { margin-left: auto; margin-right: auto; } }
+/* 取扱店の地図のパーティクル（.jmap-pt は地図より 1.5 倍大きい）が画面の右へはみ出して、横にスライドできてしまうのを防ぐ。
+   clip はスクロールの枠を作らないので、sticky などには影響しない。main にもかけて、ほかの要素がはみ出したときの保険にする */
+.sec:has(.shopfind), main { overflow-x: clip; }
