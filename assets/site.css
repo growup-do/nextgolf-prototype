@@ -941,7 +941,7 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .kv-bg .b-kvimg .photo { height: auto; width: 128vw; inset: 0 -14vw auto auto; -webkit-mask: linear-gradient(180deg, #000 55%, transparent 80%); mask: linear-gradient(180deg, #000 55%, transparent 80%); }
   .p3d-hero.has-kv .p3d-fv { left: 20px; right: 20px; top: auto; bottom: calc(9vh + 56px); transform: none; gap: 20px; }   /* 下の SCROLL（文字とバー）にかからない高さ */
   /* 鎬・Rafale：ロゴとコピーは、ヘッダーの下の画面の縦横の中央に */
-  .p3d-hero:is(.s-shinogi, .s-rafale) .p3d-fv, .p3d-hero:is(.s-shinogi, .s-rafale).has-kv .p3d-fv { left: 20px; right: 20px; top: 50%; bottom: auto; transform: translateY(-50%); align-items: center; text-align: center; }
+  .p3d-hero:is(.s-shinogi, .s-rafale) .p3d-fv, .p3d-hero:is(.s-shinogi, .s-rafale).has-kv .p3d-fv { gap: 20px; left: 20px; right: 20px; top: 50%; bottom: auto; transform: translateY(-50%); align-items: center; text-align: center; }
   /* ロゴ・コピーの大きさは Rafale（ロゴの幅 220px・コピー 16px・サブ 14px）にそろえる。縦長のロゴは、見た目の大きさが近くなる幅に */
   .p3d-logo { width: 220px; }
   .p3d-logo.tall { width: 170px; }
