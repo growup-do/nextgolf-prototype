@@ -62,6 +62,10 @@ html.kv-leaving .hd { transition: none; }   /* KV から製品ページへ移る
 .menu-open .hd { background: #eee; }   /* 透ける地だと、暗いページの上で灰色に沈むので、メニューと同じ色で塗る */
 .hd .in { height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 var(--hd-x); }
 .hd .logo svg { height: 50px; width: auto; display: block; color: inherit; }
+/* ロゴの隣のキャッチコピー（トップでは h1）。ロゴと縦の中央をそろえ、細い線で区切る */
+.hd .lt { display: flex; align-items: center; gap: 20px; min-width: 0; }
+.hd .hd-cp { margin: 0; padding-left: 20px; border-left: 1px solid currentColor; border-left-color: color-mix(in srgb, currentColor 30%, transparent); font: 500 13px/1.5 var(--ja); font-feature-settings: "palt"; opacity: .8; max-width: 26em; }
+@media (max-width: 1280px) { .hd .hd-cp { max-width: 13em; } }   /* ナビと詰まる幅では 2 行に（<wbr> で区切りのよいところで折る） */
 .hd .right { display: flex; align-items: center; gap: 40px; }
 .hd nav { display: flex; gap: 34px; font: 600 16px/1 var(--en); }
 .hd nav a { opacity: .75; transition: opacity .2s, color .2s; padding: 6px 0; }
@@ -953,6 +957,9 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   :root { --hd: 64px; --px: 20px; --hd-x: 20px; }
   body { font-size: 15px; }
   .hd .logo svg { height: 34px; }
+  .hd .lt { gap: 12px; }
+  .hd .hd-cp { padding-left: 12px; font-size: 10.5px; line-height: 1.5; max-width: 13em; }   /* スマホ：2 行で小さく */
+  .hd .right > .sns { display: none; }   /* スマホ：キャッチコピーを入れるため、ヘッダーの SNS は出さない（フッターにある） */
   .sec { padding: 72px 0; }
   main > .sec:last-child, .sec:has(+ .ft), main > .pbody:last-child > .sec:last-child { padding-bottom: 144px; }
   .sh { margin-bottom: 32px; }
