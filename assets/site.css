@@ -1060,3 +1060,5 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
 /* 取扱店の地図のパーティクル（.jmap-pt は地図より 1.5 倍大きい）が画面の右へはみ出して、横にスライドできてしまうのを防ぐ。
    clip はスクロールの枠を作らないので、sticky などには影響しない。main にもかけて、ほかの要素がはみ出したときの保険にする */
 .sec:has(.shopfind), main { overflow-x: clip; }
+/* PC：Rafale の製品ページのコピーも、鎬と同じ大きさに（スマホは 16px のまま） */
+@media (min-width: 761px) { .p3d-hero.s-rafale .p3d-lead .copy { font-size: clamp(28px, 2.6vw, 40px); line-height: 1.4; } }
