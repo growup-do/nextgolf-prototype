@@ -124,6 +124,10 @@ html.kv-leaving .hd { transition: none; }   /* KV から製品ページへ移る
 .spmenu .sp-rafale .mega-h > * { height: 20px; }
 .spmenu .sp-s ul { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
 .spmenu .sp-s li a { display: block; font: 700 15px/1.3 var(--en); padding: 10px 0; }
+/* シャフト探しへのボタン（PC のメガメニューの右と同じ） */
+.spmenu .sp-find { display: block; margin-top: 24px; padding: 16px 18px; border: 1px solid currentColor; border-radius: var(--r); font: 700 15px/1.4 var(--ja); }
+.spmenu .sp-find:hover { box-shadow: none; border-color: var(--point); }
+.spmenu .sp-find small { font: 600 11px/1 var(--en); margin-top: 6px; }
 main { padding-top: var(--hd); }
 
 /* ===== フッター（ページの締めは K90 の濃いグレー） ===== */
@@ -1012,7 +1016,15 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .info dd { padding-top: 0; }
   .form .row { grid-template-columns: 1fr; gap: 8px; }
   .form label.l { padding-top: 0; }
-  .ft .row { flex-direction: column; }
-  .ft nav { display: grid; grid-template-columns: repeat(2, auto); justify-content: start; gap: 18px 32px; }   /* スマホは 6 項目が 1 列に入らないので 2 列 */
-  .ft .bottom { flex-direction: column; gap: 16px; align-items: flex-start; }
+  /* フッター：上の余白はほかの余白（罫線の上下）と同じ 40px。ロゴは左、メニューは右（6 項目が 1 列に入らないので 2 列） */
+  .ft { padding-top: 40px; }
+  .ft .row { flex-direction: row; align-items: flex-start; gap: 24px; }
+  .ft .logo svg { height: 44px; }
+  .ft nav { display: grid; grid-template-columns: repeat(2, auto); justify-content: end; gap: 18px 28px; }
+  /* 下の段：SNS は右端、その下にコピーライト（左端）と PRIVACY POLICY（右端） */
+  .ft .bottom { display: grid; grid-template-columns: 1fr auto; grid-template-areas: ". sns" "cr pp"; gap: 20px 16px; align-items: center; }
+  .ft .bottom .sns { grid-area: sns; justify-self: end; }
+  .ft .cp { display: contents; }
+  .ft .cp a { grid-area: pp; justify-self: end; }
+  .ft .cp span { grid-area: cr; }
 }
