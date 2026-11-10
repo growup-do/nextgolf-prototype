@@ -514,7 +514,7 @@
     else key.position.set(KIND === 'rafale' ? 3 : lerp(3, 26 * t - 13, w), 6, 8);
     // 'left'：縦にしたシャフトの位置（resize で計算）
     const sxOf = v => v === 'left' ? leftX : v;
-    const sx = lerp(sxOf(a.sx), sxOf(b.sx), t) + (gust.sx || 0), sy = lerp(a.sy, b.sy, t);
+    const sx = lerp(sxOf(a.sx), sxOf(b.sx), t) + (gust.sx || 0), sy = lerp(a.sy + (SPS[i] || 0), b.sy + (SPS[i + 1] || 0), t);   // SPS：スマホで説明文をよける分
     // focus をシャフトの回転の中心に置き、その点が画面の (sx, sy) に来るようにカメラをずらす
     spin.position.x = -wx(lerp(a.focus, b.focus, t));
     const lx = -sx * 2 * d * TAN * aspect, ly = -sy * 2 * d * TAN;
@@ -574,10 +574,10 @@
   // 段落はそのカット（k）の構図で読まれ、次のカット（k+1）へ移り始めるまで残るので、次の構図も少しだけ考える。スマホは全幅の帯なので動かさない
   const CORNERS = ['at-tl', 'at-tr', 'at-bl', 'at-br'];
   const pv = new THREE.Vector3(), pc = new THREE.Vector3();
-  function shaftOnScreen(k) {   // カット k で止まったときのシャフトの軸（画面の px の点と半径の列）
+  function shaftOnScreen(k, add = SPS[k] || 0) {   // カット k で止まったときのシャフトの軸（画面の px の点と半径の列）。add：縦にずらす分
     const a = shots[Math.min(k, shots.length - 1)], d = dist(a.d), sx = a.sx === 'left' ? leftX : a.sx;
     spin.position.x = -wx(a.focus);
-    const lx = -sx * 2 * d * TAN * aspect, ly = -a.sy * 2 * d * TAN;
+    const lx = -sx * 2 * d * TAN * aspect, ly = -(a.sy + add) * 2 * d * TAN;
     camera.position.set(lx, ly + d * 0.03, d);
     camera.lookAt(look.set(lx, ly, 0));
     root.position.set(0, 0, 0);
@@ -607,8 +607,35 @@
     }
     return n / 160;
   }
+  // スマホ：説明文は画面の幅いっぱいの帯なので、上か下の帯のうちシャフトにかかりにくいほうに置き、
+  // さらにシャフトを、説明文のない残りの部分のまん中へ縦にずらす（SPS[k]：画面の高さに対する割合。上がプラス）
+  const SPS = [];
+  function placeTextsSP() {
+    const w = innerWidth, h = innerHeight, hd = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hd')) || 64;
+    SPS.length = 0;
+    texts.forEach(([sec, t]) => {
+      const k = marks.indexOf(sec);
+      if (k < 0) return;
+      const th = t.offsetHeight, bot = h * (t.querySelector('.p3d-radar') ? 0.03 : 0.08);
+      const cands = k === XS_K ? ['at-br'] : ['at-tl', 'at-br'];   // 吹き出しのカットは、説明文を下に
+      let best = null, score = Infinity, shift = 0;
+      for (const c of cands) {
+        const top = c === 'at-tl', r = { l: 20, w: w - 40, t: top ? hd + h * 0.04 : h - bot - th, h: th };
+        // シャフトの注目点（カットの focus）を、残りの部分（ヘッダーの下〜説明文、または説明文〜画面の下）のまん中へ。
+        // カットにもともと付いている縦の位置（sy）は置き換える。画面の外へ出さないよう、中心から高さの 35% まで
+        const free0 = top ? r.t + th : hd, free1 = top ? h : r.t;
+        const add = Math.max(-0.35, Math.min(0.35, (h / 2 - (free0 + free1) / 2) / h)) - (shots[k] ? shots[k].sy : 0);
+        const v = hits(shaftOnScreen(k, add), r) - (sec.classList.contains(c) ? 0.01 : 0);
+        if (v < score) { score = v; best = c; shift = add; }
+      }
+      SPS[k] = shift;
+      sec.classList.remove(...CORNERS); sec.classList.add(best);
+    });
+  }
   function placeTexts() {
-    if (innerWidth <= 760 || !texts.length) return;
+    if (!texts.length) return;
+    if (innerWidth <= 760) return placeTextsSP();
+    SPS.length = 0;
     const w = innerWidth, h = innerHeight, hd = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hd')) || 88;
     const mx = w * 0.05, top = hd + h * 0.06, bot = h * 0.1;
     texts.forEach(([sec, t]) => {

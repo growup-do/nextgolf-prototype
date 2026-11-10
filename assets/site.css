@@ -706,7 +706,7 @@ a.ev:hover .tt, a.nw:hover .t { text-decoration: underline; text-decoration-colo
 .p3d-hero.kv-light .p3d-logo { filter: none; }
 .p3d-hero.kv-light .copy { color: var(--k90); text-shadow: none; }
 .p3d-hero.kv-light .sub { color: var(--k70); text-shadow: none; }
-.p3d-hero.has-kv .copy { font-size: clamp(28px, 2.6vw, 40px); line-height: 1.4; }
+.p3d-hero.has-kv .copy, .p3d[data-slug="shinogi-blue"] .p3d-lead .copy { font-size: clamp(28px, 2.6vw, 40px); line-height: 1.4; }   /* 鎬BLUE のコピーも、ほかの鎬と同じ大きさ */
 .p3d-hero.has-kv .sub { font-size: clamp(16px, 1.35vw, 20px); color: #f2e6ec; }
 .p3d-lead .copy { font: 700 23px/1.5 var(--ja); font-feature-settings: "palt"; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.45); word-break: keep-all; overflow-wrap: anywhere; }
 .p3d-lead .sub { font: 700 20px/1.6 var(--ja); font-feature-settings: "palt"; color: #e9eef7; text-shadow: 0 2px 12px rgba(0,0,0,.45); margin-top: 10px; }
@@ -939,12 +939,13 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .p3d-lead .copy { font-size: 16px; }   /* 21 文字のコピーが 1 行に収まる大きさ */
   .p3d-lead .sub { font-size: 14px; }   /* コピー（16px）より大きくしない */
   .kv-bg .b-kvimg .photo { height: auto; width: 128vw; inset: 0 -14vw auto auto; -webkit-mask: linear-gradient(180deg, #000 55%, transparent 80%); mask: linear-gradient(180deg, #000 55%, transparent 80%); }
-  .p3d-hero.has-kv .p3d-fv { left: 20px; right: 20px; top: auto; bottom: 9vh; transform: none; gap: 20px; }
-  .p3d-logo { width: min(78vw, 320px); }
-  .p3d-logo.tall { width: min(60vw, 240px); }
-  .p3d-logo.xtall { width: min(42vw, 170px); }
-  .p3d-hero.has-kv .copy { font-size: 24px; }
-  .p3d-hero.has-kv .sub { font-size: 15px; }
+  .p3d-hero.has-kv .p3d-fv { left: 20px; right: 20px; top: auto; bottom: calc(9vh + 56px); transform: none; gap: 20px; }   /* 下の SCROLL（文字とバー）にかからない高さ */
+  /* ロゴ・コピーの大きさは Rafale（ロゴの幅 220px・コピー 16px・サブ 14px）にそろえる。縦長のロゴは、見た目の大きさが近くなる幅に */
+  .p3d-logo { width: 220px; }
+  .p3d-logo.tall { width: 170px; }
+  .p3d-logo.xtall { width: 120px; }
+  .p3d-hero.has-kv .copy, .p3d[data-slug="shinogi-blue"] .p3d-lead .copy { font-size: 16px; line-height: 1.5; }
+  .p3d-hero.has-kv .sub { font-size: 14px; }
   .p3d-info { padding: 76vh 20px 96px 64px; }
   .p3d-name h2 { font-size: 24px; }
   :root { --hd: 64px; --px: 20px; --hd-x: 20px; }
@@ -959,7 +960,7 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   /* キービジュアル：ロゴを上下に置き、交差するシャフトを真ん中に見せる */
   .kv-ui { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr auto; padding: 20px 20px 96px; }   /* 下は SCROLL（下端にくっつけた文字とバー）の分を空ける */
   .kv-item { padding: 8px; gap: 8px; }
-  .kv-item.s-shinogi { justify-self: start; align-self: start; margin-top: 7vh; }   /* ヘッダーに詰まって見えないよう、上を空ける */
+  .kv-item.s-shinogi { justify-self: start; align-self: start; margin-top: 13vh; }   /* ヘッダーに詰まって見えないよう、上を空ける */
   .kv-item.s-rafale { justify-self: end; align-self: end; margin-bottom: 2vh; }
   /* 1 本ずつ切り替えるので、選ばれていないほうのロゴ類は完全に消し、押せないように */
   .kv-item.s-shinogi { opacity: calc(1 - var(--rf)); }
