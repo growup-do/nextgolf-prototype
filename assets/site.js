@@ -401,3 +401,19 @@
   addEventListener('keydown', e => { if (e.key === 'Escape' && np.classList.contains('open')) { set(false); a.focus(); } });
   np.querySelectorAll('.mega a').forEach(x => x.addEventListener('click', () => set(false)));
 })();
+
+/* スペック表：横にはみ出すときだけ、右上に小さく「スライド →」を出し、右端をぼかす。右端までスライドしたら消す */
+(() => {
+  document.querySelectorAll('.spec-wrap').forEach(w => {
+    const box = document.createElement('div'); box.className = 'spec-box';
+    w.before(box); box.append(w);
+    const h = document.createElement('div'); h.className = 'spec-hint'; h.setAttribute('aria-hidden', 'true');
+    h.innerHTML = '横にスライド<i></i>'; box.prepend(h);
+    const upd = () => {
+      const x = w.scrollWidth - w.clientWidth > 4;
+      box.classList.toggle('is-x', x);
+      box.classList.toggle('at-end', !x || w.scrollLeft >= w.scrollWidth - w.clientWidth - 4);
+    };
+    w.addEventListener('scroll', upd, { passive: true }); addEventListener('resize', upd); upd();
+  });
+})();

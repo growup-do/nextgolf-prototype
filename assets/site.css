@@ -1040,3 +1040,18 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .ft .cp a { grid-area: pp; justify-self: end; }
   .ft .cp span { grid-area: cr; }
 }
+/* スペック表：横にスライドできることを控えめに示す（site.js が .spec-box と .spec-hint を足す） */
+.spec-box { position: relative; }
+.p3d-info .spec-box { margin-top: 40px; }
+.p3d-info .spec-box .spec-wrap { margin-top: 0; }
+.spec-hint { display: none; justify-content: flex-end; align-items: center; gap: 6px; margin-bottom: 8px; font: 500 11px/1 var(--ja); color: var(--sub); transition: opacity .3s; }
+.spec-hint i { position: relative; width: 18px; height: 1px; background: currentColor; animation: spec-nudge 1.6s ease-in-out infinite; }
+.spec-hint i::after { content: ""; position: absolute; right: 0; top: -3px; width: 6px; height: 6px; border: solid currentColor; border-width: 1px 1px 0 0; transform: rotate(45deg); transform-origin: 100% 0; top: 0; }
+@keyframes spec-nudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
+.spec-box.is-x .spec-hint { display: flex; }
+.spec-box.is-x.at-end .spec-hint { opacity: .35; }
+.spec-box.is-x:not(.at-end) .spec-wrap { -webkit-mask: linear-gradient(90deg, #000 calc(100% - 48px), transparent); mask: linear-gradient(90deg, #000 calc(100% - 48px), transparent); }
+.p3d-dark .spec-hint { color: rgba(255,255,255,.6); }
+@media (prefers-reduced-motion: reduce) { .spec-hint i { animation: none; } }
+/* スマホ：シャフト性能のチャートは、説明文の枠の横幅の中央に */
+@media (max-width: 760px) { .p3d-radar { margin-left: auto; margin-right: auto; } }
