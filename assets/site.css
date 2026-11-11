@@ -244,7 +244,7 @@ main > .sec:last-child, .sec:has(+ .ft), main > .pbody:last-child > .sec:last-ch
 .s-rafale .ln-names a { color: #fff; }
 .ln-names a:hover, .ln-names a:focus-visible, .ln-names a.on { color: #ffae00; }
 /* 製品一覧ページのシャフト探しへ：2 つのシリーズの下、中央。文字と同じく、罫線を引くあいだはその場に留める */
-.ln-h { position: absolute; left: 50%; top: calc(var(--hd) + max(24px, var(--u) * 40)); width: max-content; z-index: 3; translate: -50% var(--lnhold, 0px); margin: 0; padding: 6px 20px; background: #000; color: #fff;
+.ln-h { position: absolute; left: 50%; top: calc(var(--lnt) - max(64px, var(--u) * 84));   /* ロゴの少し上（--lnt は鎬のロゴの上端） */ width: max-content; z-index: 3; translate: -50% var(--lnhold, 0px); margin: 0; padding: 6px 20px; background: #000; color: #fff;
   font: 700 clamp(14px, calc(var(--u) * 20), 20px)/1.5 var(--ja); font-feature-settings: "palt"; text-align: center; white-space: nowrap; }
 .ln-find { position: absolute; left: 50%; top: calc(var(--stage) - var(--u) * 112); z-index: 3; translate: -50% var(--lnhold, 0px); }
 .ln-find a { border-radius: var(--r); display: inline-flex; align-items: center; gap: 14px; padding: 17px 28px; background: #000; border: 1px solid rgba(255,255,255,.55); color: #fff; font: 700 15px/1 var(--ja); white-space: nowrap; transition: color .2s, border-color .2s; }
@@ -1010,7 +1010,9 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .ln-half { position: relative; width: auto; height: 88svh; min-height: 560px; }
   .s-shinogi .ln-body, .s-rafale .ln-body { left: 50%; top: 50%; translate: -50% -50%; width: min(56vw, 260px); gap: 32px; }
   .ln-names { gap: 18px; }
-  .ln-h { position: relative; left: auto; top: auto; translate: none; background: none; width: auto; white-space: normal; word-break: keep-all; padding: 64px 20px 0; font-size: 20px; text-shadow: 0 0 8px #000, 0 0 3px #000; }
+  .ln-h { position: relative; left: auto; top: auto; translate: none; background: none; width: auto; white-space: normal; word-break: keep-all; padding: 64px 20px 0; font-size: 20px; z-index: 3;
+    margin-bottom: calc(48px - (max(88svh, 560px) - 370px) / 2);   /* 下の鎬（高さの中央に置く塊、約 370px）のロゴへ寄せる */
+    text-shadow: 0 0 8px #000, 0 0 3px #000; }
   .ln-find { position: relative; left: auto; top: auto; translate: none; display: flex; justify-content: center; padding: 8px 20px 72px; }
   .cards { grid-template-columns: 1fr 1fr; gap: 28px 14px; }
   .card b { font-size: 16px; }
