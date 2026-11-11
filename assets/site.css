@@ -64,8 +64,8 @@ html.kv-leaving .hd { transition: none; }   /* KV から製品ページへ移る
 .hd .logo svg { height: 50px; width: auto; display: block; color: inherit; }
 /* ロゴの隣のキャッチコピー（トップでは h1）。ロゴと縦の中央をそろえ、細い線で区切る */
 .hd .lt { display: flex; align-items: center; gap: 20px; min-width: 0; }
-.hd .hd-cp { margin: 0; padding-left: 20px; border-left: 1px solid currentColor; border-left-color: color-mix(in srgb, currentColor 30%, transparent); font: 500 13px/1.5 var(--ja); font-feature-settings: "palt"; opacity: .8; max-width: 26em; }
-@media (max-width: 1280px) { .hd .hd-cp { max-width: 13em; } }   /* ナビと詰まる幅では 2 行に（<wbr> で区切りのよいところで折る） */
+.hd .hd-cp { margin: 0; padding-left: 20px; border-left: 1px solid currentColor; border-left-color: color-mix(in srgb, currentColor 30%, transparent); font: 500 13px/1.5 var(--ja); font-feature-settings: "palt"; opacity: .8; max-width: 19.5em; word-break: keep-all; }
+@media (max-width: 1280px) { .hd .hd-cp { font-size: 12px; max-width: 14em; } }   /* ナビと詰まる幅では 3 行に（<wbr> の位置で折る） */
 .hd .right { display: flex; align-items: center; gap: 40px; }
 .hd nav { display: flex; gap: 34px; font: 600 16px/1 var(--en); }
 .hd nav a { opacity: .75; transition: opacity .2s, color .2s; padding: 6px 0; }
@@ -882,7 +882,8 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
 /* 会社概要のコンセプト（文章はアタリ） */
 .concept .e, .cp-e { font: 600 15px/1 var(--en); color: var(--sub); }
 .cp-e { margin-bottom: 24px; }
-.cp-h { font: 700 40px/1.6 var(--ja); font-feature-settings: "palt"; margin: 20px 0 40px; }
+.cp-h { font: 700 40px/1.6 var(--ja); font-feature-settings: "palt"; margin: 20px 0 40px; word-break: keep-all; }
+.cp-sub { display: block; margin-top: .6em; font-size: .5em; font-weight: 600; line-height: 1.6; color: var(--sub); }
 .cp-body { max-width: 760px; display: grid; gap: 1.4em; font-size: 16px; line-height: 2.1; color: var(--k80); }
 .cp-note { margin-top: 32px; font-size: 12px; color: var(--sub); }
 .concept + .sec { padding-top: 0; }
@@ -958,7 +959,7 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   body { font-size: 15px; }
   .hd .logo svg { height: 34px; }
   .hd .lt { gap: 12px; }
-  .hd .hd-cp { padding-left: 12px; font-size: 10.5px; line-height: 1.5; max-width: 13em; }   /* スマホ：2 行で小さく */
+  .hd .hd-cp { padding-left: 12px; font-size: 10.5px; line-height: 1.5; max-width: 14em; }   /* スマホ：3 行で小さく */
   .hd .right > .sns { display: none; }   /* スマホ：キャッチコピーを入れるため、ヘッダーの SNS は出さない（フッターにある） */
   .sec { padding: 72px 0; }
   main > .sec:last-child, .sec:has(+ .ft), main > .pbody:last-child > .sec:last-child { padding-bottom: 144px; }
