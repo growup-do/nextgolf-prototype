@@ -598,7 +598,7 @@
       // 上端で切るのは、上にもう一方の半分があるとき（スマホの Rafale）だけ。それ以外は浮かび上がりながら KV に重なってよい
       // スマホでは、2 つの半分の境目は斜め（左上から右下へ。site.css の --lnsl）。境目の線の上下を、カメラを通る平面で切る
       if (PIN) { if (cut(0, h)) renderer.render(scene, camera); continue; }
-      const top = hr.top > lr.top + 1, sl = SLANT * document.documentElement.clientWidth;   // 9vw（vw は表示幅）
+      const pv = ms[0].half.previousElementSibling, top = !!pv && pv.classList.contains('ln-half') && hr.top > lr.top + 1, sl = SLANT * document.documentElement.clientWidth;   // 9vw（vw は表示幅）
       const nb = kind === 'shinogi' && ms[0].half.nextElementSibling ? ms[0].half.nextElementSibling.getBoundingClientRect() : null;   // 下に Rafale の半分があるか
       const edge = top ? hr.top : nb && nb.top >= hr.bottom - 1 ? hr.bottom : null;
       renderer.clippingPlanes = edge === null ? [] : [slantPlane(edge, sl, w, h, top)];

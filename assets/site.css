@@ -65,7 +65,8 @@ html.kv-leaving .hd { transition: none; }   /* KV から製品ページへ移る
 /* ロゴの隣のキャッチコピー（トップでは h1）。ロゴと縦の中央をそろえ、細い線で区切る */
 .hd .lt { display: flex; align-items: center; gap: 20px; min-width: 0; }
 .hd .hd-cp { margin: 0; padding-left: 20px; border-left: 1px solid currentColor; border-left-color: color-mix(in srgb, currentColor 30%, transparent); font: 500 13px/1.5 var(--ja); font-feature-settings: "palt"; opacity: .8; max-width: 19.5em; word-break: keep-all; }
-@media (max-width: 1280px) { .hd .hd-cp { font-size: 12px; max-width: 14em; } }   /* ナビと詰まる幅では 3 行に（<wbr> の位置で折る） */
+@media (max-width: 1280px) { .hd .hd-cp { font-size: 12px; max-width: 14em; } .hd nav { gap: 24px; } .hd .right { gap: 28px; } }
+@media (min-width: 1081px) and (max-width: 1200px) { .hd .right > .sns { display: none; } }   /* メニューが横に並ぶ狭い幅では、ヘッダーの SNS を外す（フッターにある） */   /* ナビと詰まる幅では 3 行に（<wbr> の位置で折る） */
 .hd .right { display: flex; align-items: center; gap: 40px; }
 .hd nav { display: flex; gap: 34px; font: 600 16px/1 var(--en); }
 .hd nav a { opacity: .75; transition: opacity .2s, color .2s; padding: 6px 0; }
@@ -244,7 +245,7 @@ main > .sec:last-child, .sec:has(+ .ft), main > .pbody:last-child > .sec:last-ch
 .ln-names a:hover, .ln-names a:focus-visible, .ln-names a.on { color: #ffae00; }
 /* 製品一覧ページのシャフト探しへ：2 つのシリーズの下、中央。文字と同じく、罫線を引くあいだはその場に留める */
 .ln-h { position: absolute; left: 50%; top: calc(var(--hd) + max(24px, var(--u) * 40)); width: max-content; z-index: 3; translate: -50% var(--lnhold, 0px); margin: 0; padding: 6px 20px; background: #000; color: #fff;
-  font: 700 clamp(18px, calc(var(--u) * 28), 28px)/1.5 var(--ja); font-feature-settings: "palt"; text-align: center; white-space: nowrap; }
+  font: 700 clamp(14px, calc(var(--u) * 20), 20px)/1.5 var(--ja); font-feature-settings: "palt"; text-align: center; white-space: nowrap; }
 .ln-find { position: absolute; left: 50%; top: calc(var(--stage) - var(--u) * 112); z-index: 3; translate: -50% var(--lnhold, 0px); }
 .ln-find a { border-radius: var(--r); display: inline-flex; align-items: center; gap: 14px; padding: 17px 28px; background: #000; border: 1px solid rgba(255,255,255,.55); color: #fff; font: 700 15px/1 var(--ja); white-space: nowrap; transition: color .2s, border-color .2s; }
 .ln-find a::after { content: ""; width: 28px; height: 1px; background: currentColor; transition: width .3s, height .3s; }
@@ -1092,8 +1093,9 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
 .faq-i .a p { margin: 0; }
 .faq-i .a p + p, .faq-i .a ul + p, .faq-i .a p + ul { margin-top: .8em; }
 .faq-i .a ul { margin: 0; padding-left: 1.2em; }
-.faq-i .a a, .cp-body a { text-decoration: underline; text-underline-offset: 3px; }
+.faq-i .a a { text-decoration: underline; text-underline-offset: 3px; }
 .faq-i .a a:hover, .cp-body a:hover { color: var(--point); }
+.cp-body a { text-decoration: none; color: inherit; transition: color .2s; }   /* About の本文：線は引かず、乗せたときだけオレンジに */
 @media (max-width: 760px) {
   .faq-g + .faq-g { margin-top: 48px; }
   .faq-g h2 { font-size: 19px; }
