@@ -243,6 +243,8 @@ main > .sec:last-child, .sec:has(+ .ft), main > .pbody:last-child > .sec:last-ch
 .s-rafale .ln-names a { color: #fff; }
 .ln-names a:hover, .ln-names a:focus-visible, .ln-names a.on { color: #ffae00; }
 /* 製品一覧ページのシャフト探しへ：2 つのシリーズの下、中央。文字と同じく、罫線を引くあいだはその場に留める */
+.ln-h { position: absolute; left: 50%; top: calc(var(--hd) + max(24px, var(--u) * 40)); width: max-content; z-index: 3; translate: -50% var(--lnhold, 0px); margin: 0; padding: 6px 20px; background: #000; color: #fff;
+  font: 700 clamp(18px, calc(var(--u) * 28), 28px)/1.5 var(--ja); font-feature-settings: "palt"; text-align: center; white-space: nowrap; }
 .ln-find { position: absolute; left: 50%; top: calc(var(--stage) - var(--u) * 112); z-index: 3; translate: -50% var(--lnhold, 0px); }
 .ln-find a { border-radius: var(--r); display: inline-flex; align-items: center; gap: 14px; padding: 17px 28px; background: #000; border: 1px solid rgba(255,255,255,.55); color: #fff; font: 700 15px/1 var(--ja); white-space: nowrap; transition: color .2s, border-color .2s; }
 .ln-find a::after { content: ""; width: 28px; height: 1px; background: currentColor; transition: width .3s, height .3s; }
@@ -1007,6 +1009,7 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .ln-half { position: relative; width: auto; height: 88svh; min-height: 560px; }
   .s-shinogi .ln-body, .s-rafale .ln-body { left: 50%; top: 50%; translate: -50% -50%; width: min(56vw, 260px); gap: 32px; }
   .ln-names { gap: 18px; }
+  .ln-h { position: relative; left: auto; top: auto; translate: none; background: none; width: auto; white-space: normal; word-break: keep-all; padding: 64px 20px 0; font-size: 20px; text-shadow: 0 0 8px #000, 0 0 3px #000; }
   .ln-find { position: relative; left: auto; top: auto; translate: none; display: flex; justify-content: center; padding: 8px 20px 72px; }
   .cards { grid-template-columns: 1fr 1fr; gap: 28px 14px; }
   .card b { font-size: 16px; }
@@ -1071,3 +1074,29 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
 .sec:has(.shopfind), main { overflow-x: clip; }
 /* PC：Rafale の製品ページのコピーも、鎬と同じ大きさに（スマホは 16px のまま） */
 @media (min-width: 761px) { .p3d-hero.s-rafale .p3d-lead .copy { font-size: clamp(28px, 2.6vw, 40px); line-height: 1.4; } .p3d-hero.s-rafale .p3d-fv { gap: 32px; } .p3d[data-slug="shinogi-blue"] .p3d-fv { gap: 32px; } }   /* ロゴとコピーの間も鎬（32px）と同じ（鎬BLUE も） */
+
+/* よくある質問：分類ごとの見出しと、開け閉めできる Q&A（details） */
+.faq .wrap { max-width: 880px; }
+.faq-g + .faq-g { margin-top: 64px; }
+.faq-g h2 { font: 700 23px/1.6 var(--ja); font-feature-settings: "palt"; margin: 0 0 16px; }
+.faq-i { border-top: 1px solid var(--line, rgba(0,0,0,.15)); }
+.faq-g .faq-i:last-child { border-bottom: 1px solid var(--line, rgba(0,0,0,.15)); }
+.faq-i summary { list-style: none; cursor: pointer; display: flex; gap: 16px; align-items: baseline; padding: 22px 44px 22px 0; position: relative; font: 700 17px/1.7 var(--ja); font-feature-settings: "palt"; }
+.faq-i summary::-webkit-details-marker { display: none; }
+.faq-i summary::after { content: ""; position: absolute; right: 8px; top: 50%; width: 10px; height: 10px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; translate: 0 -75%; rotate: 45deg; transition: rotate .25s, translate .25s; }
+.faq-i[open] summary::after { rotate: 225deg; translate: 0 -25%; }
+.faq-i summary:hover { color: var(--point); }
+.faq .q { flex: none; font: 700 20px/1 var(--en); }
+.faq-i .a { display: flex; gap: 16px; padding: 0 0 26px; color: var(--k80); font-size: 15px; line-height: 2; }
+.faq-i .a .q { color: var(--sub); padding-top: 6px; }
+.faq-i .a p { margin: 0; }
+.faq-i .a p + p, .faq-i .a ul + p, .faq-i .a p + ul { margin-top: .8em; }
+.faq-i .a ul { margin: 0; padding-left: 1.2em; }
+.faq-i .a a, .cp-body a { text-decoration: underline; text-underline-offset: 3px; }
+.faq-i .a a:hover, .cp-body a:hover { color: var(--point); }
+@media (max-width: 760px) {
+  .faq-g + .faq-g { margin-top: 48px; }
+  .faq-g h2 { font-size: 19px; }
+  .faq-i summary { font-size: 15px; gap: 12px; padding: 18px 32px 18px 0; }
+  .faq-i .a { gap: 12px; font-size: 14px; }
+}
