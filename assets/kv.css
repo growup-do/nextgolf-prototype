@@ -1,6 +1,6 @@
 /* キービジュアルのロゴ（印刷データから取り出した白抜きの PNG を、マスクにして差し色で塗る） */
-.lg-shinogi { --m: url("img/kv-lg-shinogi.png?v=a389c67b"); --ar: 1610 / 155; }
-.lg-rafale { --m: url("img/kv-lg-rafale_rs.png?v=a389c67b"); --ar: 1697 / 216; }
+.lg-shinogi { --m: url("img/kv-lg-shinogi.png?v=274a5b26"); --ar: 1610 / 155; }
+.lg-rafale { --m: url("img/kv-lg-rafale_rs.png?v=274a5b26"); --ar: 1697 / 216; }
 .lg-p-shinogi-athlete-fw { --m: url("img/logo-shinogi-athlete-fw.png"); --ar: 852 / 114; }
 .lg-p-shinogi-athlete-t-60 { --m: url("img/logo-shinogi-athlete-t-60.png"); --ar: 892 / 115; }
 .lg-p-shinogi-athlete-s-60 { --m: url("img/logo-shinogi-athlete-s-60.png"); --ar: 866 / 114; }
