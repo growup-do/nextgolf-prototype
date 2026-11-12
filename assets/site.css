@@ -1104,3 +1104,15 @@ a .ext { display: inline-block; vertical-align: -1px; margin-left: 6px; flex: no
   .faq-i summary { font-size: 15px; gap: 12px; padding: 18px 32px 18px 0; }
   .faq-i .a { gap: 12px; font-size: 14px; }
 }
+
+/* プライバシーポリシー：外部送信の一覧 */
+.policy .pol-t { width: 100%; border-collapse: collapse; margin: 16px 0 20px; font-size: 14px; line-height: 1.8; }
+.policy .pol-t th, .policy .pol-t td { border: 1px solid var(--line); padding: 12px 14px; text-align: left; vertical-align: top; }
+.policy .pol-t th { background: rgba(0,0,0,.04); font-weight: 700; white-space: nowrap; }
+@media (max-width: 760px) {
+  .policy .pol-t, .policy .pol-t tbody, .policy .pol-t tr, .policy .pol-t td { display: block; }
+  .policy .pol-t thead { display: none; }
+  .policy .pol-t tr { border: 1px solid var(--line); margin-bottom: 12px; }
+  .policy .pol-t td { border: 0; padding: 8px 14px; }
+  .policy .pol-t td:first-child { font-weight: 700; background: rgba(0,0,0,.04); }
+}
